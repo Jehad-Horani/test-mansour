@@ -1,6 +1,6 @@
 import type React from "react"
 import { Card, CardContent, CardHeader } from "./ui/card"
-import { cn } from "@/lib/utils"
+import { cn } from "@/app/lib/utils"
 
 interface WindowCardProps {
   title?: string

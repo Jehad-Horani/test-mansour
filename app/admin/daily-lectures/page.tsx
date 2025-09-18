@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { RetroWindow } from "@/components/retro-window"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/app/lib/supabase/client"
 
 interface DailyLecture {
   id: string

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RetroWindow } from "@/components/retro-window"
 import { PixelIcon } from "@/components/pixel-icon"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/app/lib/supabase/client"
 import { useUserContext } from "@/contexts/user-context"
 import { useEffect } from "react"
 

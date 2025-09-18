@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import type { User } from "@supabase/supabase-js"
-import { createClient } from "@/lib/supabase/client"
-import { authClient, type Profile, type RegisterData, type LoginData } from "@/lib/supabase/auth"
+import { createClient } from "@/app/lib/supabase/client"
+import { authClient, type Profile, type RegisterData, type LoginData } from "@/app/lib/supabase/auth"
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)

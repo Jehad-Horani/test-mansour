@@ -7,7 +7,7 @@ import {RetroWindow} from "@/components/retro-window"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import PixelIcon from "@/components/pixel-icon"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/app/lib/supabase/client"
 
 interface Message {
   id: string
