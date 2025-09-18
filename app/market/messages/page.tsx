@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUser } from "../../../hooks/use-user"
-import RetroWindow from "../../components/retro-window"
+import { RetroWindow } from "../../../components/retro-window"
 import { Button } from "../../../components/ui/button"
-import { Input } from "../../components/ui/input"
-import PixelIcon from "../../components/pixel-icon"
+import { Input } from "../../../components/ui/input"
+import PixelIcon from "../../../components/pixel-icon"
 import { createClient } from "../../../lib/supabase/client"
 import Link from "next/link"
 
@@ -154,7 +154,7 @@ export default function MessagesPage() {
                 رسائلي
               </h1>
               <Button onClick={() => router.push("/market")} variant="outline" className="retro-button bg-transparent">
-                <PixelIcon name="shopping-cart" className="w-4 h-4 ml-2" />
+                <PixelIcon type="shopping-cart" className="w-4 h-4 ml-2" />
                 تصفح السوق
               </Button>
             </div>
@@ -177,7 +177,7 @@ export default function MessagesPage() {
               </div>
             ) : filteredConversations.length === 0 ? (
               <div className="text-center py-12">
-                <PixelIcon name="message-circle" className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <PixelIcon type="message-circle" className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--ink)" }}>
                   {searchTerm ? "لا توجد نتائج" : "لا توجد محادثات"}
                 </h3>

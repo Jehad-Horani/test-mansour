@@ -1,10 +1,27 @@
 interface PixelIconProps {
-  type: "gavel" | "code" | "heart-beat" | "calendar" | "upload" | "user" | "book" | "cog" | "briefcase"
+  type:
+    | "gavel"
+    | "code"
+    | "heart-beat"
+    | "calendar"
+    | "upload"
+    | "user"
+    | "book"
+    | "cog"
+    | "briefcase"
+    | "shopping-cart"
+    | "message-circle"
+    | "arrow-right"
+    | "send"
+    | "shield"
   className?: string
 }
 
-export function PixelIcon({ type, className = "w-4 h-4" }: PixelIconProps) {
-  const icons = {
+export default function PixelIcon({
+  type,
+  className = "w-4 h-4",
+}: PixelIconProps) {
+  const icons: Record<string, JSX.Element> = {
     gavel: (
       <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
         <rect x="2" y="2" width="4" height="2" fill="currentColor" />
@@ -80,6 +97,44 @@ export function PixelIcon({ type, className = "w-4 h-4" }: PixelIconProps) {
         <rect x="6" y="4" width="4" height="2" fill="currentColor" />
         <rect x="7" y="2" width="2" height="2" fill="currentColor" />
         <rect x="2" y="8" width="12" height="2" fill="none" stroke="currentColor" />
+      </svg>
+    ),
+    "shopping-cart": (
+      <svg className={className} viewBox="0 0 16 16">
+        <rect x="1" y="3" width="2" height="2" fill="currentColor" />
+        <rect x="3" y="3" width="10" height="2" fill="currentColor" />
+        <rect x="12" y="5" width="2" height="6" fill="currentColor" />
+        <rect x="3" y="5" width="9" height="6" fill="currentColor" />
+        <rect x="4" y="11" width="2" height="2" fill="currentColor" />
+        <rect x="10" y="11" width="2" height="2" fill="currentColor" />
+      </svg>
+    ),
+    "message-circle": (
+      <svg className={className} viewBox="0 0 16 16">
+        <circle cx="8" cy="8" r="7" stroke="currentColor" fill="none" />
+        <rect x="4" y="6" width="8" height="2" fill="currentColor" />
+      </svg>
+    ),
+   "arrow-right": (
+      <svg className={className} viewBox="0 0 16 16">
+        <rect x="2" y="7" width="10" height="2" fill="currentColor" />
+        <rect x="12" y="5" width="2" height="6" fill="currentColor" transform="rotate(45 12 5)" />
+        <rect x="12" y="5" width="2" height="6" fill="currentColor" transform="rotate(-45 12 5)" />
+      </svg>
+    ),
+
+    send: (
+      <svg className={className} viewBox="0 0 16 16">
+        <rect x="1" y="7" width="12" height="2" fill="currentColor" />
+        <rect x="11" y="5" width="4" height="6" fill="currentColor" transform="rotate(45 11 5)" />
+      </svg>
+    ),
+
+    shield: (
+      <svg className={className} viewBox="0 0 16 16">
+        <rect x="6" y="2" width="4" height="2" fill="currentColor" />
+        <rect x="4" y="4" width="8" height="6" fill="currentColor" />
+        <rect x="5" y="10" width="6" height="4" fill="currentColor" />
       </svg>
     ),
   }

@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "../../../../hooks/use-user"
-import RetroWindow from "../../../components/retro-window"
-import { Button } from "../../../components/ui/button"
-import { Input } from "../../../components/ui/input"
-import PixelIcon from "../../../components/pixel-icon"
-import { createClient } from "../../../../lib/supabase/client"
+import {RetroWindow} from "@/components/retro-window"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import PixelIcon from "@/components/pixel-icon"
+import { createClient } from "@/lib/supabase/client"
 
 interface Message {
   id: string
@@ -298,7 +298,7 @@ export default function PurchaseChatPage({ params }: { params: { sellerId: strin
               </div>
             </div>
             <Button onClick={() => router.back()} variant="outline" className="retro-button bg-transparent">
-              <PixelIcon name="arrow-right" className="w-4 h-4 ml-1" />
+              <PixelIcon type="arrow-right" className="w-4 h-4 ml-1" />
               العودة
             </Button>
           </div>
@@ -307,7 +307,7 @@ export default function PurchaseChatPage({ params }: { params: { sellerId: strin
           <div className="p-4 bg-blue-50 border-b" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm">
-                <PixelIcon name="shopping-cart" className="w-4 h-4 text-blue-600" />
+                <PixelIcon type="shopping-cart" className="w-4 h-4 text-blue-600" />
                 <span className="font-medium">كتاب: {bookTitle}</span>
                 <span className="text-gray-600">- السعر: {bookPrice} دينار</span>
               </div>
@@ -401,7 +401,7 @@ export default function PurchaseChatPage({ params }: { params: { sellerId: strin
                 {isLoading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  <PixelIcon name="send" className="w-4 h-4" />
+                  <PixelIcon type="send" className="w-4 h-4" />
                 )}
               </Button>
             </div>
@@ -410,7 +410,7 @@ export default function PurchaseChatPage({ params }: { params: { sellerId: strin
           {/* Purchase Guidelines */}
           <div className="p-4 bg-yellow-50 border-t" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-start gap-3">
-              <PixelIcon name="shield" className="w-5 h-5 text-yellow-600 mt-0.5" />
+              <PixelIcon type="shield" className="w-5 h-5 text-yellow-600 mt-0.5" />
               <div>
                 <h4 className="font-bold text-sm mb-2">إرشادات الشراء الآمن:</h4>
                 <ul className="text-xs text-gray-600 space-y-1">
