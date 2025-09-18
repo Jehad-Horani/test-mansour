@@ -312,7 +312,7 @@ export function RetroNavbar() {
                 {isAdmin() && (
                   <Link
                     href="/admin"
-                    className="block py-2 text-sm hover:bg-gray-100 px-2 flex items-center gap-2"
+                    className="block py-2 text-sm hover:bg-gray-100 px-2 items-center gap-2"
                     style={{ color: "var(--accent)" }}
                     onClick={() => setShowMobileMenu(false)}
                   >
@@ -322,7 +322,7 @@ export function RetroNavbar() {
                 )}
                 <Link
                   href="/market/messages"
-                  className="block py-2 text-sm hover:bg-gray-100 px-2 flex items-center gap-2"
+                  className="block py-2 text-sm hover:bg-gray-100 px-2 items-center gap-2"
                   style={{ color: "var(--ink)" }}
                   onClick={() => setShowMobileMenu(false)}
                 >
