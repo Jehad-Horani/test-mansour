@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button"
-import { RetroWindow } from "@/components/retro-window"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/app/components/ui/button"
+import { RetroWindow } from "@/app/components/retro-window"
+import { Input } from "@/app/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { ShoppingCart } from "lucide-react"
 import Link from "next/link"
 

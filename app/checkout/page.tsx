@@ -2,12 +2,12 @@
 
 import type React from "react"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RetroWindow } from "@/components/retro-window"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
+import { Label } from "@/app/components/ui/label"
+import { RetroWindow } from "@/app/components/retro-window"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import { Checkbox } from "@/app/components/ui/checkbox"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"

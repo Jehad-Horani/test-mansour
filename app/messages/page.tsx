@@ -1,9 +1,9 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { RetroWindow } from "@/components/retro-window"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
+import { RetroWindow } from "@/app/components/retro-window"
+import { Badge } from "@/app/components/ui/badge"
 import { Search, MessageCircle, Clock, ShoppingCart, Users } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"

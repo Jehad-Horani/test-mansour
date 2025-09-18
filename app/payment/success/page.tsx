@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button"
-import { RetroWindow } from "@/components/retro-window"
+import { Button } from "@/app/components/ui/button"
+import { RetroWindow } from "@/app/components/retro-window"
 import { Check, Download, Mail } from "lucide-react"
 import Link from "next/link"
 

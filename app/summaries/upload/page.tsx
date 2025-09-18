@@ -3,14 +3,14 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RetroWindow } from "@/components/retro-window"
-import { PixelIcon } from "@/components/pixel-icon"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
+import { Textarea } from "@/app/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import { RetroWindow } from "@/app/components/retro-window"
+import  PixelIcon  from "@/app/components/pixel-icon"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/app/lib/supabase/client"
+import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
 import { useUserContext } from "@/contexts/user-context"
 import { useEffect } from "react"
 
@@ -57,7 +57,7 @@ export default function UploadSummaryPage() {
 
   const router = useRouter()
   const { user, isLoggedIn } = useUserContext()
-  const supabase = createClient()
+const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -108,67 +108,56 @@ export default function UploadSummaryPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
 
-    if (!user) {
-      setError("يجب تسجيل الدخول أولاً")
-      return
-    }
-
-    // Validate required fields
-    const requiredFields = ["title", "subject_name", "university_name", "semester", "college", "major"]
-    const missingFields = requiredFields.filter((field) => !formData[field as keyof typeof formData])
-
-    if (missingFields.length > 0) {
-      setError("يرجى ملء جميع الحقول المطلوبة")
-      return
-    }
-
-    if (!file) {
-      setError("يرجى اختيار ملف للرفع")
-      return
-    }
-
-    setLoading(true)
-    setError("")
-
-    try {
-      // Upload file to Supabase Storage (if you have it configured)
-      // For now, we'll store a placeholder URL
-      const fileUrl = `/uploads/${file.name}` // This would be the actual uploaded file URL
-
-      // Insert summary record
-      const { data, error: insertError } = await supabase.from("summaries").insert({
-        title: formData.title,
-        subject_name: formData.subject_name,
-        university_name: formData.university_name,
-        semester: formData.semester,
-        college: formData.college,
-        major: formData.major,
-        description: formData.description,
-        file_url: fileUrl,
-        file_name: file.name,
-        file_size: file.size,
-        user_id: user.id,
-        is_approved: false, // Requires admin approval
-      })
-
-      if (insertError) throw insertError
-
-      setSuccess(true)
-
-      // Redirect after success
-      setTimeout(() => {
-        router.push("/summaries")
-      }, 2000)
-    } catch (error) {
-      console.error("Error uploading summary:", error)
-      setError("حدث خطأ أثناء رفع الملخص. يرجى المحاولة مرة أخرى")
-    } finally {
-      setLoading(false)
-    }
+  if (!user) {
+    setError("يجب تسجيل الدخول أولاً")
+    return
   }
+
+  const requiredFields = ["title", "subject_name", "university_name", "semester", "college", "major"]
+  const missingFields = requiredFields.filter((field) => !formData[field as keyof typeof formData])
+
+  if (missingFields.length > 0) {
+    setError("يرجى ملء جميع الحقول المطلوبة")
+    return
+  }
+
+  if (!file) {
+    setError("يرجى اختيار ملف للرفع")
+    return
+  }
+
+  setLoading(true)
+  setError("")
+
+  try {
+    const form = new FormData()
+    form.append("file", file)
+    Object.entries(formData).forEach(([key, value]) => form.append(key, value as string))
+    form.append("user_id", user.id)
+
+    const res = await fetch("/api/summaries/upload", {
+      method: "POST",
+      body: form,
+    })
+
+    if (!res.ok) throw new Error("فشل رفع الملخص")
+
+    setSuccess(true)
+
+    setTimeout(() => {
+      router.push("/summaries")
+    }, 2000)
+  } catch (err: any) {
+    console.error("Error uploading summary:", err)
+    setError("حدث خطأ أثناء رفع الملخص. يرجى المحاولة مرة أخرى")
+  } finally {
+    setLoading(false)
+  }
+}
+
 
   if (!isLoggedIn) {
     return null // Will redirect to login

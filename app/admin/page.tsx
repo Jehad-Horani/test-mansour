@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
-import { RetroWindow } from "@/components/retro-window"
+import { RetroWindow } from "@/app/components/retro-window"
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth()

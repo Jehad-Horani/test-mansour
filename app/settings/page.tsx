@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { RetroWindow } from "@/components/retro-window"
-import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
+import { RetroWindow } from "@/app/components/retro-window"
+import { Switch } from "@/app/components/ui/switch"
+import { Badge } from "@/app/components/ui/badge"
 import Link from "next/link"
 import { User, Bell, Shield, CreditCard, GraduationCap, ArrowRight, Save, Eye, EyeOff } from "lucide-react"
 

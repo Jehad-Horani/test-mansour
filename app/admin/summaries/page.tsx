@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUserContext } from "@/contexts/user-context"
-import { RetroWindow } from "@/components/retro-window"
-import { createClient } from "@/app/lib/supabase/client"
+import { RetroWindow } from "@/app/components/retro-window"
+import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
 
 interface Summary {
   id: string
@@ -33,7 +33,7 @@ export default function AdminSummariesPage() {
   const [rejectionReason, setRejectionReason] = useState("")
   const [showRejectionModal, setShowRejectionModal] = useState(false)
 
-  const supabase = createClient()
+const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
     if (!isLoggedIn || !isAdmin()) {
@@ -43,75 +43,68 @@ export default function AdminSummariesPage() {
     fetchSummaries()
   }, [isLoggedIn, isAdmin, router, filter])
 
-  const fetchSummaries = async () => {
-    try {
-      setLoading(true)
-      let query = supabase
-        .from("summaries")
-        .select(`
-          *,
-          profiles:user_id (
-            name
-          )
-        `)
-        .order("created_at", { ascending: false })
+ const fetchSummaries = async () => {
+  try {
+    setLoading(true)
+    const res = await fetch("/api/summaries")
+    const data = await res.json()
 
-      if (filter !== "all") {
-        query = query.eq("status", filter)
-      }
-
-      const { data, error } = await query
-
-      if (error) throw error
-
-      const formattedSummaries =
-        data?.map((summary) => ({
-          ...summary,
-          user_name: summary.profiles?.name || "مستخدم غير معروف",
-        })) || []
-
-      setSummaries(formattedSummaries)
-    } catch (error) {
-      console.error("Error fetching summaries:", error)
-    } finally {
-      setLoading(false)
+    let filtered = data
+    if (filter !== "all") {
+      filtered = data.filter((summary: any) => summary.status === filter)
     }
+
+    const formattedSummaries = filtered.map((summary: any) => ({
+      ...summary,
+      user_name: summary.profiles?.name || "مستخدم غير معروف",
+    }))
+
+    setSummaries(formattedSummaries)
+  } catch (error) {
+    console.error("Error fetching summaries:", error)
+  } finally {
+    setLoading(false)
   }
+}
 
-  const handleApprove = async (summaryId: string) => {
-    try {
-      const { error } = await supabase.from("summaries").update({ status: "approved" }).eq("id", summaryId)
 
-      if (error) throw error
+ const handleApprove = async (summaryId: string) => {
+  try {
+    await fetch("/api/summaries/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ summaryId }),
+    })
 
-      fetchSummaries()
-    } catch (error) {
-      console.error("Error approving summary:", error)
-    }
+    fetchSummaries()
+  } catch (error) {
+    console.error("Error approving summary:", error)
   }
+}
+
 
   const handleReject = async () => {
-    if (!selectedSummary || !rejectionReason.trim()) return
+  if (!selectedSummary || !rejectionReason.trim()) return
 
-    try {
-      const { error } = await supabase
-        .from("summaries")
-        .update({
-          status: "rejected",
-          rejection_reason: rejectionReason,
-        })
-        .eq("id", selectedSummary.id)
+  try {
+    await fetch("/api/summaries/reject", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        summaryId: selectedSummary.id,
+        rejectionReason,
+      }),
+    })
 
-      if (error) throw error
-
-      setShowRejectionModal(false)
-      setSelectedSummary(null)
-      setRejectionReason("")
-      fetchSummaries()
-    } catch (error) {
-      console.error("Error rejecting summary:", error)
-    }
+    setShowRejectionModal(false)
+    setSelectedSummary(null)
+    setRejectionReason("")
+    fetchSummaries()
+  } catch (error) {
+    console.error("Error rejecting summary:", error)
   }
+}
+
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"

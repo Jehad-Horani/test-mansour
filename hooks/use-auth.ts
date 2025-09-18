@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { User } from "@supabase/supabase-js"
-import { createClient } from "@/app/lib/supabase/client"
+import { useSupabaseClient } from "@/app/lib/supabase/client-wrapper"
 import { authClient, type Profile, type RegisterData, type LoginData } from "@/app/lib/supabase/auth"
 
 export function useAuth() {
@@ -11,53 +11,34 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const supabase = createClient()
+const { data, loading1, error1 } = useSupabaseClient()
 
-  useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
+ useEffect(() => {
+  const fetchSession = async () => {
+    try {
+      const res = await fetch("/api/auth/session")
+      const data = await res.json()
 
-      if (session?.user) {
-        try {
-          const userProfile = await authClient.getProfile()
-          setProfile(userProfile)
-        } catch (err) {
-          console.error("Error fetching profile:", err)
-        }
-      }
-
-      setLoading(false)
-    }
-
-    getInitialSession()
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null)
-
-      if (session?.user) {
-        try {
-          const userProfile = await authClient.getProfile()
-          setProfile(userProfile)
-        } catch (err) {
-          console.error("Error fetching profile:", err)
-          setProfile(null)
-        }
+      if (res.ok) {
+        setUser(data.session?.user ?? null)
+        setProfile(data.userProfile ?? null)
       } else {
+        console.error("Error fetching session:", data.error)
+        setUser(null)
         setProfile(null)
       }
-
+    } catch (err) {
+      console.error("Exception fetching session:", err)
+      setUser(null)
+      setProfile(null)
+    } finally {
       setLoading(false)
-    })
+    }
+  }
 
-    return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  fetchSession()
+}, [])
+
 
   const signUp = async (data: RegisterData) => {
     setLoading(true)

@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button"
-import { RetroWindow } from "@/components/retro-window"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/app/components/ui/button"
+import { RetroWindow } from "@/app/components/retro-window"
+import { Badge } from "@/app/components/ui/badge"
 import { Check, X, ArrowRight, Star, Zap, Crown } from "lucide-react"
 import Link from "next/link"
 

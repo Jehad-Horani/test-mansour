@@ -2,13 +2,13 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { RetroWindow } from "@/components/retro-window"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { RetroWindow } from "@/app/components/retro-window"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
 import Link from "next/link"
 import { ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { createClient } from "@/app/lib/supabase/client"
+import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("")
@@ -21,19 +21,30 @@ export default function ResetPasswordPage() {
 
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClient()
+const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
-    // Handle the auth callback
-    const handleAuthCallback = async () => {
-      const { data, error } = await supabase.auth.getSession()
-      if (error) {
-        setError("رابط استعادة كلمة المرور غير صحيح أو منتهي الصلاحية")
-      }
-    }
+  const handleAuthCallback = async () => {
+    try {
+      const access_token = searchParams.get("access_token")
+      if (!access_token) throw new Error("رابط غير صالح")
 
-    handleAuthCallback()
-  }, [supabase.auth])
+      const res = await fetch("/api/auth/verify-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_token }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error || "رابط غير صالح")
+    } catch (err: any) {
+      setError(err.message)
+    }
+  }
+
+  handleAuthCallback()
+}, [searchParams])
 
   const validateForm = () => {
     if (!password) {
@@ -55,29 +66,36 @@ export default function ResetPasswordPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+  e.preventDefault()
+  setError("")
 
-    if (!validateForm()) {
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: password,
-      })
-
-      if (error) throw error
-
-      setIsSuccess(true)
-    } catch (err: any) {
-      setError(err.message || "حدث خطأ أثناء تحديث كلمة المرور")
-    } finally {
-      setIsLoading(false)
-    }
+  if (!validateForm()) {
+    return
   }
+
+  setIsLoading(true)
+
+  try {
+    const res = await fetch("/api/auth/update-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    })
+
+    const data = await res.json()
+
+    if (res.ok) {
+      setIsSuccess(true)
+    } else {
+      setError(data.error || "حدث خطأ أثناء تحديث كلمة المرور")
+    }
+  } catch (err: any) {
+    setError(err.message || "حدث خطأ أثناء تحديث كلمة المرور")
+  } finally {
+    setIsLoading(false)
+  }
+}
+
 
   if (isSuccess) {
     return (

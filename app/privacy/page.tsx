@@ -1,8 +1,8 @@
 "use client"
 
-import { RetroWindow } from "@/components/retro-window"
+import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/app/components/ui/button"
 
 export default function PrivacyPage() {
   return (

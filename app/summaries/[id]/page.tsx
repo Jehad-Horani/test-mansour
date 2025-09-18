@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { RetroWindow } from "@/components/retro-window"
-import { PixelIcon } from "@/components/pixel-icon"
+import { Button } from "@/app/components/ui/button"
+import { RetroWindow } from "@/app/components/retro-window"
+import  PixelIcon  from "@/app/components/pixel-icon"
 import { useParams, useRouter } from "next/navigation"
-import { createClient } from "@/app/lib/supabase/client"
+import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
 import Link from "next/link"
 
 interface Summary {
@@ -32,7 +32,7 @@ export default function SummaryDetailPage() {
 
   const params = useParams()
   const router = useRouter()
-  const supabase = createClient()
+const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
     if (params.id) {
@@ -41,24 +41,28 @@ export default function SummaryDetailPage() {
   }, [params.id])
 
   const fetchSummary = async (id: string) => {
-    try {
-      const { data, error } = await supabase.from("summaries").select("*").eq("id", id).single()
+  try {
+    setLoading(true)
 
-      if (error) throw error
+    const res = await fetch(`/api/summaries/${id}`)
+    if (!res.ok) throw new Error("فشل في جلب الملخص")
 
-      if (!data.is_approved) {
-        setError("هذا الملخص غير متاح حالياً")
-        return
-      }
+    const data = await res.json()
 
-      setSummary(data)
-    } catch (error) {
-      console.error("Error fetching summary:", error)
-      setError("حدث خطأ في تحميل الملخص")
-    } finally {
-      setLoading(false)
+    if (!data.is_approved) {
+      setError("هذا الملخص غير متاح حالياً")
+      return
     }
+
+    setSummary(data)
+  } catch (err: any) {
+    console.error("Error fetching summary:", err)
+    setError("حدث خطأ في تحميل الملخص")
+  } finally {
+    setLoading(false)
   }
+}
+
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
@@ -247,7 +251,7 @@ export default function SummaryDetailPage() {
                 <span>تحميل الملخص</span>
               </div>
               <div className="p-6 text-center">
-                <PixelIcon type="download" className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
+                <PixelIcon type="download" className="w-12 h-12 mx-auto mb-4"  />
                 <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--ink)" }}>
                   جاهز للتحميل
                 </h3>

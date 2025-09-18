@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { RetroWindow } from "@/components/retro-window"
+import { Button } from "@/app/components/ui/button"
+import { RetroWindow } from "@/app/components/retro-window"
 import { Trash2, MessageCircle, User } from "lucide-react"
 import Link from "next/link"
 

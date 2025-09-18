@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { RetroWindow } from "@/components/retro-window"
+import { RetroWindow } from "@/app/components/retro-window"
 
 interface UserData {
   id: string

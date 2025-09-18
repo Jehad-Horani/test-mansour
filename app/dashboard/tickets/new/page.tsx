@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-import { RetroWindow } from "@/components/retro-window"
-import { RetroToggle } from "@/components/retro-toggle"
-import { Button } from "@/components/ui/button"
+import { RetroWindow } from "@/app/components/retro-window"
+import { RetroToggle } from "@/app/components/retro-toggle"
+import { Button } from "@/app/components/ui/button"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useUserContext } from "@/contexts/user-context"

@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { RetroWindow } from "@/components/retro-window"
-import { Button } from "@/components/ui/button"
+import { RetroWindow } from "@/app/components/retro-window"
+import { Button } from "@/app/components/ui/button"
 import { ShoppingCart, TrendingUp, DollarSign, Package, Users, Star } from "lucide-react"
 
 export default function MarketAnalyticsPage() {

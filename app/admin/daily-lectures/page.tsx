@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
-import { RetroWindow } from "@/components/retro-window"
-import { createClient } from "@/app/lib/supabase/client"
+import { RetroWindow } from "@/app/components/retro-window"
+import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
 
 interface DailyLecture {
   id: string
@@ -43,7 +43,8 @@ export default function AdminDailyLecturesPage() {
   const [showRejectionModal, setShowRejectionModal] = useState(false)
   const [showImageModal, setShowImageModal] = useState<string | null>(null)
 
-  const supabase = createClient()
+  const { data, loading1, error1 } = useSupabaseClient()
+
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "admin")) {
@@ -55,115 +56,84 @@ export default function AdminDailyLecturesPage() {
     }
   }, [user, loading, router, filter])
 
-  const fetchLectures = async () => {
-    try {
-      setLoadingData(true)
-      let query = supabase
-        .from("daily_lectures")
-        .select(`
-          *,
-          profiles:uploaded_by (
-            name
-          )
-        `)
-        .order("upload_date", { ascending: false })
+ const fetchLectures = async () => {
+  try {
+    setLoadingData(true)
+    const res = await fetch("/api/lectures")
+    const data = await res.json()
 
-      if (filter !== "all") {
-        query = query.eq("status", filter)
-      }
-
-      const { data, error } = await query
-
-      if (error) throw error
-
-      const formattedLectures =
-        data?.map((lecture) => ({
-          ...lecture,
-          uploader_name: lecture.profiles?.name || "مستخدم غير معروف",
-        })) || []
-
-      setLectures(formattedLectures)
-    } catch (error) {
-      console.error("Error fetching lectures:", error)
-    } finally {
-      setLoadingData(false)
+    let filtered = data
+    if (filter !== "all") {
+      filtered = data.filter((lecture: any) => lecture.status === filter)
     }
+
+    const formattedLectures = filtered.map((lecture: any) => ({
+      ...lecture,
+      uploader_name: lecture.profiles?.name || "مستخدم غير معروف",
+    }))
+
+    setLectures(formattedLectures)
+  } catch (error) {
+    console.error("Error fetching lectures:", error)
+  } finally {
+    setLoadingData(false)
   }
+}
 
-  const handleApprove = async (lectureId: string) => {
-    try {
-      const { error } = await supabase
-        .from("daily_lectures")
-        .update({
-          status: "approved",
-          approved_by: user?.id,
-          approved_at: new Date().toISOString(),
-        })
-        .eq("id", lectureId)
 
-      if (error) throw error
+const handleApprove = async (lectureId: string) => {
+  try {
+    await fetch("/api/lectures/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lectureId, userId: user?.id }),
+    })
 
-      await supabase.from("admin_actions").insert({
-        admin_id: user?.id,
-        action_type: "approve_lecture",
-        target_type: "daily_lecture",
-        target_id: lectureId,
-        reason: "محاضرة يومية معتمدة",
-      })
-
-      fetchLectures()
-    } catch (error) {
-      console.error("Error approving lecture:", error)
-    }
+    fetchLectures()
+  } catch (error) {
+    console.error("Error approving lecture:", error)
   }
+}
+
 
   const handleReject = async () => {
-    if (!selectedLecture || !rejectionReason.trim()) return
+  if (!selectedLecture || !rejectionReason.trim()) return
 
-    try {
-      const { error } = await supabase
-        .from("daily_lectures")
-        .update({
-          status: "rejected",
-          rejection_reason: rejectionReason,
-          approved_by: user?.id,
-          approved_at: new Date().toISOString(),
-        })
-        .eq("id", selectedLecture.id)
+  try {
+    await fetch("/api/lectures/reject", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lectureId: selectedLecture.id,
+        rejectionReason,
+        userId: user?.id,
+      }),
+    })
 
-      if (error) throw error
-
-      await supabase.from("admin_actions").insert({
-        admin_id: user?.id,
-        action_type: "reject_lecture",
-        target_type: "daily_lecture",
-        target_id: selectedLecture.id,
-        reason: rejectionReason,
-      })
-
-      setShowRejectionModal(false)
-      setSelectedLecture(null)
-      setRejectionReason("")
-      fetchLectures()
-    } catch (error) {
-      console.error("Error rejecting lecture:", error)
-    }
+    setShowRejectionModal(false)
+    setSelectedLecture(null)
+    setRejectionReason("")
+    fetchLectures()
+  } catch (error) {
+    console.error("Error rejecting lecture:", error)
   }
+}
+
 
   const handleToggleFeatured = async (lectureId: string, currentFeatured: boolean) => {
-    try {
-      const { error } = await supabase
-        .from("daily_lectures")
-        .update({ is_featured: !currentFeatured })
-        .eq("id", lectureId)
+  try {
+    await fetch("/api/lectures/toggle-featured", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lectureId, isFeatured: !currentFeatured }),
+    })
 
-      if (error) throw error
-
-      fetchLectures()
-    } catch (error) {
-      console.error("Error toggling featured:", error)
-    }
+    fetchLectures()
+  } catch (error) {
+    console.error("Error toggling featured:", error)
   }
+}
+
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
@@ -217,9 +187,8 @@ export default function AdminDailyLecturesPage() {
                     <button
                       key={status}
                       onClick={() => setFilter(status)}
-                      className={`px-3 py-1 text-sm border border-gray-400 ${
-                        filter === status ? "bg-retro-accent text-white" : "bg-white text-black hover:bg-gray-50"
-                      }`}
+                      className={`px-3 py-1 text-sm border border-gray-400 ${filter === status ? "bg-retro-accent text-white" : "bg-white text-black hover:bg-gray-50"
+                        }`}
                     >
                       {status === "all"
                         ? "الكل"
@@ -391,11 +360,10 @@ export default function AdminDailyLecturesPage() {
                         {lecture.status === "approved" && (
                           <button
                             onClick={() => handleToggleFeatured(lecture.id, lecture.is_featured)}
-                            className={`retro-button px-3 py-1 text-sm ${
-                              lecture.is_featured
+                            className={`retro-button px-3 py-1 text-sm ${lecture.is_featured
                                 ? "bg-purple-500 text-white hover:bg-purple-600"
                                 : "bg-gray-500 text-white hover:bg-gray-600"
-                            }`}
+                              }`}
                           >
                             {lecture.is_featured ? "إلغاء التمييز" : "تمييز"}
                           </button>

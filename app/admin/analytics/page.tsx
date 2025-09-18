@@ -1,6 +1,6 @@
 "use client"
 
-import { RetroWindow } from "@/components/retro-window"
+import { RetroWindow } from "@/app/components/retro-window"
 
 export default function AnalyticsPage() {
   // Mock analytics data

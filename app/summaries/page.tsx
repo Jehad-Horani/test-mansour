@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RetroWindow } from "@/components/retro-window"
-import { PixelIcon } from "@/components/pixel-icon"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import { RetroWindow } from "@/app/components/retro-window"
+import  PixelIcon  from "@/app/components/pixel-icon"
 import Link from "next/link"
-import { createClient } from "@/app/lib/supabase/client"
+import { useSupabaseClient } from "../lib/supabase/client-wrapper"
 import { useUserContext } from "@/contexts/user-context"
 
 interface Summary {
@@ -55,7 +55,7 @@ export default function SummariesPage() {
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false)
   const { isLoggedIn } = useUserContext()
 
-  const supabase = createClient()
+const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
     fetchSummaries()
@@ -65,22 +65,22 @@ export default function SummariesPage() {
     filterSummaries()
   }, [summaries, searchTerm, selectedCollege, selectedMajor])
 
-  const fetchSummaries = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("summaries")
-        .select("*")
-        .eq("is_approved", true)
-        .order("created_at", { ascending: false })
+const fetchSummaries = async () => {
+  try {
+    setLoading(true)
 
-      if (error) throw error
-      setSummaries(data || [])
-    } catch (error) {
-      console.error("Error fetching summaries:", error)
-    } finally {
-      setLoading(false)
-    }
+    const res = await fetch("/api/summaries") // نعمل كول على API route
+    if (!res.ok) throw new Error("فشل في جلب الملخصات")
+
+    const data = await res.json()
+    setSummaries(data || [])
+  } catch (error) {
+    console.error("Error fetching summaries:", error)
+  } finally {
+    setLoading(false)
   }
+}
+
 
   const filterSummaries = () => {
     let filtered = summaries

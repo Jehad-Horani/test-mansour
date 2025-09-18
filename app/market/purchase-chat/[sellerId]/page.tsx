@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "../../../../hooks/use-user"
-import {RetroWindow} from "@/components/retro-window"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import PixelIcon from "@/components/pixel-icon"
-import { createClient } from "@/app/lib/supabase/client"
+import {RetroWindow} from "@/app/components/retro-window"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
+import PixelIcon from "@/app/components/pixel-icon"
+import { useSupabaseClient } from "../../../lib/supabase/client-wrapper"
 
 interface Message {
   id: string
@@ -43,7 +43,7 @@ export default function PurchaseChatPage({ params }: { params: { sellerId: strin
   const { user } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClient()
+const { data, loading1, error1 } = useSupabaseClient()
 
   const bookTitle = searchParams.get("bookTitle") || "كتاب غير محدد"
   const bookPrice = searchParams.get("bookPrice") || "0"
@@ -58,38 +58,22 @@ export default function PurchaseChatPage({ params }: { params: { sellerId: strin
     lastSeen: new Date(Date.now() - Math.random() * 60 * 60 * 1000),
   }
 
-  useEffect(() => {
-    if (!user) return
+useEffect(() => {
+  if (!user) return
 
-    initializeConversation()
+  initializeConversation()
 
-    // Set up real-time subscription for new messages
-    const channel = supabase
-      .channel("messages")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${getConversationId()}`,
-        },
-        (payload) => {
-          const newMessage = payload.new as Message
-          setMessages((prev) => [...prev, newMessage])
-
-          // Mark message as delivered if we're the receiver
-          if (newMessage.receiver_id === user.id) {
-            markMessageAsDelivered(newMessage.id)
-          }
-        },
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
+  // لا يمكن عمل real-time هنا مباشرة في Client Component بدون supabase
+  // الحل: استخدام polling كل 3 ثواني مثلاً لتحميل الرسائل
+  const interval = setInterval(() => {
+    if (conversation) {
+      loadMessages(conversation.id)
     }
-  }, [user, params.sellerId, bookTitle])
+  }, 3000)
+
+  return () => clearInterval(interval)
+}, [user, params.sellerId, bookTitle, conversation])
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -100,141 +84,128 @@ export default function PurchaseChatPage({ params }: { params: { sellerId: strin
   }
 
   const initializeConversation = async () => {
-    if (!user) return
+  if (!user) return
 
-    const conversationId = getConversationId()
+  const conversationId = getConversationId()
 
-    try {
-      // Check if conversation exists
-      const { data: existingConversation } = await supabase
-        .from("conversations")
-        .select("*")
-        .eq("id", conversationId)
-        .single()
+  try {
+    const res = await fetch("/api/chat/init-conversation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conversationId,
+        buyerId: user.id,
+        sellerId: params.sellerId,
+        bookTitle,
+        bookPrice,
+      }),
+    })
+    const data = await res.json()
 
-      if (!existingConversation) {
-        // Create new conversation
-        const { error: convError } = await supabase.from("conversations").insert({
-          id: conversationId,
-          buyer_id: user.id,
-          seller_id: params.sellerId,
-          book_title: bookTitle,
-          book_price: bookPrice,
-        })
+    if (!res.ok) throw new Error(data.error || "حدث خطأ عند تهيئة المحادثة")
 
-        if (convError) throw convError
-
-        // Send initial purchase inquiry message
-        await sendMessage(`مرحباً، أنا مهتم بشراء "${bookTitle}" بسعر ${bookPrice} دينار`, "purchase_inquiry")
-      } else {
-        setConversation(existingConversation)
-        // Load existing messages
-        loadMessages(conversationId)
-      }
-    } catch (error) {
-      console.error("Error initializing conversation:", error)
-    }
+    setConversation(data.conversation)
+    setMessages(data.messages || [])
+  } catch (err: any) {
+    console.error("Error initializing conversation:", err)
   }
+}
 
-  const loadMessages = async (conversationId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true })
 
-      if (error) throw error
-      setMessages(data || [])
-
-      // Mark unread messages as read
-      const unreadMessages = data?.filter((msg) => msg.receiver_id === user?.id && msg.status !== "read") || []
-
-      if (unreadMessages.length > 0) {
-        await supabase
-          .from("messages")
-          .update({ status: "read" })
-          .in(
-            "id",
-            unreadMessages.map((msg) => msg.id),
-          )
-      }
-    } catch (error) {
-      console.error("Error loading messages:", error)
-    }
+ const loadMessages = async (conversationId: string) => {
+  try {
+    const res = await fetch("/api/chat/get-messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversationId, userId: user?.id }),
+    })
+    const data = await res.json()
+    setMessages(data.messages || [])
+  } catch (err: any) {
+    console.error("Error loading messages:", err)
   }
+}
 
-  const sendMessage = async (messageText: string, messageType: Message["message_type"] = "text") => {
-    if (!user || !messageText.trim()) return
 
-    const conversationId = getConversationId()
+ const sendMessage = async (messageText: string, messageType: Message["message_type"] = "text") => {
+  if (!user || !messageText.trim()) return
+  const conversationId = getConversationId()
 
-    try {
-      const { error } = await supabase.from("messages").insert({
-        conversation_id: conversationId,
-        sender_id: user.id,
-        sender_name: user.name || "مستخدم",
-        receiver_id: params.sellerId,
-        receiver_name: sellerName,
+  try {
+    const res = await fetch("/api/chat/send-message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conversationId,
+        senderId: user.id,
+        senderName: user.name || "مستخدم",
+        receiverId: params.sellerId,
+        receiverName: sellerName,
         message: messageText,
-        message_type: messageType,
-        book_title: bookTitle,
-        book_price: bookPrice,
-        status: "sent",
-      })
+        messageType,
+        bookTitle,
+        bookPrice,
+      }),
+    })
 
-      if (error) throw error
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || "حدث خطأ عند إرسال الرسالة")
 
-      // Simulate seller response for demo purposes
-      if (messageType !== "seller_response") {
-        setTimeout(
-          () => {
-            simulateSellerResponse(conversationId)
-          },
-          2000 + Math.random() * 3000,
-        )
-      }
-    } catch (error) {
-      console.error("Error sending message:", error)
+    if (messageType !== "seller_response") {
+      setTimeout(() => simulateSellerResponse(conversationId), 2000 + Math.random() * 3000)
     }
+  } catch (err: any) {
+    console.error("Error sending message:", err)
   }
+}
 
-  const simulateSellerResponse = async (conversationId: string) => {
-    const responses = [
-      "شكراً لاهتمامك! الكتاب متوفر وحالته ممتازة",
-      "أهلاً وسهلاً! يمكننا الاتفاق على موعد للتسليم",
-      "مرحباً! السعر قابل للتفاوض قليلاً",
-      "الكتاب متوفر، متى يمكنك استلامه؟",
-      "أهلاً بك! هل تريد رؤية صور إضافية للكتاب؟",
-    ]
 
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)]
+const simulateSellerResponse = async (conversationId: string) => {
+  const responses = [
+    "شكراً لاهتمامك! الكتاب متوفر وحالته ممتازة",
+    "أهلاً وسهلاً! يمكننا الاتفاق على موعد للتسليم",
+    "مرحباً! السعر قابل للتفاوض قليلاً",
+    "الكتاب متوفر، متى يمكنك استلامه؟",
+    "أهلاً بك! هل تريد رؤية صور إضافية للكتاب؟",
+  ]
 
-    try {
-      await supabase.from("messages").insert({
-        conversation_id: conversationId,
-        sender_id: params.sellerId,
-        sender_name: sellerName,
-        receiver_id: user?.id || "",
-        receiver_name: user?.name || "مشتري",
+  const randomResponse = responses[Math.floor(Math.random() * responses.length)]
+
+  try {
+    await fetch("/api/chat/send-message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conversationId,
+        senderId: params.sellerId,
+        senderName: sellerName,
+        receiverId: user?.id || "",
+        receiverName: user?.name || "مشتري",
         message: randomResponse,
-        message_type: "seller_response",
-        book_title: bookTitle,
-        book_price: bookPrice,
-        status: "sent",
-      })
-    } catch (error) {
-      console.error("Error sending seller response:", error)
-    }
+        messageType: "seller_response",
+        bookTitle,
+        bookPrice,
+      }),
+    })
+  } catch (err: any) {
+    console.error("Error sending seller response:", err)
   }
+}
 
-  const markMessageAsDelivered = async (messageId: string) => {
-    try {
-      await supabase.from("messages").update({ status: "delivered" }).eq("id", messageId)
-    } catch (error) {
-      console.error("Error marking message as delivered:", error)
-    }
+
+
+ const markMessageAsDelivered = async (messageId: string) => {
+  try {
+    await fetch("/api/chat/mark-delivered", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId }),
+    })
+  } catch (err: any) {
+    console.error("Error marking message as delivered:", err)
   }
+}
+
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return

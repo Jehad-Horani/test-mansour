@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { RetroWindow } from "@/components/retro-window"
-import { RetroToggle } from "@/components/retro-toggle"
+import { RetroWindow } from "@/app/components/retro-window"
+import { RetroToggle } from "@/app/components/retro-toggle"
 import Link from "next/link"
 
 const mockStudyPlans = [

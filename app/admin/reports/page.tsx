@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { RetroWindow } from "@/components/retro-window"
+import { RetroWindow } from "@/app/components/retro-window"
 
 interface Report {
   id: string

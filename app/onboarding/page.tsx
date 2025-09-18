@@ -1,7 +1,7 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { RetroWindow } from "@/components/retro-window"
+import { Button } from "@/app/components/ui/button"
+import { RetroWindow } from "@/app/components/retro-window"
 import { useUserContext } from "@/contexts/user-context"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"

@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { RetroWindow } from "@/components/retro-window"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/app/components/ui/button"
+import { RetroWindow } from "@/app/components/retro-window"
+import { Badge } from "@/app/components/ui/badge"
+import { Input } from "@/app/components/ui/input"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 

@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { RetroWindow } from "@/components/retro-window"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
+import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
 import { Save, ArrowRight } from "lucide-react"
 

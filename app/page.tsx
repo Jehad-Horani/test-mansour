@@ -1,9 +1,9 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { RetroWindow } from "@/components/retro-window"
-import { PixelIcon } from "@/components/pixel-icon"
-import { AuthDebug } from "@/components/auth-debug"
+import { Button } from "@/app/components/ui/button"
+import { RetroWindow } from "@/app/components/retro-window"
+import  PixelIcon  from "@/app/components/pixel-icon"
+import { AuthDebug } from "@/app/components/auth-debug"
 import Link from "next/link"
 
 export default function HomePage() {
@@ -42,7 +42,7 @@ export default function HomePage() {
               {/* Law College */}
               <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
                 <div className="p-6 text-center">
-                  <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
+                  <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4"  />
                   <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     كلية الحقوق
                   </h3>
@@ -53,7 +53,7 @@ export default function HomePage() {
               {/* IT College */}
               <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
                 <div className="p-6 text-center">
-                  <PixelIcon type="code" className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
+                  <PixelIcon type="code" className="w-12 h-12 mx-auto mb-4"  />
                   <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     كلية تكنولوجيا المعلومات
                   </h3>
@@ -64,7 +64,7 @@ export default function HomePage() {
               {/* Business College */}
               <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
                 <div className="p-6 text-center">
-                  <PixelIcon type="briefcase" className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
+                  <PixelIcon type="briefcase" className="w-12 h-12 mx-auto mb-4"  />
                   <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     كلية إدارة الأعمال
                   </h3>

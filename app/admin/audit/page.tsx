@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUserContext } from "@/contexts/user-context"
-import { RetroWindow } from "@/components/retro-window"
-import { createClient } from "@/app/lib/supabase/client"
+import { RetroWindow } from "@/app/components/retro-window"
+import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
 
 interface AuditLog {
   id: string
@@ -29,7 +29,7 @@ export default function AdminAuditPage() {
   const [severityFilter, setSeverityFilter] = useState<"all" | "low" | "medium" | "high" | "critical">("all")
   const [dateRange, setDateRange] = useState<"today" | "week" | "month" | "all">("today")
 
-  const supabase = createClient()
+const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
     if (!isLoggedIn || !isAdmin()) {
