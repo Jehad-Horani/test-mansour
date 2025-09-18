@@ -7,7 +7,7 @@ import { RetroWindow } from "../../components/retro-window"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import PixelIcon from "../../components/pixel-icon"
-import { createClient } from "../../lib/supabase/client"
+import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
 import Link from "next/link"
 
 interface ConversationWithLastMessage {
@@ -30,94 +30,56 @@ export default function MessagesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const { user } = useUser()
   const router = useRouter()
-  const supabase = createClient()
+const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
-    if (!user) {
-      router.push("/auth/login")
+  if (!user) {
+    router.push("/auth/login")
+    return
+  }
+
+  const loadConversations = async () => {
+    try {
+      const res = await fetch("/api/chat/get-conversations")
+      const data = await res.json()
+      setConversations(data || [])
+    } catch (err) {
+      console.error("Error loading conversations:", err)
+    }
+  }
+
+  loadConversations()
+
+  // Real-time updates via API route are more complex;
+  // إذا تريد تحديث مباشر، اعمل WebSocket أو استخدم Supabase Realtime في API route مع SSE
+}, [user])
+
+
+  const loadConversations = async () => {
+  if (!user) return
+
+  try {
+    const res = await fetch("/api/chat/get-conversations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: user.id }),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      console.error("Error loading conversations:", data.error)
       return
     }
 
-    loadConversations()
-
-    // Set up real-time subscription for conversation updates
-    const channel = supabase
-      .channel("conversations")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "conversations",
-        },
-        () => {
-          loadConversations()
-        },
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [user])
-
-  const loadConversations = async () => {
-    if (!user) return
-
-    try {
-      // Get conversations where user is buyer or seller
-      const { data: convData, error: convError } = await supabase
-        .from("conversations")
-        .select("*")
-        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-        .order("last_message_at", { ascending: false })
-
-      if (convError) throw convError
-
-      // Get last message and unread count for each conversation
-      const conversationsWithDetails = await Promise.all(
-        (convData || []).map(async (conv) => {
-          const otherUserId = conv.buyer_id === user.id ? conv.seller_id : conv.buyer_id
-          const isBuyer = conv.buyer_id === user.id
-
-          // Get last message
-          const { data: lastMsg } = await supabase
-            .from("messages")
-            .select("message, sender_name")
-            .eq("conversation_id", conv.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single()
-
-          // Get unread count
-          const { count: unreadCount } = await supabase
-            .from("messages")
-            .select("*", { count: "exact", head: true })
-            .eq("conversation_id", conv.id)
-            .eq("receiver_id", user.id)
-            .neq("status", "read")
-
-          // For demo purposes, generate other user name
-          const otherUserName = isBuyer ? `البائع ${otherUserId.slice(-4)}` : `المشتري ${otherUserId.slice(-4)}`
-
-          return {
-            ...conv,
-            other_user_name: otherUserName,
-            other_user_id: otherUserId,
-            last_message: lastMsg?.message || "لا توجد رسائل",
-            unread_count: unreadCount || 0,
-            is_buyer: isBuyer,
-          }
-        }),
-      )
-
-      setConversations(conversationsWithDetails)
-    } catch (error) {
-      console.error("Error loading conversations:", error)
-    } finally {
-      setLoading(false)
-    }
+    setConversations(data)
+  } catch (error) {
+    console.error("Error loading conversations:", error)
+  } finally {
+    setLoading(false)
   }
+}
+
 
   const filteredConversations = conversations.filter(
     (conv) =>

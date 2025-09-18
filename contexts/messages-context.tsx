@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { createClient } from "../app/lib/supabase/client"
+import { useSupabaseClient } from "@/app/lib/supabase/client-wrapper"
 import { useUserContext } from "./user-context"
 
 interface MessagesContextType {
@@ -15,83 +15,97 @@ const MessagesContext = createContext<MessagesContextType | undefined>(undefined
 export function MessagesProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0)
   const { user, isLoggedIn } = useUserContext()
-  const supabase = createClient()
+const { data, loading1, error1 } = useSupabaseClient()
 
-  useEffect(() => {
-    if (!isLoggedIn || !user) {
-      setUnreadCount(0)
-      return
+useEffect(() => {
+  if (!isLoggedIn || !user) {
+    setUnreadCount(0)
+    return
+  }
+
+  let intervalId: NodeJS.Timeout
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await fetch("/api/messages/unread-count", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.id }),
+      })
+
+      const data = await res.json()
+      if (res.ok) {
+        setUnreadCount(data.unreadCount || 0)
+      } else {
+        console.error("Error fetching unread count:", data.error)
+      }
+    } catch (err) {
+      console.error("Error fetching unread count:", err)
     }
+  }
 
-    // Initial load
-    refreshUnreadCount()
+  // تحميل أولي
+  fetchUnreadCount()
 
-    // Set up real-time subscription for new messages
-    const channel = supabase
-      .channel("messages_unread")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `receiver_id=eq.${user.id}`,
-        },
-        () => {
-          refreshUnreadCount()
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-          filter: `receiver_id=eq.${user.id}`,
-        },
-        () => {
-          refreshUnreadCount()
-        },
-      )
-      .subscribe()
+  // تحديث دوري كل 5 ثواني (يمكن تغييره حسب الحاجة)
+  intervalId = setInterval(fetchUnreadCount, 5000)
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [user, isLoggedIn])
+  return () => clearInterval(intervalId)
+}, [user, isLoggedIn])
+
 
   const refreshUnreadCount = async () => {
-    if (!user) return
+  if (!user) return
 
-    try {
-      const { count } = await supabase
-        .from("messages")
-        .select("*", { count: "exact", head: true })
-        .eq("receiver_id", user.id)
-        .neq("status", "read")
+  try {
+    const res = await fetch("/api/messages/unread-count", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId: user.id }),
+    })
 
-      setUnreadCount(count || 0)
-    } catch (error) {
-      console.error("Error fetching unread count:", error)
+    const data = await res.json()
+
+    if (res.ok) {
+      setUnreadCount(data.unreadCount || 0)
+    } else {
+      console.error("Error fetching unread count:", data.error)
     }
+  } catch (error) {
+    console.error("Error fetching unread count:", error)
   }
+}
 
-  const markConversationAsRead = async (conversationId: string) => {
-    if (!user) return
 
-    try {
-      await supabase
-        .from("messages")
-        .update({ status: "read" })
-        .eq("conversation_id", conversationId)
-        .eq("receiver_id", user.id)
-        .neq("status", "read")
+ const markConversationAsRead = async (conversationId: string) => {
+  if (!user) return
 
+  try {
+    const res = await fetch("/api/messages/mark-as-read", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ conversationId, userId: user.id }),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      console.error("Error marking conversation as read:", data.error)
+    } else {
+      // بعد ما ننجح في تحديث الحالة، نحدث عدد الرسائل غير المقروءة
       refreshUnreadCount()
-    } catch (error) {
-      console.error("Error marking conversation as read:", error)
     }
+  } catch (error) {
+    console.error("Error marking conversation as read:", error)
   }
+}
+
 
   return (
     <MessagesContext.Provider
