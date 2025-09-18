@@ -120,7 +120,7 @@ export default function AdminDashboard() {
             <div className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-xl font-bold text-black">مرحباً، {user?.name}</h1>
+                  <h1 className="text-xl font-bold text-black">مرحباً،</h1>
                   <p className="text-gray-600">لوحة التحكم الرئيسية - منصة تخصصكُم</p>
                 </div>
                 <div className="text-right">

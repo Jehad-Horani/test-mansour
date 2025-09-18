@@ -1,10 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
-// نستخدم service_role key عشان admin operations
+// بننشئ supabase client بسيرفر باستخدام service_role key
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // خليها مخزنة بالـ .env.local
+  process.env.SUPABASE_SERVICE_ROLE_KEY! // خليها بالـ .env.local
 )
 
 export async function POST(request: NextRequest) {
@@ -12,17 +12,18 @@ export async function POST(request: NextRequest) {
     const { email, password, name } = await request.json()
 
     if (!email || !password || !name) {
-      return NextResponse.json({ error: "Email, password, and name are required" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Email, password, and name are required" },
+        { status: 400 }
+      )
     }
 
-    // Create user in Supabase Auth using service role
+    // إنشاء المستخدم بسوبابيز Auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Skip email confirmation for admin
-      user_metadata: {
-        name,
-      },
+      email_confirm: true, // نعمل confirm تلقائي
+      user_metadata: { name },
     })
 
     if (authError) {
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create user" }, { status: 500 })
     }
 
-    // Create profile with admin role
+    // إنشاء profile بالجدول profiles
     const { error: profileError } = await supabase.from("profiles").insert({
       id: authData.user.id,
       name,
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     if (profileError) {
       console.error("Profile creation error:", profileError)
-      // Try to clean up the auth user if profile creation fails
+      // إذا فشل إنشاء profile نحذف اليوزر من auth
       await supabase.auth.admin.deleteUser(authData.user.id)
       return NextResponse.json({ error: profileError.message }, { status: 500 })
     }
@@ -76,6 +77,9 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error("Admin creation error:", error)
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message || "Internal server error" },
+      { status: 500 }
+    )
   }
 }
