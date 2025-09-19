@@ -11,9 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/ta
 import { Badge } from "@/app/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { RetroWindow } from "@/app/components/retro-window"
-import { PixelIcon } from "@/app/components/pixel-icon"
+import  PixelIcon from "@/app/components/pixel-icon"
 import { useAuth } from "@/hooks/use-auth"
-import { createBrowserClient } from "@/app/lib/supabase/client"
+import  {createClient}  from "../../lib/supabase/client"
 
 interface UserProfile {
   id: string
@@ -37,7 +37,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
 
-  const supabase = createBrowserClient()
+  const supabase = createClient()
 
   useEffect(() => {
     if (user) {

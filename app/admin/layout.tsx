@@ -82,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="flex items-center gap-4">
             <div className="text-white text-sm">
-              <span>مرحباً، {user?.name}</span>
+              <span>مرحباً</span>
             </div>
             <Link href="/" className="text-white hover:text-gray-200 text-sm">
               الموقع الرئيسي
