@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { useSupabaseClient } from "@/app/lib/supabase/client-wrapper"
+import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 import { useUserContext } from "./user-context"
 
 interface MessagesContextType {

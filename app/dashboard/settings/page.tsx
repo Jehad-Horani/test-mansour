@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RetroWindow } from "@/app/components/retro-window"
 import PixelIcon from "@/app/components/pixel-icon"
 import { useAuth } from "@/hooks/use-auth"
-import { createClient } from "@/app/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 import { RetroToggle } from "@/app/components/retro-toggle"
 

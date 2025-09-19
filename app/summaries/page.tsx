@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RetroWindow } from "@/app/components/retro-window"
 import PixelIcon from "@/app/components/pixel-icon"
 import Link from "next/link"
-import { useSupabaseClient } from "../lib/supabase/client-wrapper"
+import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 import { useUserContext } from "@/contexts/user-context"
 
 interface Summary {

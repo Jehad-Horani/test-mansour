@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar"
 import { RetroWindow } from "@/app/components/retro-window"
 import  PixelIcon from "@/app/components/pixel-icon"
 import { useAuth } from "@/hooks/use-auth"
-import { createClient } from "../../lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 
 interface UserProfile {
   id: string

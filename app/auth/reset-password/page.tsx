@@ -8,7 +8,7 @@ import { Input } from "@/app/components/ui/input"
 import Link from "next/link"
 import { ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
+import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("")

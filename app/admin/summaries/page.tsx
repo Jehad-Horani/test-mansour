@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUserContext } from "@/contexts/user-context"
 import { RetroWindow } from "@/app/components/retro-window"
-import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
+import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 
 interface Summary {
   id: string

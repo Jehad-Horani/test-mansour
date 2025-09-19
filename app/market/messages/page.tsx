@@ -7,7 +7,7 @@ import { RetroWindow } from "../../components/retro-window"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import PixelIcon from "../../components/pixel-icon"
-import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
+import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 import Link from "next/link"
 
 interface ConversationWithLastMessage {

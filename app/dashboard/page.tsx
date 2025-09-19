@@ -86,7 +86,7 @@ export default function DashboardPage() {
                     مرحباً، {profile.name}
                   </h1>
                   <p className="text-gray-600 mb-2">
-                    {profile.university} - {getMajorLabel(profile.major)}
+                    {profile.university} - {getMajorLabel}
                   </p>
                   <div className="flex items-center gap-3 mb-4">
                     <Badge
