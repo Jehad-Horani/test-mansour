@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
-import  PixelIcon  from "@/app/components/pixel-icon"
+import PixelIcon from "@/app/components/pixel-icon"
 import { useParams, useRouter } from "next/navigation"
 import { useSupabaseClient } from "../../lib/supabase/client-wrapper"
 import Link from "next/link"

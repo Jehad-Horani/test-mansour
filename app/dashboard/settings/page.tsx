@@ -6,11 +6,11 @@ import { Label } from "@/app/components/ui/label"
 import { Switch } from "@/app/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { RetroWindow } from "@/app/components/retro-window"
-import { PixelIcon } from "@/app/components/pixel-icon"
+import PixelIcon from "@/app/components/pixel-icon"
 import { useAuth } from "@/hooks/use-auth"
-import { createBrowserClient } from "@/app/lib/supabase/client"
+import { createClient } from "@/app/lib/supabase/client"
 import Link from "next/link"
-import RetroToggle from "@/app/components/retro-toggle"
+import { RetroToggle } from "@/app/components/retro-toggle"
 
 interface UserSettings {
   id: string
@@ -35,7 +35,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState("notifications")
 
-  const supabase = createBrowserClient()
+  const supabase =  createClient()
 
   useEffect(() => {
     if (user) {
@@ -143,7 +143,7 @@ export default function SettingsPage() {
               <RetroWindow title="إعدادات الحساب" className="mb-6">
                 <div className="flex items-center gap-4 p-4">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <PixelIcon type="settings" className="w-6 h-6" style={{ color: "var(--primary)" }} />
+                    <PixelIcon type="settings" className="w-6 h-6"/>
                   </div>
                   <div>
                     <h1 className="text-xl font-bold" style={{ color: "var(--ink)" }}>

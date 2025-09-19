@@ -76,7 +76,7 @@ export function useUser() {
       } catch (error) {
         console.error("Failed to save user to localStorage:", error)
         // Handle quota exceeded or other storage errors
-        if (error.name === "QuotaExceededError") {
+        if (error === "QuotaExceededError") {
           console.warn("localStorage quota exceeded, clearing old data")
           try {
             localStorage.clear()

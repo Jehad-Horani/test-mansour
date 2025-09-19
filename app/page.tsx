@@ -2,7 +2,7 @@
 
 import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
-import  PixelIcon  from "@/app/components/pixel-icon"
+import PixelIcon from "@/app/components/pixel-icon"
 import { AuthDebug } from "@/app/components/auth-debug"
 import Link from "next/link"
 
