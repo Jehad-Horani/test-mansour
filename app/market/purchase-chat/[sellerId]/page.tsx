@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "../../../../hooks/use-user"
-import {RetroWindow} from "@/app/components/retro-window"
+import { RetroWindow } from "@/app/components/retro-window"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import PixelIcon from "@/app/components/pixel-icon"

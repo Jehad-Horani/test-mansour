@@ -6,11 +6,11 @@ import { Label } from "@/app/components/ui/label"
 import { Switch } from "@/app/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { RetroWindow } from "@/app/components/retro-window"
-import { PixelIcon } from "@/app/components/pixel-icon"
+import PixelIcon from "@/app/components/pixel-icon"
 import { useAuth } from "@/hooks/use-auth"
 import { createBrowserClient } from "@/app/lib/supabase/client"
 import Link from "next/link"
-import RetroToggle from "@/app/components/retro-toggle"
+import { RetroToggle } from "@/app/components/retro-toggle"
 
 interface UserSettings {
   id: string

@@ -1,32 +1,32 @@
 interface PixelIconProps {
   type:
-  | "gavel"
-  | "code"
-  | "heart-beat"
-  | "calendar"
-  | "upload"
-  | "user"
-  | "book"
-  | "cog"
-  | "briefcase"
-  | "shopping-cart"
-  | "message-circle"
-  | "arrow-right"
-  | "send"
-  | "shield"
-  | "filter"
-  | "file"
-  | "building"
-  | "graduation-cap"
-  | "download"
-  | "alert"
-  | "arrow-left"
-  | "check"
-  | "info"
+    | "gavel"
+    | "code"
+    | "heart-beat"
+    | "calendar"
+    | "upload"
+    | "user"
+    | "book"
+    | "cog"
+    | "briefcase"
+    | "shopping-cart"
+    | "message-circle"
+    | "arrow-right"
+    | "send"
+    | "shield"
+    | "filter"
+    | "file"
+    | "building"
+    | "graduation-cap"
+    | "download"
+    | "alert"
+    | "arrow-left"
+    | "check"
+    | "info"
   className?: string
 }
 
-export default function PixelIcon({
+export function PixelIcon({
   type,
   className = "w-4 h-4",
 }: PixelIconProps) {
@@ -131,14 +131,12 @@ export default function PixelIcon({
         <rect x="12" y="5" width="2" height="6" fill="currentColor" transform="rotate(-45 12 5)" />
       </svg>
     ),
-
     send: (
       <svg className={className} viewBox="0 0 16 16">
         <rect x="1" y="7" width="12" height="2" fill="currentColor" />
         <rect x="11" y="5" width="4" height="6" fill="currentColor" transform="rotate(45 11 5)" />
       </svg>
     ),
-
     shield: (
       <svg className={className} viewBox="0 0 16 16">
         <rect x="6" y="2" width="4" height="2" fill="currentColor" />
@@ -146,7 +144,14 @@ export default function PixelIcon({
         <rect x="5" y="10" width="6" height="4" fill="currentColor" />
       </svg>
     ),
-
+    filter: (
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <rect x="2" y="2" width="12" height="2" fill="currentColor" />
+        <rect x="4" y="4" width="8" height="2" fill="currentColor" />
+        <rect x="6" y="6" width="4" height="2" fill="currentColor" />
+        <rect x="7" y="8" width="2" height="6" fill="currentColor" />
+      </svg>
+    ),
     file: (
       <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
         <rect x="4" y="2" width="8" height="12" fill="none" stroke="currentColor" />
@@ -155,7 +160,6 @@ export default function PixelIcon({
         <rect x="4" y="11" width="8" height="2" fill="currentColor" />
       </svg>
     ),
-
     building: (
       <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
         <rect x="3" y="4" width="10" height="10" fill="currentColor" />
@@ -166,7 +170,6 @@ export default function PixelIcon({
         <rect x="7" y="2" width="2" height="2" fill="currentColor" />
       </svg>
     ),
-
     "graduation-cap": (
       <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
         <rect x="2" y="6" width="12" height="2" fill="currentColor" />
@@ -175,7 +178,6 @@ export default function PixelIcon({
         <rect x="7" y="5" width="2" height="1" fill="currentColor" />
       </svg>
     ),
-
     download: (
       <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
         <rect x="7" y="2" width="2" height="6" fill="currentColor" />
@@ -183,7 +185,6 @@ export default function PixelIcon({
         <rect x="4" y="10" width="8" height="2" fill="currentColor" />
       </svg>
     ),
-
     alert: (
       <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
         <rect x="7" y="2" width="2" height="6" fill="currentColor" />
@@ -191,7 +192,6 @@ export default function PixelIcon({
         <rect x="4" y="14" width="8" height="2" fill="currentColor" />
       </svg>
     ),
-
     "arrow-left": (
       <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
         <rect x="4" y="7" width="10" height="2" fill="currentColor" />
@@ -199,7 +199,6 @@ export default function PixelIcon({
         <rect x="4" y="5" width="2" height="6" fill="currentColor" transform="rotate(-45 4 5)" />
       </svg>
     ),
-
     check: (
       <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
         <rect x="4" y="8" width="2" height="2" fill="currentColor" />
@@ -207,7 +206,6 @@ export default function PixelIcon({
         <rect x="12" y="4" width="2" height="2" fill="currentColor" />
       </svg>
     ),
-
     info: (
       <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
         <rect x="7" y="4" width="2" height="2" fill="currentColor" />
@@ -215,9 +213,9 @@ export default function PixelIcon({
         <rect x="7" y="14" width="2" height="2" fill="currentColor" />
       </svg>
     ),
-
-
   }
 
   return icons[type] || null
 }
+
+export default PixelIcon
