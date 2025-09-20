@@ -14,24 +14,36 @@ export async function GET() {
     }
 
     let userProfile = null
-    if (session?.user) {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single()
 
-      if (profileError) {
-        console.error("Profile error:", profileError)
-        // Return session without profile if profile doesn't exist yet
-        return NextResponse.json({ 
-          session, 
-          userProfile: null,
-          error: "Profile not found"
-        }, { status: 200 })
+    if (session?.user) {
+      const maxRetries = 3
+      let attempts = 0
+      let profileData = null
+      let profileError = null
+
+      while (attempts < maxRetries) {
+        const res = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single()
+
+        profileData = res.data
+        profileError = res.error
+
+        if (!profileError && profileData) break
+
+        console.log(`[v0] Profile fetch attempt ${attempts + 1} failed, retrying...`, profileError)
+        await new Promise(resolve => setTimeout(resolve, 1000)) // انتظر 1 ثانية قبل المحاولة التالية
+        attempts++
       }
-      
-      userProfile = profileData
+
+      if (profileError || !profileData) {
+        console.error("Profile fetch failed after retries:", profileError)
+        userProfile = null
+      } else {
+        userProfile = profileData
+      }
     }
 
     return NextResponse.json({ session, userProfile }, { status: 200 })

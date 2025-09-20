@@ -103,7 +103,7 @@ export const authClient = {
           graduation_year: (new Date().getFullYear() + Number.parseInt(data.year) + 3).toString(),
         })
 
-        .eq("id", authData.user.id)
+        
 
       if (profileError) {
         console.log("[v0] Profile update error:", profileError.message)
