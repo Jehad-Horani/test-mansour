@@ -83,7 +83,7 @@ export default function DashboardPage() {
     }
   }, [loading, router])
   
-  if (loading || isLoading || !isLoggedIn || !profile) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
         <RetroWindow title="جاري التحميل...">
@@ -97,6 +97,23 @@ export default function DashboardPage() {
       </div>
     )
   }
+
+
+  if (!profile) {
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
+      <RetroWindow title="خطأ">
+        <div className="p-6 text-center">
+          <p style={{ color: "var(--ink)" }}>تعذر تحميل بيانات المستخدم</p>
+          <Button asChild>
+            <Link href="/auth/login">العودة لتسجيل الدخول</Link>
+          </Button>
+        </div>
+      </RetroWindow>
+    </div>
+  )
+}
+
 
   const getTierColor = (tier: string) => {
     switch (tier) {
