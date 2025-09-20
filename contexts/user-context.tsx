@@ -8,7 +8,7 @@ interface UserContextType {
   login: (
     userData: Omit<User, "isLoggedIn" | "joinDate" | "stats" | "preferences" | "subscription" | "role" | "permissions">,
   ) => void
-  logout: () => void
+  logout: () => Promise<void>
   register: (userData: {
     name: string
     email: string

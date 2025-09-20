@@ -37,14 +37,18 @@ export default function LoginPage() {
         password: formData.password,
       })
 
-      // Redirect based on user role
-      setTimeout(() => {
-        if (profile?.role === "admin") {
-          router.replace("/admin")
-        } else {
-          router.replace("/dashboard")
-        }
-      }, 100)
+      // Wait for the auth hook to update, then redirect
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Fetch fresh session data to get the profile
+      const sessionRes = await fetch("/api/auth/session")
+      const sessionData = await sessionRes.json()
+      
+      if (sessionData.userProfile?.role === "admin") {
+        router.replace("/admin")
+      } else {
+        router.replace("/dashboard")
+      }
     } catch (err: any) {
       console.error("Login failed:", err)
       setLocalError(err.message || "فشل في تسجيل الدخول")
