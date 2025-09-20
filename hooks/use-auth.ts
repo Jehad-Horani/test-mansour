@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import type { User } from "@supabase/supabase-js"
-import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 import { authClient, type Profile, type RegisterData, type LoginData } from "@/lib/supabase/auth"
 
 export function useAuth() {
@@ -11,24 +10,20 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-const { data, loading1, error1 } = useSupabaseClient()
-
- useEffect(() => {
+  // Fetch session from API
   const fetchSession = async () => {
     try {
       const res = await fetch("/api/auth/session")
       const data = await res.json()
-
       if (res.ok) {
         setUser(data.session?.user ?? null)
         setProfile(data.userProfile ?? null)
       } else {
-        console.error("Error fetching session:", data.error)
         setUser(null)
         setProfile(null)
       }
     } catch (err) {
-      console.error("Exception fetching session:", err)
+      console.error(err)
       setUser(null)
       setProfile(null)
     } finally {
@@ -36,45 +31,52 @@ const { data, loading1, error1 } = useSupabaseClient()
     }
   }
 
-  fetchSession()
-}, [])
+  useEffect(() => {
+    fetchSession()
+  }, [])
 
+  // Sign Up
+ const signUp = async (data: RegisterData) => {
+  setLoading(true)
+  setError(null)
 
-  const signUp = async (data: RegisterData) => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      await authClient.signUp(data)
-      // Note: User will need to verify email before they can sign in
-    } catch (err: any) {
-      setError(err.message || "حدث خطأ أثناء إنشاء الحساب")
-      throw err
-    } finally {
-      setLoading(false)
-    }
+  try {
+    await authClient.signUp(data) // throw إذا في error
+    await fetchSession() // جلب الـ session بعد التسجيل
+  } catch (err: any) {
+    setError(err.message || "حدث خطأ أثناء إنشاء الحساب")
+    throw err
+  } finally {
+    setLoading(false)
   }
+}
 
-  const signIn = async (data: LoginData) => {
-    setLoading(true)
-    setError(null)
 
-    try {
-      await authClient.signIn(data)
-    } catch (err: any) {
-      setError(err.message || "حدث خطأ في تسجيل الدخول")
-      throw err
-    } finally {
-      setLoading(false)
-    }
+  // Sign In
+ const signIn = async (data: LoginData) => {
+  setLoading(true)
+  setError(null)
+
+  try {
+    await authClient.signIn(data) // throw إذا في error
+    await fetchSession() // جلب الـ session بعد تسجيل الدخول
+  } catch (err: any) {
+    setError(err.message || "حدث خطأ في تسجيل الدخول")
+    throw err
+  } finally {
+    setLoading(false)
   }
+}
 
+
+  // Sign Out
   const signOut = async () => {
     setLoading(true)
     setError(null)
-
     try {
       await authClient.signOut()
+      setUser(null)
+      setProfile(null)
     } catch (err: any) {
       setError(err.message || "حدث خطأ أثناء تسجيل الخروج")
       throw err
@@ -83,9 +85,9 @@ const { data, loading1, error1 } = useSupabaseClient()
     }
   }
 
+  // Reset password
   const resetPassword = async (email: string) => {
     setError(null)
-
     try {
       await authClient.resetPassword(email)
     } catch (err: any) {
@@ -94,9 +96,9 @@ const { data, loading1, error1 } = useSupabaseClient()
     }
   }
 
+  // Update profile
   const updateProfile = async (updates: Partial<Profile>) => {
     setError(null)
-
     try {
       await authClient.updateProfile(updates)
       const updatedProfile = await authClient.getProfile()
@@ -110,44 +112,25 @@ const { data, loading1, error1 } = useSupabaseClient()
   const isAdmin = () => profile?.role === "admin"
   const isLoggedIn = !!user
 
-  const hasPermission = (permission: string) => {
-    if (!profile) return false
-    if (profile.role === "admin") return true
-
-    // Define permissions based on subscription tier
-    const permissions = {
-      free: ["view_content", "upload_files", "participate_community"],
-      standard: ["view_content", "upload_files", "participate_community", "consultations"],
-      premium: [
-        "view_content",
-        "upload_files",
-        "participate_community",
-        "consultations",
-        "group_sessions",
-        "priority_support",
-      ],
-    }
-
-    return permissions[profile.subscription_tier]?.includes(permission) || false
-  }
-
-  const getMajorLabel = (major: "law" | "it" | "medical" | "business") => {
-    const labels = {
+  const getMajorLabel = (major?: "law" | "it" | "medical" | "business" | "") => {
+    const labels: Record<string, string> = {
       law: "القانون",
       it: "تقنية المعلومات",
       medical: "الطب",
       business: "إدارة الأعمال",
+      "": "غير محدد",
     }
-    return labels[major]
+    return labels[major || ""] ?? "غير محدد"
   }
 
-  const getTierLabel = (tier: "free" | "standard" | "premium") => {
-    const labels = {
+  const getTierLabel = (tier?: "free" | "standard" | "premium" | "") => {
+    const labels: Record<string, string> = {
       free: "مجاني",
       standard: "قياسي",
       premium: "مميز",
+      "": "غير محدد",
     }
-    return labels[tier]
+    return labels[tier || ""] ?? "غير محدد"
   }
 
   return {
@@ -162,7 +145,6 @@ const { data, loading1, error1 } = useSupabaseClient()
     updateProfile,
     isAdmin,
     isLoggedIn,
-    hasPermission,
     getMajorLabel,
     getTierLabel,
     clearError: () => setError(null),
