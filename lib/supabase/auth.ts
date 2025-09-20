@@ -1,5 +1,4 @@
 import { createClient } from "./client"
-import { createClient as createServerClient } from "./server"
 
 export interface RegisterData {
   name: string
@@ -201,30 +200,5 @@ export const authClient = {
     const { error } = await supabase.from("profiles").update(updates).eq("id", user.id)
 
     if (error) throw error
-  },
-}
-
-// Server-side auth functions
-export const authServer = {
-  async getUser() {
-    const supabase = await createServerClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    return user
-  },
-
-  async getProfile(): Promise<Profile | null> {
-    const supabase = await createServerClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return null
-
-    const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-
-    if (error) return null
-    return profile
   },
 }
