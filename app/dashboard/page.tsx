@@ -20,6 +20,24 @@ import {
   TrendingUp,
 } from "lucide-react"
 
+const getMajorLabelSafe = (major: string | null | undefined) => {
+  switch (major) {
+    case "law": return "القانون"
+    case "it": return "تكنولوجيا المعلومات"
+    case "medical": return "الطب"
+    case "business": return "الأعمال"
+    default: return "غير محدد"
+  }
+}
+
+const getTierLabelSafe = (tier: string | null | undefined) => {
+  switch (tier) {
+    case "free": return "مجاني"
+    case "standard": return "أساسي"
+    case "premium": return "مميز"
+    default: return "غير محدد"
+  }
+}
 export default function DashboardPage() {
   const { user, profile, loading, isLoggedIn, getMajorLabel, getTierLabel } = useAuth()
   const router = useRouter()
@@ -33,7 +51,7 @@ export default function DashboardPage() {
         setIsLoading(false)
       }
     }
-  }, [isLoggedIn, loading, router])
+  }, [loading, isLoggedIn, router])
 
   if (loading || isLoading || !isLoggedIn || !profile) {
     return (
@@ -61,11 +79,11 @@ export default function DashboardPage() {
     }
   }
 
-  const recentActivity = [
-    { type: "upload", title: `رفع محاضرة جديدة: ${getMajorLabel(profile.major)}`, time: "منذ ساعتين" },
-    { type: "exam", title: `امتحان ${getMajorLabel(profile.major)} غداً`, time: "منذ 4 ساعات" },
-    { type: "community", title: "إجابة جديدة على سؤالك", time: "منذ يوم" },
-  ]
+ const recentActivity = [
+  { type: "upload", title: `رفع محاضرة جديدة: ${getMajorLabelSafe(profile?.major)}`, time: "منذ ساعتين" },
+  { type: "exam", title: `امتحان ${getMajorLabelSafe(profile?.major)} غداً`, time: "منذ 4 ساعات" },
+  { type: "community", title: "إجابة جديدة على سؤالك", time: "منذ يوم" },
+]
 
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
@@ -86,7 +104,7 @@ export default function DashboardPage() {
                     مرحباً، {profile.name}
                   </h1>
                   <p className="text-gray-600 mb-2">
-                    {profile.university} - {getMajorLabel}
+                    {profile.university} - {getMajorLabelSafe(profile?.major)}
                   </p>
                   <div className="flex items-center gap-3 mb-4">
                     <Badge
