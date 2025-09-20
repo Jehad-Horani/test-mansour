@@ -106,15 +106,12 @@ export default function RegisterPage() {
         year: formData.year,
       })
 
-      // بعد التسجيل، ننتظر بيانات المستخدم وتوجيهه مباشرة للداش بورد
-      const checkUserInterval = setInterval(() => {
-        if (user) {
-          clearInterval(checkUserInterval)
-          router.push("/dashboard")
-        }
-      }, 500)
-
       setIsSuccess(true)
+      
+      // Redirect after showing success message
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 2000)
     } catch (err: any) {
       setErrors({ submit: err.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى." })
     } finally {
@@ -148,6 +145,10 @@ export default function RegisterPage() {
               <p className="text-gray-600 mb-6">
                 تم إنشاء حسابك بنجاح. سيتم توجيهك مباشرة للداش بورد.
               </p>
+              <div className="mb-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600 mx-auto"></div>
+                <p className="text-sm text-gray-500 mt-2">جاري التوجيه...</p>
+              </div>
               <div className="space-y-3">
                 <Button
                   asChild

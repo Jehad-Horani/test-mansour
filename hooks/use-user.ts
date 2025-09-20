@@ -130,11 +130,17 @@ export function useUser() {
   }
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem("currentUser")
-    // Clear any other user-related data
-    localStorage.removeItem("userPreferences")
-    localStorage.removeItem("userCart")
+    return new Promise<void>((resolve) => {
+      setUser(null)
+      try {
+        localStorage.removeItem("currentUser")
+        localStorage.removeItem("userPreferences")
+        localStorage.removeItem("userCart")
+      } catch (error) {
+        console.error("Error clearing localStorage:", error)
+      }
+      resolve()
+    })
   }
 
   const updateUser = (updates: Partial<User>) => {

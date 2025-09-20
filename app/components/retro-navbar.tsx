@@ -19,10 +19,17 @@ export function RetroNavbar() {
 
   const cartCount = getCartCount()
 
-  const handleLogout = () => {
-    logout()
-    setShowUserMenu(false)
-    router.push("/")
+  const handleLogout = async () => {
+    try {
+      await logout()
+      setShowUserMenu(false)
+      router.push("/")
+    } catch (error) {
+      console.error("Logout error:", error)
+      // Force logout even if there's an error
+      setShowUserMenu(false)
+      router.push("/")
+    }
   }
 
   return (

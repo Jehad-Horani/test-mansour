@@ -81,7 +81,8 @@ export const authClient = {
 
     console.log("[v0] SignUp successful, user created:", authData.user.id)
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    // Wait for the user to be properly created
+    await new Promise((resolve) => setTimeout(resolve, 1500))
 
     try {
       console.log("[v0] Updating profile with additional data...")
@@ -134,6 +135,9 @@ export const authClient = {
       }
 
       console.log("[v0] Profile updated successfully")
+      
+      // Wait a bit more for the profile to be fully created
+      await new Promise((resolve) => setTimeout(resolve, 500))
     } catch (err: any) {
       console.log("[v0] Profile operation failed:", err.message)
       throw new Error("فشل في حفظ بيانات المستخدم")
@@ -158,6 +162,10 @@ export const authClient = {
     }
 
     console.log("[v0] SignIn successful for user:", authData.user?.id)
+    
+    // Wait a moment for the session to be established
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
     return authData
   },
 

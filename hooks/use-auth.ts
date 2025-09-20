@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
 import { authClient, type Profile, type RegisterData, type LoginData } from "@/lib/supabase/auth"
 
@@ -9,6 +10,7 @@ export function useAuth() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   // Fetch session from API
   const fetchSession = async () => {
@@ -41,8 +43,35 @@ export function useAuth() {
   setError(null)
 
   try {
-    await authClient.signUp(data) // throw إذا في error
-    await fetchSession() // جلب الـ session بعد التسجيل
+    const result = await authClient.signUp(data)
+    
+    // Wait a bit for Supabase to process the user creation
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // Fetch the session multiple times with retries
+    let retries = 0
+    const maxRetries = 5
+    
+    while (retries < maxRetries) {
+      await fetchSession()
+      
+      // Check if we have both user and profile
+      const sessionCheck = await fetch("/api/auth/session")
+      const sessionData = await sessionCheck.json()
+      
+      if (sessionData.session?.user && sessionData.userProfile) {
+        setUser(sessionData.session.user)
+        setProfile(sessionData.userProfile)
+        return result
+      }
+      
+      retries++
+      if (retries < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+    
+    return result
   } catch (err: any) {
     setError(err.message || "حدث خطأ أثناء إنشاء الحساب")
     throw err
@@ -58,8 +87,35 @@ export function useAuth() {
   setError(null)
 
   try {
-    await authClient.signIn(data) // throw إذا في error
-    await fetchSession() // جلب الـ session بعد تسجيل الدخول
+    const result = await authClient.signIn(data)
+    
+    // Wait a bit for Supabase to process the login
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    // Fetch the session with retries
+    let retries = 0
+    const maxRetries = 3
+    
+    while (retries < maxRetries) {
+      await fetchSession()
+      
+      // Check if we have both user and profile
+      const sessionCheck = await fetch("/api/auth/session")
+      const sessionData = await sessionCheck.json()
+      
+      if (sessionData.session?.user && sessionData.userProfile) {
+        setUser(sessionData.session.user)
+        setProfile(sessionData.userProfile)
+        return result
+      }
+      
+      retries++
+      if (retries < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+    }
+    
+    return result
   } catch (err: any) {
     setError(err.message || "حدث خطأ في تسجيل الدخول")
     throw err
@@ -77,6 +133,7 @@ export function useAuth() {
       await authClient.signOut()
       setUser(null)
       setProfile(null)
+      router.push("/")
     } catch (err: any) {
       setError(err.message || "حدث خطأ أثناء تسجيل الخروج")
       throw err

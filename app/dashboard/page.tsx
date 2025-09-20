@@ -44,22 +44,39 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    console.log("[v0] Dashboard - Auth state:", { loading, isLoggedIn, user: !!user, profile: !!profile })
+    
     if (!loading) {
       if (!isLoggedIn) {
+        console.log("[v0] Dashboard - Not logged in, redirecting to login")
         router.push("/auth/login")
       } else {
+        console.log("[v0] Dashboard - User is logged in, showing dashboard")
         setIsLoading(false)
       }
     }
   }, [loading, isLoggedIn, router])
 
+  // Add a timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.log("[v0] Dashboard - Loading timeout, forcing redirect to login")
+        router.push("/auth/login")
+      }
+    }, 5000) // 5 second timeout
+    
+    return () => clearTimeout(timeout)
+  }, [loading, router])
   if (loading || isLoading || !isLoggedIn || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
         <RetroWindow title="جاري التحميل...">
           <div className="p-6 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p style={{ color: "var(--ink)" }}>يرجى الانتظار...</p>
+            <p style={{ color: "var(--ink)" }}>
+              {loading ? "جاري التحقق من بيانات المستخدم..." : "يرجى الانتظار..."}
+            </p>
           </div>
         </RetroWindow>
       </div>
