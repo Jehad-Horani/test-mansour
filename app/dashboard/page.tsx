@@ -72,7 +72,7 @@ export default function DashboardPage() {
           console.log("[v0] Still loading after timeout, redirecting to login")
           router.push("/auth/login")
         }
-      }, 10000) // 10 second timeout
+      }, 1000) // 10 second timeout
       
       setRedirectTimeout(timeout)
       
