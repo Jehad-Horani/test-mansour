@@ -38,7 +38,7 @@ export default function RegisterPage() {
     phone: "",
     countryCode: "+962",
     university: "",
-    major: "",
+    major: "" as "" | "law" | "it" | "medical" | "business",
     year: "",
     password: "",
     confirmPassword: "",
@@ -52,68 +52,37 @@ export default function RegisterPage() {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const { signUp, loading, error, clearError } = useAuth()
+  const { signUp, loading, error, clearError, user } = useAuth()
   const router = useRouter()
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name.trim()) {
-      newErrors.name = "الاسم الكامل مطلوب"
-    } else if (formData.name.trim().length < 3) {
-      newErrors.name = "الاسم يجب أن يكون 3 أحرف على الأقل"
-    }
+    if (!formData.name.trim()) newErrors.name = "الاسم الكامل مطلوب"
+    else if (formData.name.trim().length < 3) newErrors.name = "الاسم يجب أن يكون 3 أحرف على الأقل"
 
-    if (!formData.email.trim()) {
-      newErrors.email = "البريد الإلكتروني مطلوب"
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!formData.email.trim()) newErrors.email = "البريد الإلكتروني مطلوب"
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
       newErrors.email = "البريد الإلكتروني غير صحيح"
-    }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = "رقم الهاتف مطلوب"
-    } else {
+    if (!formData.phone.trim()) newErrors.phone = "رقم الهاتف مطلوب"
+    else {
       const phoneWithoutSpaces = formData.phone.replace(/\s/g, "")
-      if (formData.countryCode === "+962") {
-        // Jordanian phone validation
-        if (!/^[7][0-9]{8}$/.test(phoneWithoutSpaces)) {
-          newErrors.phone = "رقم الهاتف الأردني غير صحيح (يجب أن يبدأ بـ 7 ويتكون من 9 أرقام)"
-        }
-      } else {
-        // General phone validation for other countries
-        if (!/^[0-9]{7,15}$/.test(phoneWithoutSpaces)) {
-          newErrors.phone = "رقم الهاتف غير صحيح"
-        }
-      }
+      if (formData.countryCode === "+962" && !/^[7][0-9]{8}$/.test(phoneWithoutSpaces))
+        newErrors.phone = "رقم الهاتف الأردني غير صحيح (يجب أن يبدأ بـ 7 ويتكون من 9 أرقام)"
+      else if (formData.countryCode !== "+962" && !/^[0-9]{7,15}$/.test(phoneWithoutSpaces))
+        newErrors.phone = "رقم الهاتف غير صحيح"
     }
 
-    if (!formData.university) {
-      newErrors.university = "يرجى اختيار الجامعة"
-    }
-
-    if (!formData.major) {
-      newErrors.major = "يرجى اختيار التخصص"
-    }
-
-    if (!formData.year) {
-      newErrors.year = "يرجى اختيار المستوى الدراسي"
-    }
-
-    if (!formData.password) {
-      newErrors.password = "كلمة المرور مطلوبة"
-    } else if (formData.password.length < 8) {
-      newErrors.password = "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "تأكيد كلمة المرور مطلوب"
-    } else if (formData.password !== formData.confirmPassword) {
+    if (!formData.university) newErrors.university = "يرجى اختيار الجامعة"
+    if (!formData.major) newErrors.major = "يرجى اختيار التخصص"
+    if (!formData.year) newErrors.year = "يرجى اختيار المستوى الدراسي"
+    if (!formData.password) newErrors.password = "كلمة المرور مطلوبة"
+    else if (formData.password.length < 8) newErrors.password = "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
+    if (!formData.confirmPassword) newErrors.confirmPassword = "تأكيد كلمة المرور مطلوب"
+    else if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "كلمة المرور غير متطابقة"
-    }
-
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = "يجب الموافقة على الشروط والأحكام"
-    }
+    if (!formData.agreeToTerms) newErrors.agreeToTerms = "يجب الموافقة على الشروط والأحكام"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -121,10 +90,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!validateForm()) {
-      return
-    }
+    if (!validateForm()) return
 
     setIsSubmitting(true)
     clearError()
@@ -140,6 +106,14 @@ export default function RegisterPage() {
         year: formData.year,
       })
 
+      // بعد التسجيل، ننتظر بيانات المستخدم وتوجيهه مباشرة للداش بورد
+      const checkUserInterval = setInterval(() => {
+        if (user) {
+          clearInterval(checkUserInterval)
+          router.push("/dashboard")
+        }
+      }, 500)
+
       setIsSuccess(true)
     } catch (err: any) {
       setErrors({ submit: err.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى." })
@@ -150,19 +124,13 @@ export default function RegisterPage() {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
-    }
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }))
   }
 
   const handleCountryCodeSelect = (code: string) => {
     setFormData((prev) => ({ ...prev, countryCode: code }))
     setShowCountryDropdown(false)
-    if (errors.phone) {
-      setErrors((prev) => ({ ...prev, phone: "" }))
-    }
+    if (errors.phone) setErrors((prev) => ({ ...prev, phone: "" }))
   }
 
   const selectedCountry = countryCodes.find((c) => c.code === formData.countryCode) || countryCodes[0]
@@ -177,14 +145,16 @@ export default function RegisterPage() {
               <h2 className="text-xl font-bold mb-4" style={{ color: "var(--ink)" }}>
                 مرحباً بك في تخصص!
               </h2>
-              <p className="text-gray-600 mb-6">تم إنشاء حسابك بنجاح. يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب.</p>
+              <p className="text-gray-600 mb-6">
+                تم إنشاء حسابك بنجاح. سيتم توجيهك مباشرة للداش بورد.
+              </p>
               <div className="space-y-3">
                 <Button
                   asChild
                   className="retro-button w-full"
                   style={{ background: "var(--primary)", color: "white" }}
                 >
-                  <Link href="/auth/login">تسجيل الدخول</Link>
+                  <Link href="/dashboard">الذهاب للداش بورد</Link>
                 </Button>
                 <Button
                   variant="outline"
@@ -200,6 +170,7 @@ export default function RegisterPage() {
       </div>
     )
   }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--panel)" }}>
