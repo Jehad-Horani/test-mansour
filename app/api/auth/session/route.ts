@@ -4,42 +4,44 @@ import { createClient } from "@/lib/supabase/server"
 export async function GET() {
   try {
     const supabase = await createClient()
-    const { data: { session }, error } = await supabase.auth.getSession()
+    
+    // Get the current session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-    if (error) throw error
+    if (sessionError) {
+      console.error("Session error:", sessionError)
+      return NextResponse.json({ session: null, userProfile: null }, { status: 200 })
+    }
 
     let userProfile = null
     if (session?.user) {
-      // Add retry logic for profile fetching
-      let retries = 0
-      const maxRetries = 3
-      
-      while (retries < maxRetries && !userProfile) {
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single()
 
-        if (!profileError && profileData) {
-          userProfile = profileData
-          break
-        }
-        
-        retries++
-        if (retries < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 500))
-        }
+      if (profileError) {
+        console.error("Profile error:", profileError)
+        // Return session without profile if profile doesn't exist yet
+        return NextResponse.json({ 
+          session, 
+          userProfile: null,
+          error: "Profile not found"
+        }, { status: 200 })
       }
       
-      if (!userProfile) {
-        console.log("[v0] Profile not found for user:", session.user.id)
-      }
+      userProfile = profileData
     }
 
-    return NextResponse.json({ session, userProfile })
+    return NextResponse.json({ session, userProfile }, { status: 200 })
+    
   } catch (err: any) {
     console.error("Error fetching session:", err)
-    return NextResponse.json({ error: err.message || "Unexpected error" }, { status: 500 })
+    return NextResponse.json({ 
+      session: null, 
+      userProfile: null, 
+      error: err.message || "Unexpected error" 
+    }, { status: 500 })
   }
 }

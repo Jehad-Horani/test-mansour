@@ -96,6 +96,7 @@ export default function RegisterPage() {
     clearError()
 
     try {
+      console.log("[v0] Starting registration process...")
       await signUp({
         name: formData.name.trim(),
         email: formData.email.trim(),
@@ -106,13 +107,17 @@ export default function RegisterPage() {
         year: formData.year,
       })
 
+      console.log("[v0] Registration successful, showing success state...")
       setIsSuccess(true)
       
       // Redirect after showing success message
       setTimeout(() => {
+        console.log("[v0] Redirecting to dashboard...")
         router.push("/dashboard")
-      }, 2000)
+      }, 1500)
+      
     } catch (err: any) {
+      console.error("[v0] Registration failed:", err)
       setErrors({ submit: err.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى." })
     } finally {
       setIsSubmitting(false)

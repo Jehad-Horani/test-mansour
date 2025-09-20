@@ -42,6 +42,7 @@ export default function DashboardPage() {
   const { user, profile, loading, isLoggedIn, getMajorLabel, getTierLabel } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
+  const [redirectTimeout, setRedirectTimeout] = useState<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     console.log("[v0] Dashboard - Auth state:", { loading, isLoggedIn, user: !!user, profile: !!profile })
@@ -53,21 +54,35 @@ export default function DashboardPage() {
       } else {
         console.log("[v0] Dashboard - User is logged in, showing dashboard")
         setIsLoading(false)
+        // Clear any existing timeout
+        if (redirectTimeout) {
+          clearTimeout(redirectTimeout)
+          setRedirectTimeout(null)
+        }
       }
     }
   }, [loading, isLoggedIn, router])
 
-  // Add a timeout to prevent infinite loading
+  // Add a safety timeout to prevent infinite loading
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.log("[v0] Dashboard - Loading timeout, forcing redirect to login")
-        router.push("/auth/login")
+    if (loading) {
+      const timeout = setTimeout(() => {
+        console.log("[v0] Dashboard - Loading timeout reached")
+        if (loading) {
+          console.log("[v0] Still loading after timeout, redirecting to login")
+          router.push("/auth/login")
+        }
+      }, 10000) // 10 second timeout
+      
+      setRedirectTimeout(timeout)
+      
+      return () => {
+        clearTimeout(timeout)
+        setRedirectTimeout(null)
       }
-    }, 5000) // 5 second timeout
-    
-    return () => clearTimeout(timeout)
+    }
   }, [loading, router])
+  
   if (loading || isLoading || !isLoggedIn || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
@@ -75,7 +90,7 @@ export default function DashboardPage() {
           <div className="p-6 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
             <p style={{ color: "var(--ink)" }}>
-              {loading ? "جاري التحقق من بيانات المستخدم..." : "يرجى الانتظار..."}
+              {loading ? "جاري التحقق من بيانات المستخدم..." : isLoading ? "جاري تحميل لوحة التحكم..." : "يرجى الانتظار..."}
             </p>
           </div>
         </RetroWindow>

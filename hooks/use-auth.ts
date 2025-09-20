@@ -15,17 +15,30 @@ export function useAuth() {
   // Fetch session from API
   const fetchSession = async () => {
     try {
+      setLoading(true)
       const res = await fetch("/api/auth/session")
-      const data = await res.json()
-      if (res.ok) {
-        setUser(data.session?.user ?? null)
-        setProfile(data.userProfile ?? null)
-      } else {
+      
+      if (!res.ok) {
+        console.error("Session fetch failed:", res.status, res.statusText)
         setUser(null)
         setProfile(null)
+        return
       }
+      
+      const data = await res.json()
+      
+      console.log("[v0] Session data received:", { 
+        hasSession: !!data.session, 
+        hasUser: !!data.session?.user,
+        hasProfile: !!data.userProfile,
+        error: data.error 
+      })
+      
+      setUser(data.session?.user ?? null)
+      setProfile(data.userProfile ?? null)
+      
     } catch (err) {
-      console.error(err)
+      console.error("Session fetch error:", err)
       setUser(null)
       setProfile(null)
     } finally {
@@ -38,91 +51,63 @@ export function useAuth() {
   }, [])
 
   // Sign Up
- const signUp = async (data: RegisterData) => {
-  setLoading(true)
-  setError(null)
+  const signUp = async (data: RegisterData) => {
+    setLoading(true)
+    setError(null)
 
-  try {
-    const result = await authClient.signUp(data)
-    
-    // Wait a bit for Supabase to process the user creation
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Fetch the session multiple times with retries
-    let retries = 0
-    const maxRetries = 5
-    
-    while (retries < maxRetries) {
+    try {
+      console.log("[v0] Starting signUp process...")
+      const result = await authClient.signUp(data)
+      
+      console.log("[v0] SignUp completed, waiting for session...")
+      
+      // Wait for Supabase to process the user creation and profile trigger
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Fetch the updated session
       await fetchSession()
       
-      // Check if we have both user and profile
-      const sessionCheck = await fetch("/api/auth/session")
-      const sessionData = await sessionCheck.json()
+      console.log("[v0] SignUp process completed")
+      return result
       
-      if (sessionData.session?.user && sessionData.userProfile) {
-        setUser(sessionData.session.user)
-        setProfile(sessionData.userProfile)
-        return result
-      }
-      
-      retries++
-      if (retries < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-      }
+    } catch (err: any) {
+      console.error("[v0] SignUp error:", err)
+      setError(err.message || "حدث خطأ أثناء إنشاء الحساب")
+      throw err
+    } finally {
+      setLoading(false)
     }
-    
-    return result
-  } catch (err: any) {
-    setError(err.message || "حدث خطأ أثناء إنشاء الحساب")
-    throw err
-  } finally {
-    setLoading(false)
   }
-}
 
 
   // Sign In
- const signIn = async (data: LoginData) => {
-  setLoading(true)
-  setError(null)
+  const signIn = async (data: LoginData) => {
+    setLoading(true)
+    setError(null)
 
-  try {
-    const result = await authClient.signIn(data)
-    
-    // Wait a bit for Supabase to process the login
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    // Fetch the session with retries
-    let retries = 0
-    const maxRetries = 3
-    
-    while (retries < maxRetries) {
+    try {
+      console.log("[v0] Starting signIn process...")
+      const result = await authClient.signIn(data)
+      
+      console.log("[v0] SignIn completed, fetching session...")
+      
+      // Wait a moment for Supabase to establish the session
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Fetch the updated session
       await fetchSession()
       
-      // Check if we have both user and profile
-      const sessionCheck = await fetch("/api/auth/session")
-      const sessionData = await sessionCheck.json()
+      console.log("[v0] SignIn process completed")
+      return result
       
-      if (sessionData.session?.user && sessionData.userProfile) {
-        setUser(sessionData.session.user)
-        setProfile(sessionData.userProfile)
-        return result
-      }
-      
-      retries++
-      if (retries < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, 500))
-      }
+    } catch (err: any) {
+      console.error("[v0] SignIn error:", err)
+      setError(err.message || "حدث خطأ في تسجيل الدخول")
+      throw err
+    } finally {
+      setLoading(false)
     }
-    
-    return result
-  } catch (err: any) {
-    setError(err.message || "حدث خطأ في تسجيل الدخول")
-    throw err
-  } finally {
-    setLoading(false)
   }
-}
 
 
   // Sign Out
@@ -130,11 +115,14 @@ export function useAuth() {
     setLoading(true)
     setError(null)
     try {
+      console.log("[v0] Starting signOut process...")
       await authClient.signOut()
       setUser(null)
       setProfile(null)
+      console.log("[v0] SignOut completed")
       router.push("/")
     } catch (err: any) {
+      console.error("[v0] SignOut error:", err)
       setError(err.message || "حدث خطأ أثناء تسجيل الخروج")
       throw err
     } finally {

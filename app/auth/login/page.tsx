@@ -32,23 +32,31 @@ export default function LoginPage() {
     }
 
     try {
+      console.log("[v0] Starting login process...")
       await signIn({
         email: formData.email.trim(),
         password: formData.password,
       })
 
-      // Wait for the auth hook to update, then redirect
-      await new Promise(resolve => setTimeout(resolve, 500))
+      console.log("[v0] Login successful, checking profile...")
       
-      // Fetch fresh session data to get the profile
-      const sessionRes = await fetch("/api/auth/session")
-      const sessionData = await sessionRes.json()
+      // Wait for auth state to update
+      await new Promise(resolve => setTimeout(resolve, 1000))
       
-      if (sessionData.userProfile?.role === "admin") {
-        router.replace("/admin")
-      } else {
-        router.replace("/dashboard")
-      }
+      // Force a fresh session check
+      const res = await fetch("/api/auth/session")
+      const data = await res.json()
+      
+      console.log("[v0] Fresh session check:", { 
+        hasUser: !!data.session?.user, 
+        role: data.userProfile?.role 
+      })
+      
+      // Redirect based on role
+      const redirectPath = data.userProfile?.role === "admin" ? "/admin" : "/dashboard"
+      console.log("[v0] Redirecting to:", redirectPath)
+      router.replace(redirectPath)
+      
     } catch (err: any) {
       console.error("Login failed:", err)
       setLocalError(err.message || "فشل في تسجيل الدخول")
