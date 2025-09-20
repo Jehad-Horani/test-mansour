@@ -91,13 +91,18 @@ export const authClient = {
 
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({
+        .insert({
+          id: authData.user.id,  // نفس الـ id من auth.users
+          name: data.name,
+          phone: data.phone,
           university: data.university,
           major: data.major,
           year: data.year,
-          phone: data.phone,
+          role: "student",
+          subscription_tier: "free",
           graduation_year: (new Date().getFullYear() + Number.parseInt(data.year) + 3).toString(),
         })
+
         .eq("id", authData.user.id)
 
       if (profileError) {
@@ -107,7 +112,7 @@ export const authClient = {
       }
 
       console.log("[v0] Profile updated successfully")
-      
+
     } catch (err: any) {
       console.log("[v0] Profile operation failed:", err.message)
       console.warn("[v0] Profile operation failed, but continuing...")
@@ -132,10 +137,10 @@ export const authClient = {
     }
 
     console.log("[v0] SignIn successful for user:", authData.user?.id)
-    
+
     // Wait a moment for the session to be established
     await new Promise(resolve => setTimeout(resolve, 300))
-    
+
     return authData
   },
 
