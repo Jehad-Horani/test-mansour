@@ -64,7 +64,11 @@ export const authClient = {
         data: {
           name: data.name,
           phone: data.phone,
+          university: data.university,
+          major: data.major,
+          year: data.year,
           role: "student",
+          subscription_tier: "free",
         },
       },
     })
