@@ -79,7 +79,6 @@ export function useAuth() {
     }
   }
 
-
   // Sign In
   const signIn = async (data: LoginData) => {
     setLoading(true)
@@ -108,7 +107,6 @@ export function useAuth() {
       setLoading(false)
     }
   }
-
 
   // Sign Out
   const signOut = async () => {
@@ -154,6 +152,7 @@ export function useAuth() {
     }
   }
 
+  // Helper functions
   const isAdmin = () => profile?.role === "admin"
   const isLoggedIn = !!user
 
