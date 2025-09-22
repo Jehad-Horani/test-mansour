@@ -55,7 +55,7 @@ export function useAuth() {
             role: "student",
             email: currentUser.email ?? "",
             password: "",
-            name: "",
+            name: currentUser.user_metadata?.name ?? currentUser.email ?? "",
             year: "0",
             university: "",
             major: "it",
