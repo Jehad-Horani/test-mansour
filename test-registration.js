@@ -2,7 +2,7 @@ const { createClient } = require('@supabase/supabase-js')
 
 const supabaseUrl = 'https://drehfmtwazwjliahjils.supabase.co'
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZWhmbXR3YXp3amxpYWhqaWxzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NzQyNjI2MCwiZXhwIjoyMDczMDAyMjYwfQ.l05nEunL7NyaYv_9a_d2Pb58p4k0wmSM7QxFiT-_pHI'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZWhmbXR3YXp3amxpYWhqaWxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE7NTc0MjYyNjAsImV4cCI6MjA3MzAwMjI2MH0.Juj9ccOUxnbHJ_b5OODhBBvKMpwTi4l2p6Rr-sZNg1E'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZWhmbXR3YXp3amxpYWhqaWxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0MjYyNjAsImV4cCI6MjA3MzAwMjI2MH0.Juj9ccOUxnbHJ_b5OODhBBvKMpwTi4l2p6Rr-sZNg1E'
 
 async function testRegistration() {
   console.log('🧪 Testing Supabase Registration...\n')
