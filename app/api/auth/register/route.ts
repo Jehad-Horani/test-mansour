@@ -102,9 +102,9 @@ export async function POST(req: Request) {
         id: authData.user.id,
         name,
         phone,
-        university,
-        major,
-        year,
+        university: university ? [university] : [null], // Array format
+        major: major || null, // String or null
+        year: year || null, // String or null
         role: "student",
         subscription_tier: "free",
         preferences: {
