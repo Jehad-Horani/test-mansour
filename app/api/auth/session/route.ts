@@ -1,43 +1,24 @@
-import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
-export async function GET() {
-  try {
-    const supabase = await createClient()
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    if (sessionError) return NextResponse.json({ session: null, userProfile: null })
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const supabase = createServerSupabaseClient({ req, res });
 
-    let userProfile = null
-    if (session?.user) {
-      const maxRetries = 3
-      let attempts = 0
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
-      while (attempts < maxRetries) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .maybeSingle()
+    if (!user) return res.status(401).json({ hasProfile: false, profile: null });
 
-        if (error) {
-          console.error("Profile fetch error:", error.message)
-        }
-        if (!error && data) {
-          userProfile = data
-          break
-        }
-        attempts++
-        await new Promise(res => setTimeout(res, 1000))
-        console.log("Session user id:", session?.user.id)
-        console.log("Profile query result:", data, error)
+    const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-      }
-
-    }
-
-
-    return NextResponse.json({ session, userProfile: userProfile ?? { id: session?.user.id, role: "user" } })
-  } catch (err: any) {
-    return NextResponse.json({ session: null, userProfile: null, error: err.message }, { status: 500 })
-  }
+    return res.status(200).json({
+        hasProfile: !!profile,
+        profile: profile || null,
+        error: error?.message || null,
+    });
 }
