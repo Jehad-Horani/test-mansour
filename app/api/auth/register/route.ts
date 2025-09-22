@@ -3,10 +3,59 @@ import { createClient } from "@/lib/supabase/server"
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password, phone, university, major, year } = await req.json()
+    const body = await req.json()
+    console.log("[v0] Registration API - Request body:", body)
+
+    // Handle both new registration and profile creation for existing users
+    if (body.userId) {
+      // This is a fallback profile creation for existing auth user
+      const { userId, name, phone, university, major, year } = body
+      
+      console.log("[v0] Registration API - Creating profile for existing user:", userId)
+      
+      const supabase = createClient()
+      
+      const { error: profileError } = await supabase.from("profiles").insert({
+        id: userId,
+        name,
+        phone,
+        university,
+        major,
+        year,
+        role: "student",
+        subscription_tier: "free",
+        preferences: {
+          theme: "retro",
+          language: "ar",
+          emailNotifications: true,
+          pushNotifications: true,
+          profileVisibility: "university"
+        },
+        stats: {
+          uploadsCount: 0,
+          viewsCount: 0,
+          helpfulVotes: 0,
+          coursesEnrolled: 0,
+          booksOwned: 0,
+          consultations: 0,
+          communityPoints: 0
+        }
+      })
+
+      if (profileError) {
+        console.error("[v0] Registration API - Profile creation error:", profileError.message)
+        return NextResponse.json({ error: `فشل في إنشاء الملف الشخصي: ${profileError.message}` }, { status: 500 })
+      }
+      
+      console.log("[v0] Registration API - Profile created successfully")
+      return NextResponse.json({ message: "تم إنشاء الملف الشخصي بنجاح" })
+    }
+
+    // Original registration flow (shouldn't be used now, but kept for compatibility)
+    const { name, email, password, phone, university, major, year } = body
     const supabase = createClient()
 
-    console.log("[v0] Registration API - Starting registration for:", email)
+    console.log("[v0] Registration API - Starting full registration for:", email)
 
     // تسجيل المستخدم في Supabase Auth with metadata
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -18,7 +67,8 @@ export async function POST(req: Request) {
           phone,
           university,
           major,
-          year
+          year,
+          role: "student",
         }
       }
     })
@@ -35,24 +85,20 @@ export async function POST(req: Request) {
 
     console.log("[v0] Registration API - Auth user created:", authData.user.id)
 
-    // Use service role to ensure profile creation
-    const supabaseAdmin = createClient()
-    
-    // Wait a moment for trigger to process
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Wait for trigger to process
+    await new Promise(resolve => setTimeout(resolve, 2000))
 
-    // Check if profile already exists (from trigger)
-    const { data: existingProfile } = await supabaseAdmin
+    // Check if profile exists
+    const { data: existingProfile } = await supabase
       .from("profiles")
       .select("id")
       .eq("id", authData.user.id)
       .single()
 
     if (!existingProfile) {
-      console.log("[v0] Registration API - Profile not created by trigger, creating manually")
+      console.log("[v0] Registration API - Creating profile manually")
       
-      // إنشاء profile في جدول profiles manually
-      const { error: profileError } = await supabaseAdmin.from("profiles").insert({
+      const { error: profileError } = await supabase.from("profiles").insert({
         id: authData.user.id,
         name,
         phone,
