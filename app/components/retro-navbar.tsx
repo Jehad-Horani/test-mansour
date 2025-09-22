@@ -290,7 +290,7 @@ export function RetroNavbar() {
             >
               الأسعار
             </Link>
-            {isLoggedIn && (
+            {isLoggedIn ? (
               <>
                 <Link
                   href="/dashboard"
@@ -354,8 +354,8 @@ export function RetroNavbar() {
                   تسجيل الخروج
                 </button>
               </>
-            )}
-            {!isLoggedIn && (
+            ):
+            (
               <div className="pt-2 space-y-2">
                 <Link
                   href="/auth/login"

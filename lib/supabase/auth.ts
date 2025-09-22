@@ -19,7 +19,7 @@ export interface Profile {
   id: string
   email: string
   password: string         // ← خليها اختيارية
-  name?: string             // ← اختيارية، لأنه أول مرة ممكن ما يدخلها
+  name: string             // ← اختيارية، لأنه أول مرة ممكن ما يدخلها
   phone?: string
   university?: string
   major?: "law" | "it" | "medical" | "business"
