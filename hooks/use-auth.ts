@@ -52,16 +52,16 @@ export function useAuth() {
           console.error("Profile fetch error:", profileError)
           setProfile({
             id: currentUser.id,
-            role: "student",
+            role: currentUser.user_metadata?.role ?? currentUser.email ?? "",
             email: currentUser.email ?? "",
             password: "",
             name: currentUser.user_metadata?.name ?? currentUser.email ?? "",
-            year: "0",
-            university: "",
-            major: "it",
-            subscription_tier: "free",
-            avatar_url: "",
-            bio: "",
+            year: currentUser.user_metadata?.year ?? currentUser.email ?? "",
+            university:  currentUser.user_metadata?.university ?? currentUser.email ?? "",
+            major: currentUser.user_metadata?.major ?? currentUser.email ?? "",
+            subscription_tier: currentUser.user_metadata?.subscription_tier ?? currentUser.email ?? "",
+            avatar_url: currentUser.user_metadata?.avatar_url ?? currentUser.email ?? "",
+            bio: currentUser.user_metadata?.bio ?? currentUser.email ?? "",
           })
         } else {
           setProfile(userProfile)
