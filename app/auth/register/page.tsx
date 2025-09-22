@@ -31,6 +31,8 @@ const countryCodes = [
   { code: "+970", country: "فلسطين", flag: "🇵🇸" },
 ]
 
+const universities = ["الجامعة الأردنية", "جامعة العلوم والتكنولوجيا الأردنية", "جامعة اليرموك", "جامعة مؤتة", "جامعة عمان العربية"]
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -52,7 +54,7 @@ export default function RegisterPage() {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const { signUp, loading, error, clearError, user } = useAuth()
+  const { signUp, loading, error, clearError } = useAuth()
   const router = useRouter()
 
   const validateForm = () => {
@@ -96,7 +98,6 @@ export default function RegisterPage() {
     clearError()
 
     try {
-      console.log("[v0] Starting registration process...")
       await signUp({
         name: formData.name.trim(),
         email: formData.email.trim(),
@@ -128,17 +129,10 @@ export default function RegisterPage() {
         updated_at: ""
       })
 
-      console.log("[v0] Registration successful, showing success state...")
       setIsSuccess(true)
-      
-      // Redirect after showing success message
-      setTimeout(() => {
-        console.log("[v0] Redirecting to dashboard...")
-        router.push("/dashboard")
-      }, 1500)
-      
+
+      setTimeout(() => router.push("/dashboard"), 1500)
     } catch (err: any) {
-      console.error("[v0] Registration failed:", err)
       setErrors({ submit: err.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى." })
     } finally {
       setIsSubmitting(false)
@@ -198,7 +192,6 @@ export default function RegisterPage() {
     )
   }
 
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--panel)" }}>
       <div className="w-full max-w-md">
@@ -221,6 +214,7 @@ export default function RegisterPage() {
                 </div>
               )}
 
+              {/* الاسم الكامل */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
                   الاسم الكامل *
@@ -240,6 +234,7 @@ export default function RegisterPage() {
                 )}
               </div>
 
+              {/* البريد الإلكتروني */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
                   البريد الإلكتروني *
@@ -260,12 +255,12 @@ export default function RegisterPage() {
                 )}
               </div>
 
+              {/* رقم الهاتف + country code */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
                   رقم الهاتف *
                 </label>
                 <div className="flex gap-2">
-                  {/* Country Code Selector */}
                   <div className="relative">
                     <button
                       type="button"
@@ -299,7 +294,6 @@ export default function RegisterPage() {
                     )}
                   </div>
 
-                  {/* Phone Number Input */}
                   <Input
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
@@ -321,10 +315,7 @@ export default function RegisterPage() {
                 </p>
               </div>
 
-              {showCountryDropdown && (
-                <div className="fixed inset-0 z-40" onClick={() => setShowCountryDropdown(false)} />
-              )}
-
+              {/* الجامعة */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
                   الجامعة *
@@ -336,11 +327,11 @@ export default function RegisterPage() {
                   style={{ background: "white", border: "2px inset #c0c0c0" }}
                 >
                   <option value="">اختر الجامعة</option>
-                  <option value="ju">الجامعة الأردنية</option>
-                  <option value="just">جامعة العلوم والتكنولوجيا الأردنية</option>
-                  <option value="yarmouk">جامعة اليرموك</option>
-                  <option value="mutah">جامعة مؤتة</option>
-                  <option value="aau">جامعة عمان العربية</option>
+                  {universities.map((uni) => (
+                    <option key={uni} value={uni}>
+                      {uni}
+                    </option>
+                  ))}
                 </select>
                 {errors.university && (
                   <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
@@ -350,6 +341,7 @@ export default function RegisterPage() {
                 )}
               </div>
 
+              {/* التخصص */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
                   التخصص *
@@ -374,6 +366,7 @@ export default function RegisterPage() {
                 )}
               </div>
 
+              {/* المستوى الدراسي */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
                   المستوى الدراسي *
@@ -399,6 +392,7 @@ export default function RegisterPage() {
                 )}
               </div>
 
+              {/* كلمة المرور */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
                   كلمة المرور *
@@ -428,6 +422,7 @@ export default function RegisterPage() {
                 )}
               </div>
 
+              {/* تأكيد كلمة المرور */}
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
                   تأكيد كلمة المرور *
@@ -457,49 +452,30 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              <div className="flex items-start gap-2">
+              {/* الموافقة على الشروط */}
+              <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={formData.agreeToTerms}
                   onChange={(e) => handleInputChange("agreeToTerms", e.target.checked)}
-                  className="mt-1"
+                  id="agreeToTerms"
+                  className="accent-blue-500"
                 />
-                <label className="text-sm" style={{ color: "var(--ink)" }}>
-                  أوافق على{" "}
-                  <Link href="/terms" className="hover:underline" style={{ color: "var(--primary)" }}>
-                    شروط الاستخدام
-                  </Link>{" "}
-                  و{" "}
-                  <Link href="/privacy" className="hover:underline" style={{ color: "var(--primary)" }}>
-                    سياسة الخصوصية
-                  </Link>
+                <label htmlFor="agreeToTerms" className="text-sm">
+                  أوافق على <Link href="#" className="underline text-blue-600">الشروط والأحكام</Link> *
                 </label>
-                {errors.agreeToTerms && (
-                  <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {errors.agreeToTerms}
-                  </p>
-                )}
               </div>
+              {errors.agreeToTerms && (
+                <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.agreeToTerms}
+                </p>
+              )}
 
-              <Button
-                type="submit"
-                disabled={isSubmitting || loading}
-                className="w-full retro-button"
-                style={{ background: "var(--primary)", color: "white" }}
-              >
-                {isSubmitting || loading ? "جاري إنشاء الحساب..." : "إنشاء الحساب"}
+              <Button type="submit" disabled={isSubmitting || loading} className="retro-button w-full mt-4">
+                {isSubmitting || loading ? "جاري الإنشاء..." : "إنشاء الحساب"}
               </Button>
             </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                لديك حساب بالفعل؟{" "}
-                <Link href="/auth/login" className="hover:underline" style={{ color: "var(--primary)" }}>
-                  تسجيل الدخول
-                </Link>
-              </p>
-            </div>
           </div>
         </RetroWindow>
       </div>
