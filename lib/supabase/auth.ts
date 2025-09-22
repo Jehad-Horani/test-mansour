@@ -58,6 +58,7 @@ export const authClient = {
 
     console.log("[v0] Starting signUp process for:", data.email)
 
+    // Simplified signUp call - let the trigger handle profile creation
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
@@ -69,43 +70,63 @@ export const authClient = {
           university: data.university,
           major: data.major,
           year: data.year,
-          role: "student",
-          subscription_tier: "free",
+          role: "student"
         },
       },
     })
 
-    if (authError) throw new Error(authError.message)
-    if (!authData.user) throw new Error("فشل في إنشاء حساب المستخدم")
-    console.log("[v0] inserting profile:", {
-      id: authData.user.id,
-      name: data.name,
-      phone: data.phone,
-      university: data.university,
-      major: data.major,
-      year: data.year,
-      role: "student",
-      subscription_tier: "free",
-      graduation_year: (new Date().getFullYear() + Number.parseInt(data.year) + 3).toString(),
-    })
+    if (authError) {
+      console.error("[v0] Auth signup error:", authError)
+      throw new Error(authError.message)
+    }
+    
+    if (!authData.user) {
+      throw new Error("فشل في إنشاء حساب المستخدم")
+    }
 
+    console.log("[v0] Auth user created successfully:", authData.user.id)
 
-    // Insert full profile directly
-    const { error: profileError } = await supabase
+    // Wait a bit for trigger to process
+    await new Promise(resolve => setTimeout(resolve, 2000))
+
+    // Verify profile was created
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .insert({
-        id: authData.user.id,
-        name: data.name,
-        phone: data.phone,
-        university: data.university,
-        major: data.major,
-        year: data.year,
-        role: "student",
-        subscription_tier: "free",
-        graduation_year: (new Date().getFullYear() + Number.parseInt(data.year) + 3).toString(),
-      })
+      .select("id")
+      .eq("id", authData.user.id)
+      .single()
 
-    if (profileError) console.warn("[v0] Profile insert warning:", profileError.message)
+    if (profileError || !profile) {
+      console.warn("[v0] Profile not created by trigger, will create manually via API")
+      
+      // Call our registration API as fallback
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: authData.user.id,
+            name: data.name,
+            phone: data.phone,
+            university: data.university,
+            major: data.major,
+            year: data.year
+          })
+        })
+
+        if (!response.ok) {
+          console.warn("[v0] Manual profile creation also failed")
+        } else {
+          console.log("[v0] Profile created manually via API")
+        }
+      } catch (apiError) {
+        console.warn("[v0] API fallback failed:", apiError)
+      }
+    } else {
+      console.log("[v0] Profile created successfully by trigger")
+    }
 
     return authData
   },
