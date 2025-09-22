@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
 import { authClient, type Profile, type RegisterData, type LoginData } from "@/lib/supabase/auth"
 
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)

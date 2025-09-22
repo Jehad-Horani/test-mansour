@@ -3,13 +3,19 @@
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/app/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
+import { useUserProfile } from "@/hooks/use-user-profile"
+
 
 export function AuthDebug() {
-  const { user, profile, loading, error, signOut } = useAuth()
+  const { user, error, signOut } = useAuth()
 
-  if (loading) {
-    return (
-      <div className="p-4 border rounded">
+   const { profile, loading } = useUserProfile()
+
+ 
+   
+   if (loading) {
+     return (
+       <div className="p-4 border rounded">
         <div className="animate-spin w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full mx-auto mb-2"></div>
         <div className="text-center text-sm">جاري التحقق من المصادقة...</div>
       </div>
