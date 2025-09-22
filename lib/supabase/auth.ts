@@ -16,14 +16,14 @@ export interface LoginData {
 }
 
 export interface Profile {
-  email: string
-  password: string
   id: string
-  name: string
+  email: string
+  password: string         // ← خليها اختيارية
+  name?: string             // ← اختيارية، لأنه أول مرة ممكن ما يدخلها
   phone?: string
   university?: string
   major?: "law" | "it" | "medical" | "business"
-  year: string
+  year?: string
   graduation_year?: string
   study_level?: string
   avatar_url?: string
@@ -31,14 +31,16 @@ export interface Profile {
   role: "student" | "admin"
   subscription_tier: "free" | "standard" | "premium"
   subscription_expires_at?: string
-  preferences: {
+
+  preferences?: {           // ← صارت اختيارية
     theme: "retro" | "modern"
     language: "ar" | "en"
     emailNotifications: boolean
     pushNotifications: boolean
     profileVisibility: "public" | "university" | "private"
   }
-  stats: {
+
+  stats?: {                 // ← صارت اختيارية
     uploadsCount: number
     viewsCount: number
     helpfulVotes: number
@@ -47,9 +49,11 @@ export interface Profile {
     consultations: number
     communityPoints: number
   }
-  created_at: string
-  updated_at: string
+
+  created_at?: string
+  updated_at?: string
 }
+
 
 // Client-side auth functions
 export const authClient = {
@@ -79,7 +83,7 @@ export const authClient = {
       console.error("[v0] Auth signup error:", authError)
       throw new Error(authError.message)
     }
-    
+
     if (!authData.user) {
       throw new Error("فشل في إنشاء حساب المستخدم")
     }
@@ -98,7 +102,7 @@ export const authClient = {
 
     if (profileError || !profile) {
       console.warn("[v0] Profile not created by trigger, will create manually via API")
-      
+
       // Call our registration API as fallback
       try {
         const response = await fetch('/api/auth/register', {

@@ -7,15 +7,13 @@ import { useUserProfile } from "@/hooks/use-user-profile"
 
 
 export function AuthDebug() {
-  const { user, error, signOut } = useAuth()
+  const { user, profile, loading, error, signOut } = useAuth()
 
-   const { profile, loading } = useUserProfile()
+  
 
- 
-   
-   if (loading) {
-     return (
-       <div className="p-4 border rounded">
+  if (loading) {
+    return (
+      <div className="p-4 border rounded">
         <div className="animate-spin w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full mx-auto mb-2"></div>
         <div className="text-center text-sm">جاري التحقق من المصادقة...</div>
       </div>

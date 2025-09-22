@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
 import { authClient, type Profile, type RegisterData, type LoginData } from "@/lib/supabase/auth"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 
 export function useAuth() {
@@ -12,8 +13,9 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const supabase = createClientComponentClient()
 
-  // Fetch session from API
+  // Fetch session + profile
   const fetchSession = async () => {
     try {
       setLoading(true)
@@ -35,8 +37,38 @@ export function useAuth() {
         error: data.error
       })
 
-      setUser(data.session?.user ?? null)
-      setProfile(data.userProfile ?? (data.session?.user ? { id: data.session.user.id, role: "user" } : null))
+      const currentUser = data.session?.user ?? null
+      setUser(currentUser)
+
+      if (currentUser) {
+        // جلب البروفايل من جدول profiles
+        const { data: userProfile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", currentUser.id)
+          .single()
+
+        if (profileError) {
+          console.error("Profile fetch error:", profileError)
+          setProfile({
+            id: currentUser.id,
+            role: "student",
+            email: currentUser.email ?? "",
+            password: "",
+            name: "",
+            year: "0",
+            university: "",
+            major: "it",
+            subscription_tier: "free",
+            avatar_url: "",
+            bio: "",
+          })
+        } else {
+          setProfile(userProfile)
+        }
+      } else {
+        setProfile(null)
+      }
 
     } catch (err) {
       console.error("Session fetch error:", err)
@@ -62,10 +94,8 @@ export function useAuth() {
 
       console.log("[v0] SignUp completed, waiting for session...")
 
-      // Wait for Supabase to process the user creation and profile trigger
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      // Fetch the updated session
       await fetchSession()
 
       console.log("[v0] SignUp process completed")
@@ -91,10 +121,8 @@ export function useAuth() {
 
       console.log("[v0] SignIn completed, fetching session...")
 
-      // Wait a moment for Supabase to establish the session
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Fetch the updated session
       await fetchSession()
 
       console.log("[v0] SignIn process completed")
