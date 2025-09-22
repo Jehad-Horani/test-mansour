@@ -19,9 +19,9 @@ export async function POST(req: Request) {
         id: userId,
         name,
         phone,
-        university,
-        major,
-        year,
+        university: university, // Keep as string - the database should accept it
+        major: major, // Keep as string
+        year: year, // Keep as string
         role: "student",
         subscription_tier: "free",
         preferences: {
