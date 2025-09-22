@@ -59,7 +59,7 @@ export function useAuth() {
             year: currentUser.user_metadata?.year ?? currentUser.email ?? "",
             university:  currentUser.user_metadata?.university ?? currentUser.email ?? "",
             major: currentUser.user_metadata?.major ?? currentUser.email ?? "",
-            subscription_tier: currentUser.user_metadata?.subscription_tier ?? currentUser.email ?? "",
+            subscription_tier: currentUser.user_metadata?.subscription_tier ?? "",
             avatar_url: currentUser.user_metadata?.avatar_url ?? currentUser.email ?? "",
             bio: currentUser.user_metadata?.bio ?? currentUser.email ?? "",
           })
