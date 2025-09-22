@@ -94,7 +94,7 @@ export async function POST(req: Request) {
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     // Check if profile exists
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile } = await supabaseAdmin
       .from("profiles")
       .select("id")
       .eq("id", authData.user.id)
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     if (!existingProfile) {
       console.log("[v0] Registration API - Creating profile manually")
       
-      const { error: profileError } = await supabase.from("profiles").insert({
+      const { error: profileError } = await supabaseAdmin.from("profiles").insert({
         id: authData.user.id,
         name,
         phone,
