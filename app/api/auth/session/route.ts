@@ -36,7 +36,7 @@ export async function GET() {
     }
 
 
-    return NextResponse.json({ session, userProfile })
+    return NextResponse.json({ session, userProfile: userProfile ?? { id: session?.user.id, role: "user" } })
   } catch (err: any) {
     return NextResponse.json({ session: null, userProfile: null, error: err.message }, { status: 500 })
   }

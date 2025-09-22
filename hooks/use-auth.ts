@@ -35,7 +35,7 @@ export function useAuth() {
       })
       
       setUser(data.session?.user ?? null)
-      setProfile(data.userProfile ?? null)
+setProfile(data.userProfile ?? (data.session?.user ? { id: data.session.user.id, role: "user" } : null))
       
     } catch (err) {
       console.error("Session fetch error:", err)
