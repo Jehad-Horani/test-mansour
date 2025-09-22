@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 export async function POST(req: Request) {
   try {
@@ -13,9 +14,13 @@ export async function POST(req: Request) {
       
       console.log("[v0] Registration API - Creating profile for existing user:", userId)
       
-      const supabase = createClient()
+      // Use service role key for profile creation to bypass RLS
+      const supabaseAdmin = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
       
-      const { error: profileError } = await supabase.from("profiles").insert({
+      const { error: profileError } = await supabaseAdmin.from("profiles").insert({
         id: userId,
         name,
         phone,
