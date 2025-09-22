@@ -75,6 +75,18 @@ export const authClient = {
 
     if (authError) throw new Error(authError.message)
     if (!authData.user) throw new Error("فشل في إنشاء حساب المستخدم")
+    console.log("[v0] inserting profile:", {
+      id: authData.user.id,
+      name: data.name,
+      phone: data.phone,
+      university: data.university,
+      major: data.major,
+      year: data.year,
+      role: "student",
+      subscription_tier: "free",
+      graduation_year: (new Date().getFullYear() + Number.parseInt(data.year) + 3).toString(),
+    })
+
 
     // Insert full profile directly
     const { error: profileError } = await supabase

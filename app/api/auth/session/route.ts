@@ -13,15 +13,28 @@ export async function GET() {
       let attempts = 0
 
       while (attempts < maxRetries) {
-        const { data, error } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle()
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .maybeSingle()
+
+        if (error) {
+          console.error("Profile fetch error:", error.message)
+        }
         if (!error && data) {
           userProfile = data
           break
         }
         attempts++
         await new Promise(res => setTimeout(res, 1000))
+        console.log("Session user id:", session?.user.id)
+        console.log("Profile query result:", data, error)
+
       }
+
     }
+
 
     return NextResponse.json({ session, userProfile })
   } catch (err: any) {
