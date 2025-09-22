@@ -93,6 +93,12 @@ export async function POST(req: Request) {
     // Wait for trigger to process
     await new Promise(resolve => setTimeout(resolve, 2000))
 
+    // Use service role key for profile checks and creation
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     // Check if profile exists
     const { data: existingProfile } = await supabaseAdmin
       .from("profiles")
