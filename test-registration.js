@@ -37,7 +37,7 @@ async function testRegistration() {
         console.log('\n2. Testing with service role key:')
         const supabaseService = createClient(supabaseUrl, supabaseServiceKey)
         
-        const { data: serviceData, error: serviceError } = await supabaseService.auth.adminlb.createUser({
+        const { data: serviceData, error: serviceError } = await supabaseService.auth.admin.createUser({
           email: 'testuser456@gmail.com',
           password: 'TestPassword123!',
           user_metadata: {
