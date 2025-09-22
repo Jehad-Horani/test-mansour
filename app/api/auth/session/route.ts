@@ -1,24 +1,54 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const supabase = createServerSupabaseClient({ req, res });
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = createClient()
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+    // Get the current user from the session
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-    if (!user) return res.status(401).json({ hasProfile: false, profile: null });
+    if (userError || !user) {
+      console.log("[v0] Session API - No authenticated user")
+      return NextResponse.json({ 
+        session: null, 
+        userProfile: null,
+        error: userError?.message || "No authenticated user"
+      })
+    }
 
-    const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+    console.log("[v0] Session API - User found:", user.id)
 
-    return res.status(200).json({
-        hasProfile: !!profile,
-        profile: profile || null,
-        error: error?.message || null,
-    });
+    // Get the user's profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) {
+      console.error("[v0] Session API - Profile fetch error:", profileError.message)
+      return NextResponse.json({
+        session: { user },
+        userProfile: null,
+        error: `Profile not found: ${profileError.message}`
+      })
+    }
+
+    console.log("[v0] Session API - Profile found for user:", user.id)
+
+    return NextResponse.json({
+      session: { user },
+      userProfile: profile,
+      error: null
+    })
+
+  } catch (error) {
+    console.error("[v0] Session API - General error:", error)
+    return NextResponse.json({
+      session: null,
+      userProfile: null,
+      error: "Internal server error"
+    }, { status: 500 })
+  }
 }
