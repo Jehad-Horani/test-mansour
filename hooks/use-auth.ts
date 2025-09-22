@@ -17,26 +17,26 @@ export function useAuth() {
     try {
       setLoading(true)
       const res = await fetch("/api/auth/session")
-      
+
       if (!res.ok) {
         console.error("Session fetch failed:", res.status, res.statusText)
         setUser(null)
         setProfile(null)
         return
       }
-      
+
       const data = await res.json()
-      
-      console.log("[v0] Session data received:", { 
-        hasSession: !!data.session, 
+
+      console.log("[v0] Session data received:", {
+        hasSession: !!data.session,
         hasUser: !!data.session?.user,
         hasProfile: !!data.userProfile,
-        error: data.error 
+        error: data.error
       })
-      
+
       setUser(data.session?.user ?? null)
-setProfile(data.userProfile ?? (data.session?.user ? { id: data.session.user.id, role: "user" } : null))
-      
+      setProfile(data.userProfile ?? (data.session?.user ? { id: data.session.user.id, role: "user" } : null))
+
     } catch (err) {
       console.error("Session fetch error:", err)
       setUser(null)
@@ -51,25 +51,25 @@ setProfile(data.userProfile ?? (data.session?.user ? { id: data.session.user.id,
   }, [])
 
   // Sign Up
-  const signUp = async (data: RegisterData) => {
+  const signUp = async (data: Profile) => {
     setLoading(true)
     setError(null)
 
     try {
       console.log("[v0] Starting signUp process...")
       const result = await authClient.signUp(data)
-      
+
       console.log("[v0] SignUp completed, waiting for session...")
-      
+
       // Wait for Supabase to process the user creation and profile trigger
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
+
       // Fetch the updated session
       await fetchSession()
-      
+
       console.log("[v0] SignUp process completed")
       return result
-      
+
     } catch (err: any) {
       console.error("[v0] SignUp error:", err)
       setError(err.message || "حدث خطأ أثناء إنشاء الحساب")
@@ -87,18 +87,18 @@ setProfile(data.userProfile ?? (data.session?.user ? { id: data.session.user.id,
     try {
       console.log("[v0] Starting signIn process...")
       const result = await authClient.signIn(data)
-      
+
       console.log("[v0] SignIn completed, fetching session...")
-      
+
       // Wait a moment for Supabase to establish the session
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       // Fetch the updated session
       await fetchSession()
-      
+
       console.log("[v0] SignIn process completed")
       return result
-      
+
     } catch (err: any) {
       console.error("[v0] SignIn error:", err)
       setError(err.message || "حدث خطأ في تسجيل الدخول")

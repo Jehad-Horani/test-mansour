@@ -16,12 +16,14 @@ export interface LoginData {
 }
 
 export interface Profile {
+  email: string
+  password: string
   id: string
   name: string
   phone?: string
   university?: string
   major?: "law" | "it" | "medical" | "business"
-  year?: string
+  year: string
   graduation_year?: string
   study_level?: string
   avatar_url?: string
@@ -51,7 +53,7 @@ export interface Profile {
 
 // Client-side auth functions
 export const authClient = {
-  async signUp(data: RegisterData) {
+  async signUp(data: Profile) {
     const supabase = createClient()
 
     console.log("[v0] Starting signUp process for:", data.email)

@@ -105,6 +105,27 @@ export default function RegisterPage() {
         university: formData.university,
         major: formData.major as "law" | "it" | "medical" | "business",
         year: formData.year,
+        id: "",
+        role: "student",
+        subscription_tier: "free",
+        preferences: {
+          theme: "retro",
+          language: "ar",
+          emailNotifications: false,
+          pushNotifications: false,
+          profileVisibility: "public"
+        },
+        stats: {
+          uploadsCount: 0,
+          viewsCount: 0,
+          helpfulVotes: 0,
+          coursesEnrolled: 0,
+          booksOwned: 0,
+          consultations: 0,
+          communityPoints: 0
+        },
+        created_at: "",
+        updated_at: ""
       })
 
       console.log("[v0] Registration successful, showing success state...")
