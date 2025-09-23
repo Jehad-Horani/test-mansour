@@ -147,7 +147,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       if (initialSession?.user) {
         setSession(initialSession)
-        const profile = await fetchUserProfile(initialSession.user.id)
+        const profile = await fetchUserProfile(initialSession.user.id, initialSession.user)
         setUser(profile)
         console.log("Initial profile loaded:", !!profile)
       }
