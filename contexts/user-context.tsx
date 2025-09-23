@@ -166,7 +166,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
         if (session?.user) {
           setSession(session)
-          const profile = await fetchUserProfile(session.user.id)
+          const profile = await fetchUserProfile(session.user.id, session.user)
           setUser(profile)
           console.log("Profile loaded after auth change:", !!profile)
         } else {
