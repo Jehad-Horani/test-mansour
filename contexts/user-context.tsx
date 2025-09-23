@@ -123,7 +123,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const { data: { session: currentSession } } = await supabase.auth.getSession()
     
     if (currentSession?.user) {
-      const profile = await fetchUserProfile(currentSession.user.id)
+      const profile = await fetchUserProfile(currentSession.user.id, currentSession.user)
       setUser(profile)
       setSession(currentSession)
     } else {
