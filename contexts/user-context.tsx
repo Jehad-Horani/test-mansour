@@ -49,9 +49,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Function to fetch user profile from database
-  const fetchUserProfile = async (userId: string): Promise<User | null> => {
+  // Function to fetch user profile from database with fallback
+  const fetchUserProfile = async (userId: string, authUser?: any): Promise<User | null> => {
     try {
+      // First try to fetch from database
       const { data: profile, error } = await supabase
         .from("profiles")
         .select("*")
@@ -59,14 +60,46 @@ export function UserProvider({ children }: { children: ReactNode }) {
         .single()
 
       if (error) {
-        console.error("Error fetching profile:", error)
+        console.warn("Database profile fetch failed:", error.message)
+        
+        // If it's an RLS policy error, create a temporary profile from auth metadata
+        if (error.code === '42P17' || error.message.includes('infinite recursion') || error.message.includes('policy')) {
+          console.log("Creating temporary profile from auth metadata due to policy issue")
+          
+          if (authUser) {
+            return {
+              id: authUser.id,
+              name: authUser.user_metadata?.name || authUser.email || 'مستخدم',
+              email: authUser.email || '',
+              major: authUser.user_metadata?.major || 'law',
+              university: authUser.user_metadata?.university || 'جامعة افتراضية',
+              year: authUser.user_metadata?.year || '2024',
+              role: authUser.user_metadata?.role || 'student',
+              avatar_url: authUser.user_metadata?.avatar_url,
+              bio: authUser.user_metadata?.bio,
+              phone: authUser.user_metadata?.phone,
+              subscription_tier: authUser.user_metadata?.subscription_tier || 'free',
+              stats: {
+                uploadsCount: 0,
+                viewsCount: 0,
+                helpfulVotes: 0,
+                coursesEnrolled: 0,
+                booksOwned: 0,
+                consultations: 0,
+                communityPoints: 0,
+              },
+              permissions: [],
+            }
+          }
+        }
+        
         return null
       }
 
       return {
         id: profile.id,
         name: profile.name,
-        email: profile.email,
+        email: profile.email || authUser?.email,
         major: profile.major,
         university: profile.university,
         year: profile.year,
