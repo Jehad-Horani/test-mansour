@@ -1,8 +1,8 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react"
-import { createClientComponentClient, type Session } from "@supabase/auth-helpers-nextjs"
-import type { User as SupabaseUser } from "@supabase/supabase-js"
+import type { Session, User as SupabaseUser } from "@supabase/supabase-js"
+import { createClient } from "@/lib/supabase/client"
 
 export interface User {
   id: string
@@ -44,7 +44,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
@@ -110,10 +110,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
       
       if (!mounted) return
 
+      console.log("Initial session:", !!initialSession?.user)
+
       if (initialSession?.user) {
         setSession(initialSession)
         const profile = await fetchUserProfile(initialSession.user.id)
         setUser(profile)
+        console.log("Initial profile loaded:", !!profile)
       }
       
       setLoading(false)
@@ -126,15 +129,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
       async (event, session) => {
         if (!mounted) return
 
-        console.log("Auth state changed:", event, !!session)
+        console.log("Auth state changed:", event, !!session?.user)
 
         if (session?.user) {
           setSession(session)
           const profile = await fetchUserProfile(session.user.id)
           setUser(profile)
+          console.log("Profile loaded after auth change:", !!profile)
         } else {
           setUser(null)
           setSession(null)
+          console.log("User logged out")
         }
         
         setLoading(false)
@@ -150,12 +155,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     setLoading(true)
     try {
+      console.log("Logging out...")
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error("Logout error:", error)
         throw error
       }
       // State will be updated by the auth state change listener
+      console.log("Logout successful")
     } catch (error) {
       console.error("Logout failed:", error)
       // Force state reset even if logout fails
