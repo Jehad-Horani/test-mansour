@@ -1,28 +1,226 @@
 "use client"
 
-import { createContext, useContext, ReactNode } from "react"
-import { useUser, type User } from "@/hooks/use-user"
+import React, { createContext, useContext, useEffect, useState, ReactNode } from "react"
+import { createClientComponentClient, type Session } from "@supabase/auth-helpers-nextjs"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
+
+export interface User {
+  id: string
+  name: string
+  email: string
+  major: "law" | "it" | "medical" | "business"
+  university: string
+  year: string
+  role: "student" | "admin"
+  avatar?: string
+  avatar_url?: string
+  bio?: string
+  phone?: string
+  subscription_tier?: "free" | "standard" | "premium"
+  stats?: {
+    uploadsCount?: number
+    viewsCount?: number
+    helpfulVotes?: number
+    coursesEnrolled?: number
+    booksOwned?: number
+    consultations?: number
+    communityPoints?: number
+  }
+  permissions?: string[]
+}
 
 interface UserContextType {
   user: User | null
   isLoggedIn: boolean
   loading: boolean
+  session: Session | null
   logout: () => Promise<void>
-  updateUser: (updates: Partial<User>) => void
+  updateUser: (updates: Partial<User>) => Promise<void>
   isAdmin: () => boolean
   hasPermission: (permission: string) => boolean
+  refreshUser: () => Promise<void>
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const userHook = useUser()
+  const supabase = createClientComponentClient()
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  return <UserContext.Provider value={userHook}>{children}</UserContext.Provider>
+  // Function to fetch user profile from database
+  const fetchUserProfile = async (userId: string): Promise<User | null> => {
+    try {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single()
+
+      if (error) {
+        console.error("Error fetching profile:", error)
+        return null
+      }
+
+      return {
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        major: profile.major,
+        university: profile.university,
+        year: profile.year,
+        role: profile.role,
+        avatar: profile.avatar_url,
+        avatar_url: profile.avatar_url,
+        bio: profile.bio,
+        phone: profile.phone,
+        subscription_tier: profile.subscription_tier,
+        stats: profile.stats,
+        permissions: profile.permissions || [],
+      }
+    } catch (err) {
+      console.error("Error loading user profile:", err)
+      return null
+    }
+  }
+
+  // Function to refresh user data
+  const refreshUser = async () => {
+    const { data: { session: currentSession } } = await supabase.auth.getSession()
+    
+    if (currentSession?.user) {
+      const profile = await fetchUserProfile(currentSession.user.id)
+      setUser(profile)
+      setSession(currentSession)
+    } else {
+      setUser(null)
+      setSession(null)
+    }
+    setLoading(false)
+  }
+
+  // Initialize and listen for auth changes
+  useEffect(() => {
+    let mounted = true
+
+    // Get initial session
+    const getInitialSession = async () => {
+      const { data: { session: initialSession } } = await supabase.auth.getSession()
+      
+      if (!mounted) return
+
+      if (initialSession?.user) {
+        setSession(initialSession)
+        const profile = await fetchUserProfile(initialSession.user.id)
+        setUser(profile)
+      }
+      
+      setLoading(false)
+    }
+
+    getInitialSession()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return
+
+        console.log("Auth state changed:", event, !!session)
+
+        if (session?.user) {
+          setSession(session)
+          const profile = await fetchUserProfile(session.user.id)
+          setUser(profile)
+        } else {
+          setUser(null)
+          setSession(null)
+        }
+        
+        setLoading(false)
+      }
+    )
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  const logout = async () => {
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error("Logout error:", error)
+        throw error
+      }
+      // State will be updated by the auth state change listener
+    } catch (error) {
+      console.error("Logout failed:", error)
+      // Force state reset even if logout fails
+      setUser(null)
+      setSession(null)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateUser = async (updates: Partial<User>) => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .update(updates)
+        .eq("id", user.id)
+        .select()
+        .single()
+
+      if (error) {
+        console.error("Error updating user:", error)
+        throw error
+      }
+
+      // Update local state
+      setUser({ ...user, ...data })
+    } catch (error) {
+      console.error("Failed to update user:", error)
+      throw error
+    }
+  }
+
+  const isAdmin = (): boolean => {
+    return user?.role === "admin" || false
+  }
+
+  const hasPermission = (permission: string): boolean => {
+    if (!user) return false
+    return user.permissions?.includes(permission) || 
+           user.permissions?.includes("full_access") || 
+           isAdmin() || false
+  }
+
+  const value: UserContextType = {
+    user,
+    isLoggedIn: !!user,
+    loading,
+    session,
+    logout,
+    updateUser,
+    isAdmin,
+    hasPermission,
+    refreshUser,
+  }
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 }
 
 export function useUserContext() {
   const context = useContext(UserContext)
-  if (!context) throw new Error("useUserContext must be used within a UserProvider")
+  if (!context) {
+    throw new Error("useUserContext must be used within a UserProvider")
+  }
   return context
 }
