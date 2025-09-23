@@ -6,12 +6,13 @@ import { Input } from "@/app/components/ui/input"
 import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
 import { ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { authClient } from "@/lib/supabase/auth"
+import { useUserContext } from "@/contexts/user-context"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function LoginPage() {
-  const { signIn, loading, error, clearError, profile } = useAuth()
+  const { user, loading: contextLoading, refreshUser } = useUserContext()
   const router = useRouter()
   const [formData, setFormData] = useState({
     email: "",
@@ -19,64 +20,65 @@ export default function LoginPage() {
     rememberMe: false,
   })
   const [showPassword, setShowPassword] = useState(false)
-  const [localError, setLocalError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !contextLoading) {
+      const redirectPath = user.role === "admin" ? "/admin" : "/dashboard"
+      router.replace(redirectPath)
+    }
+  }, [user, contextLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLocalError("")
-    clearError()
+    setError("")
 
     if (!formData.email.trim() || !formData.password.trim()) {
-      setLocalError("يرجى إدخال البريد الإلكتروني وكلمة المرور")
+      setError("يرجى إدخال البريد الإلكتروني وكلمة المرور")
       return
     }
 
+    setLoading(true)
+
     try {
       console.log("[v0] Starting login process...")
-      await signIn({
+      
+      // Sign in using the auth client
+      await authClient.signIn({
         email: formData.email.trim(),
         password: formData.password,
       })
 
-      console.log("[v0] Login successful, checking profile...")
+      console.log("[v0] Login successful, refreshing user context...")
       
-      // Wait for auth state to update
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Refresh the user context to get the latest auth state
+      await refreshUser()
       
-      // Force a fresh session check
-      const res = await fetch("/api/auth/session")
-      const data = await res.json()
+      console.log("[v0] Auth state refreshed")
       
-      console.log("[v0] Fresh session check:", { 
-        hasUser: !!data.session?.user, 
-        role: data.userProfile?.role 
-      })
-      
-      // Redirect based on role
-      const redirectPath = data.userProfile?.role === "admin" ? "/admin" : "/dashboard"
-      console.log("[v0] Redirecting to:", redirectPath)
-      router.replace(redirectPath)
+      // Navigation will be handled by the useEffect above
       
     } catch (err: any) {
       console.error("Login failed:", err)
-      setLocalError(err.message || "فشل في تسجيل الدخول")
+      setError(err.message || "فشل في تسجيل الدخول")
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    if (localError || error) {
-      setLocalError("")
-      clearError()
+    if (error) {
+      setError("")
     }
   }
 
-  const displayError = localError || error
-
-  if (loading) {
+  if (contextLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--panel)" }}>
-        <RetroWindow title="جاري تسجيل الدخول...">
+        <RetroWindow title="جاري التحقق من الهوية...">
           <div className="p-6 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
             <p style={{ color: "var(--ink)" }}>يرجى الانتظار...</p>
@@ -101,10 +103,10 @@ export default function LoginPage() {
         <RetroWindow title="تسجيل الدخول">
           <div className="p-6">
             <form className="space-y-4" onSubmit={handleSubmit}>
-              {displayError && (
+              {error && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-red-600" />
-                  <span className="text-red-600 text-sm">{displayError}</span>
+                  <span className="text-red-600 text-sm">{error}</span>
                 </div>
               )}
 
@@ -223,7 +225,7 @@ export default function LoginPage() {
                   className="retro-button bg-green-100 text-xs w-full"
                   onClick={async () => {
                     try {
-                      setLocalError("")
+                      setError("")
                       const response = await fetch("/api/auth/setup-admin", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -240,11 +242,11 @@ export default function LoginPage() {
                           rememberMe: false,
                         })
                       } else {
-                        setLocalError("خطأ في إنشاء الحسابات: " + result.error)
+                        setError("خطأ في إنشاء الحسابات: " + result.error)
                       }
                     } catch (error) {
                       console.error("Setup error:", error)
-                      setLocalError("حدث خطأ في إعداد النظام")
+                      setError("حدث خطأ في إعداد النظام")
                     }
                   }}
                   disabled={loading}
