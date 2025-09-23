@@ -16,9 +16,8 @@ export function createClient() {
     throw new Error("Missing Supabase environment variables")
   }
 
-  client = createBrowserClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {},
-  })
+  // Remove the cookies configuration to use document.cookie API automatically
+  client = createBrowserClient(supabaseUrl, supabaseAnonKey)
 
   return client
 }
