@@ -322,18 +322,28 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = async () => {
-    setLoading(true)
     try {
-      console.log("Logging out...")
+      console.log('[AUTH] Logging out...')
+      setLoading(true)
+      setError(null)
+      
       const { error } = await supabase.auth.signOut()
       if (error) {
-        console.error("Logout error:", error)
+        console.error('[AUTH] Logout error:', error)
+        setError('Logout failed')
         throw error
       }
-      // State will be updated by the auth state change listener
-      console.log("Logout successful")
-    } catch (error) {
-      console.error("Logout failed:", error)
+      
+      // Force immediate state reset
+      setUser(null)
+      setSession(null)
+      setError(null)
+      
+      console.log('[AUTH] Logout successful')
+    } catch (error: any) {
+      console.error('[AUTH] Logout failed:', error)
+      setError(error.message || 'Logout failed')
+      
       // Force state reset even if logout fails
       setUser(null)
       setSession(null)
@@ -341,6 +351,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const clearError = () => {
+    setError(null)
   }
 
   const updateUser = async (updates: Partial<User>) => {
