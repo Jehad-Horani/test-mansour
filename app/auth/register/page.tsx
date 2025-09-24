@@ -9,6 +9,7 @@ import { ArrowRight, AlertCircle, Eye, EyeOff, ChevronDown, CheckCircle } from "
 import { useState } from "react"
 import { useUserContext } from "@/contexts/user-context"
 import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 
 const countryCodes = [
   { code: "+962", country: "الأردن", flag: "🇯🇴" },
