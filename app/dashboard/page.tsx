@@ -150,7 +150,7 @@ export default function DashboardPage() {
                 />
                 <div className="flex-1">
                   <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--ink)" }}>
-                    مرحباً، {profile.name}
+                    مرحباً، {user.name}
                   </h1>
                   <p className="text-gray-600 mb-2">
                     {profile.university} - {getMajorLabelSafe(profile?.major)}
