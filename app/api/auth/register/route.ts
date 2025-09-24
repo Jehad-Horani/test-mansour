@@ -24,7 +24,7 @@ export async function POST(req: Request) {
         id: userId,
         name,
         phone,
-        university: university || null, // String format
+        university: university ? [university] : null, // Array format
         major: major || null,
         year: year || null,
         role: "student",
