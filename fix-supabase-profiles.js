@@ -9,11 +9,8 @@ async function fixSupabaseProfiles() {
   console.log('🔧 Starting Supabase profile fixes...')
 
   try {
-    // Step 1: Check current table structure
-    console.log('📋 Checking profiles table structure...')
-    const { data: columns, error: columnError } = await supabase
-      .rpc('get_table_columns', { table_name: 'profiles' })
-      .catch(() => ({ data: null, error: null }))
+    // Step 1: Check profiles table
+    console.log('📋 Checking profiles table...')
 
     // Step 2: Check for users without profiles
     console.log('👥 Checking for users without profiles...')
