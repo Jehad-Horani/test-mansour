@@ -104,41 +104,65 @@ export default function RegisterPage() {
     clearError()
 
     try {
-      await signUp({
-        name: formData.name.trim(),
+      console.log('[REGISTER] Starting signup process...')
+      
+      // Sign up with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email.trim(),
         password: formData.password,
-        phone: `${formData.countryCode}${formData.phone.trim()}`,
-        university: formData.university,
-        major: formData.major as "law" | "it" | "medical" | "business",
-        year: formData.year,
-        id: "",
-        role: "student",
-        subscription_tier: "free",
-        preferences: {
-          theme: "retro",
-          language: "ar",
-          emailNotifications: false,
-          pushNotifications: false,
-          profileVisibility: "public"
-        },
-        stats: {
-          uploadsCount: 0,
-          viewsCount: 0,
-          helpfulVotes: 0,
-          coursesEnrolled: 0,
-          booksOwned: 0,
-          consultations: 0,
-          communityPoints: 0
-        },
-        created_at: "",
-        updated_at: ""
+        options: {
+          data: {
+            name: formData.name.trim(),
+            phone: `${formData.countryCode}${formData.phone.trim()}`,
+            university: formData.university,
+            major: formData.major,
+            year: formData.year,
+            role: "student"
+          }
+        }
       })
 
-      setIsSuccess(true)
+      if (authError) {
+        console.error('[REGISTER] Auth error:', authError)
+        throw authError
+      }
 
-      setTimeout(() => router.push("/dashboard"), 1500)
+      if (!authData.user) {
+        throw new Error('فشل في إنشاء حساب المستخدم')
+      }
+
+      console.log('[REGISTER] Auth user created, creating profile...')
+
+      // Create profile using the API
+      const profileResponse = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: `${formData.countryCode}${formData.phone.trim()}`,
+          university: formData.university,
+          major: formData.major,
+          year: formData.year
+        })
+      })
+
+      if (!profileResponse.ok) {
+        const profileError = await profileResponse.json()
+        console.error('[REGISTER] Profile creation error:', profileError)
+        throw new Error(profileError.error || 'فشل في إنشاء الملف الشخصي')
+      }
+
+      console.log('[REGISTER] Profile created successfully')
+      
+      // Refresh user context to load the new profile
+      await refreshUser()
+      
+      setIsSuccess(true)
+      setTimeout(() => router.push("/dashboard"), 2000)
+      
     } catch (err: any) {
+      console.error('[REGISTER] Registration error:', err)
       setErrors({ submit: err.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى." })
     } finally {
       setIsSubmitting(false)
