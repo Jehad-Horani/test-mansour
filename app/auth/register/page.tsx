@@ -7,7 +7,7 @@ import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
 import { ArrowRight, AlertCircle, Eye, EyeOff, ChevronDown, CheckCircle } from "lucide-react"
 import { useState } from "react"
-import { useAuth } from "@/hooks/use-auth"
+import { useUserContext } from "@/contexts/user-context"
 import { useRouter } from "next/navigation"
 
 const countryCodes = [
