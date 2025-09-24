@@ -54,8 +54,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [initialized, setInitialized] = useState(false)
 
   // Function to fetch user profile from database with fallback
-  const fetchUserProfile = async (userId: string, authUser?: any): Promise<User | null> => {
+  const fetchUserProfile = async (userId: string, authUser?: any, retryCount = 0): Promise<User | null> => {
     try {
+      console.log(`[AUTH] Fetching profile for user: ${userId} (attempt ${retryCount + 1})`)
+      
       // First try to fetch from database
       const { data: profile, error } = await supabase
         .from("profiles")
@@ -64,60 +66,99 @@ export function UserProvider({ children }: { children: ReactNode }) {
         .single()
 
       if (error) {
-        console.warn("Database profile fetch failed:", error.message)
+        console.warn(`[AUTH] Database profile fetch failed: ${error.message}`)
         
-        // If it's an RLS policy error, create a temporary profile from auth metadata
-        if (error.code === '42P17' || error.message.includes('infinite recursion') || error.message.includes('policy')) {
-          console.log("Creating temporary profile from auth metadata due to policy issue")
-          
-          if (authUser) {
-            return {
-              id: authUser.id,
-              name: authUser.user_metadata?.name || authUser.email || 'مستخدم',
-              email: authUser.email || '',
-              major: authUser.user_metadata?.major || 'law',
-              university: authUser.user_metadata?.university || 'جامعة افتراضية',
-              year: authUser.user_metadata?.year || '2024',
-              role: authUser.user_metadata?.role || 'student',
-              avatar_url: authUser.user_metadata?.avatar_url,
-              bio: authUser.user_metadata?.bio,
-              phone: authUser.user_metadata?.phone,
-              subscription_tier: authUser.user_metadata?.subscription_tier || 'free',
-              stats: {
-                uploadsCount: 0,
-                viewsCount: 0,
-                helpfulVotes: 0,
-                coursesEnrolled: 0,
-                booksOwned: 0,
-                consultations: 0,
-                communityPoints: 0,
-              },
-              permissions: [],
-            }
+        // If profile not found and this is first attempt, try to create it
+        if (error.code === 'PGRST116' && retryCount === 0) {
+          console.log('[AUTH] Profile not found, attempting to create...')
+          try {
+            await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: authUser.id,
+                name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'مستخدم جديد',
+                phone: authUser.user_metadata?.phone,
+                university: authUser.user_metadata?.university,
+                major: authUser.user_metadata?.major,
+                year: authUser.user_metadata?.year
+              })
+            })
+            
+            // Retry fetching the profile
+            return await fetchUserProfile(userId, authUser, retryCount + 1)
+          } catch (createError) {
+            console.error('[AUTH] Failed to create profile:', createError)
+          }
+        }
+        
+        // Create fallback profile from auth metadata
+        if (authUser) {
+          console.log('[AUTH] Creating fallback profile from auth metadata')
+          return {
+            id: authUser.id,
+            name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'مستخدم',
+            email: authUser.email || '',
+            major: (authUser.user_metadata?.major as any) || 'law',
+            university: Array.isArray(authUser.user_metadata?.university) 
+              ? authUser.user_metadata.university[0] 
+              : authUser.user_metadata?.university || 'جامعة افتراضية',
+            year: authUser.user_metadata?.year || '1',
+            role: (authUser.user_metadata?.role as any) || 'student',
+            avatar_url: authUser.user_metadata?.avatar_url,
+            bio: authUser.user_metadata?.bio,
+            phone: authUser.user_metadata?.phone,
+            subscription_tier: (authUser.user_metadata?.subscription_tier as any) || 'free',
+            stats: {
+              uploadsCount: 0,
+              viewsCount: 0,
+              helpfulVotes: 0,
+              coursesEnrolled: 0,
+              booksOwned: 0,
+              consultations: 0,
+              communityPoints: 0,
+            },
+            permissions: [],
           }
         }
         
         return null
       }
 
-      return {
+      // Convert database profile to User format
+      const formattedProfile: User = {
         id: profile.id,
         name: profile.name,
-        email: profile.email || authUser?.email,
-        major: profile.major,
-        university: profile.university,
-        year: profile.year,
-        role: profile.role,
+        email: authUser?.email || '',
+        major: profile.major || 'law',
+        university: Array.isArray(profile.university) 
+          ? profile.university[0] 
+          : profile.university || 'جامعة افتراضية',
+        year: profile.year || '1',
+        role: profile.role || 'student',
         avatar: profile.avatar_url,
         avatar_url: profile.avatar_url,
         bio: profile.bio,
         phone: profile.phone,
-        subscription_tier: profile.subscription_tier,
-        stats: profile.stats,
+        subscription_tier: profile.subscription_tier || 'free',
+        stats: profile.stats || {
+          uploadsCount: 0,
+          viewsCount: 0,
+          helpfulVotes: 0,
+          coursesEnrolled: 0,
+          booksOwned: 0,
+          consultations: 0,
+          communityPoints: 0,
+        },
         permissions: profile.permissions || [],
       }
+
+      console.log(`[AUTH] Profile loaded successfully: ${formattedProfile.name}`)
+      return formattedProfile
+
     } catch (err) {
-      console.error("Error loading user profile:", err)
+      console.error("[AUTH] Error loading user profile:", err)
+      setError("Failed to load user profile")
       return null
     }
   }
