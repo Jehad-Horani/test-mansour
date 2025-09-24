@@ -92,18 +92,6 @@ export function RetroNavbar() {
 
           {isLoggedIn ? (
             <>
-              <Link href="/market/messages" className="relative">
-                <MessageCircle className="w-5 h-5" style={{ color: "var(--ink)" }} />
-                {unreadMessagesCount > 0 && (
-                  <span
-                    className="absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                    style={{ background: "var(--accent)" }}
-                  >
-                    {unreadMessagesCount > 9 ? "9+" : unreadMessagesCount}
-                  </span>
-                )}
-              </Link>
-
               {/* Notifications */}
               <Link href="/notifications" className="relative">
                 <Bell className="w-5 h-5" style={{ color: "var(--ink)" }} />
@@ -161,16 +149,7 @@ export function RetroNavbar() {
                         style={{ color: "var(--ink)" }}
                         onClick={() => setShowUserMenu(false)}
                       >
-                        <MessageCircle className="w-4 h-4" />
-                        الرسائل
-                        {unreadMessagesCount > 0 && (
-                          <span
-                            className="text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
-                            style={{ background: "var(--accent)" }}
-                          >
-                            {unreadMessagesCount > 9 ? "9+" : unreadMessagesCount}
-                          </span>
-                        )}
+                    
                       </Link>
                       <Link
                         href="/settings"
@@ -220,12 +199,14 @@ export function RetroNavbar() {
                 className="retro-button"
                 style={{ background: "var(--primary)", color: "white" }}
               >
-                <Link href="/auth/register">ابدأ الآن</Link>
+                <Link href="/auth/register">انشاء حساب</Link>
               </Button>
             </>
           )}
 
           {/* Mobile Menu Toggle */}
+        </div>
+      </div>
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
             className="md:hidden p-2 retro-button bg-transparent"
@@ -236,8 +217,6 @@ export function RetroNavbar() {
               <Menu className="w-5 h-5" style={{ color: "var(--ink)" }} />
             )}
           </button>
-        </div>
-      </div>
 
       {showMobileMenu && (
         <div className="md:hidden retro-window bg-white border-t-2" style={{ borderColor: "#c0c0c0" }}>
