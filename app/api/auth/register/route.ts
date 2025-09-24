@@ -113,7 +113,7 @@ export async function POST(req: Request) {
         id: authData.user.id,
         name,
         phone,
-        university: university || null, // String format
+        university: university ? [university] : null, // Array format
         major: major || null,
         year: year || null,
         role: "student",
