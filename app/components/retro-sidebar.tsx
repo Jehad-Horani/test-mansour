@@ -5,17 +5,17 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { Button } from "@/app/components/ui/button"
-import { useUser } from "@/hooks/use-user"
+import { useAuth } from "@/hooks/use-auth"
 import { useTier } from "@/hooks/use-tier"
 
 export function RetroSidebar() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
-  const { user, isLoggedIn, isAdmin } = useUser()
+  const { user, profile, loading, error, signOut , isAdmin , isLoggedIn } = useAuth()
   const { tier } = useTier()
 
   const getQuickActions = () => {
-    if (!isLoggedIn) {
+    if (!user) {
       return [
         { title: "تسجيل الدخول", href: "/auth/login" },
         { title: "إنشاء حساب", href: "/auth/register" },
@@ -82,13 +82,7 @@ export function RetroSidebar() {
 
     const notifications = []
 
-    if (user.stats?.upcomingExams > 0) {
-      notifications.push({
-        title: `${user.stats.upcomingExams} امتحان قادم`,
-        href: "/dashboard/exams",
-        type: "warning",
-      })
-    }
+   
 
     if (tier === "free") {
       notifications.push({
@@ -127,7 +121,7 @@ export function RetroSidebar() {
       >
         <div className="p-4 space-y-4 max-h-screen overflow-y-auto">
           <div className="retro-window-title mb-4">
-            <span>{isLoggedIn ? `مرحباً ${user?.name?.split(" ")[0]}` : "القائمة الجانبية"}</span>
+            <span>{isLoggedIn ? `مرحباً ${profile?.name?.split(" ")[0]}` : "القائمة الجانبية"}</span>
             <button className="md:hidden text-white hover:text-gray-300" onClick={() => setIsOpen(false)}>
               ×
             </button>
@@ -139,7 +133,7 @@ export function RetroSidebar() {
                 <div>
                   <div className="text-xs text-gray-300 mb-1 font-medium">التخصص</div>
                   <div className="text-sm text-white font-semibold">
-                    {user.major === "law" ? "القانون" : user.major === "it" ? "تقنية المعلومات" : "إدارة الأعمال"}
+                    {profile?.major}
                   </div>
                 </div>
                 <div
@@ -155,7 +149,7 @@ export function RetroSidebar() {
                   {tier === "premium" ? "مميز" : tier === "standard" ? "معياري" : "مجاني"}
                 </div>
               </div>
-              <div className="text-xs text-gray-300">{user.university}</div>
+              <div className="text-xs text-gray-300">{profile?.university}</div>
             </div>
           )}
 
@@ -227,16 +221,16 @@ export function RetroSidebar() {
             </div>
           )}
 
-          {isLoggedIn && user?.stats && (
+          {isLoggedIn && profile?.stats && (
             <div className="mt-4 pt-4 border-t border-gray-600">
               <div className="text-xs text-gray-300 mb-2 font-semibold">إحصائياتي</div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="bg-gray-800/90 rounded p-2 text-center border border-gray-600">
-                  <div className="text-white font-semibold">{user.stats.coursesEnrolled || 0}</div>
+                  <div className="text-white font-semibold">{profile?.stats?.coursesEnrolled || 0}</div>
                   <div className="text-gray-300">المقررات</div>
                 </div>
                 <div className="bg-gray-800/90 rounded p-2 text-center border border-gray-600">
-                  <div className="text-white font-semibold">{user.stats.booksOwned || 0}</div>
+                  <div className="text-white font-semibold">{profile?.stats?.booksOwned || 0}</div>
                   <div className="text-gray-300">الكتب</div>
                 </div>
               </div>
