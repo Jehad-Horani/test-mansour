@@ -3,7 +3,7 @@
 import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
 import { Badge } from "@/app/components/ui/badge"
-import { useAuth } from "@/hooks/use-auth"
+import { useUserContext } from "@/contexts/user-context"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
