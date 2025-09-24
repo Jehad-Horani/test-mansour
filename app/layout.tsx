@@ -8,6 +8,7 @@ import { RetroSidebar } from "@/app/components/retro-sidebar"
 import { Breadcrumbs } from "@/app/components/breadcrumbs"
 import { UserProvider } from "@/contexts/user-context"
 import { MessagesProvider } from "@/contexts/messages-context"
+import { AuthDebug } from "@/components/auth/auth-debug"
 
 const cairo = Cairo({
   subsets: ["arabic"],
