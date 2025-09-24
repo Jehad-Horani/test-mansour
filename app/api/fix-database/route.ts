@@ -80,11 +80,10 @@ export async function POST(request: NextRequest) {
         const profileData = {
           id: user.id,
           name: user.user_metadata?.name || user.email?.split('@')[0] || 'مستخدم جديد',
-          email: user.email,
-          phone: user.user_metadata?.phone || null,
-          university: user.user_metadata?.university || null,
-          major: user.user_metadata?.major || null,
-          year: user.user_metadata?.year || null,
+          phone: user.user_metadata?.phone,
+          university: user.user_metadata?.university,
+          major: user.user_metadata?.major,
+          year: user.user_metadata?.year,
           role: user.user_metadata?.role || 'student',
           subscription_tier: 'free',
           preferences: {
