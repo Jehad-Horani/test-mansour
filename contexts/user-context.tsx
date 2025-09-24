@@ -394,14 +394,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const value: UserContextType = {
     user,
-    isLoggedIn: !!user,
-    loading,
+    isLoggedIn: !!user && !!session,
+    loading: loading && !initialized,
     session,
     logout,
     updateUser,
     isAdmin,
     hasPermission,
     refreshUser,
+    error,
+    clearError,
   }
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
