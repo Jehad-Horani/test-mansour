@@ -28,7 +28,7 @@ export function createClient() {
 // Server-side auth functions
 export const authServer = {
   async getUser() {
-const supabase = createClient()
+    const supabase = createClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -36,7 +36,7 @@ const supabase = createClient()
   },
 
   async getProfile(): Promise<Profile | null> {
-const supabase = createClient()
+    const supabase = createClient()
 
     const {
       data: { user },

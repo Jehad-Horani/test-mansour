@@ -58,12 +58,12 @@ export async function POST(req: Request) {
 
     // Original registration flow (shouldn't be used now, but kept for compatibility)
     const { name, email, password, phone, university, major, year } = body
-const supabase = await createClient()
+    const supabase = createClient()
 
     console.log("[v0] Registration API - Starting full registration for:", email)
 
     // تسجيل المستخدم في Supabase Auth with metadata
-    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+    const { data: authData, error: signUpError } = await (await supabase).auth.signUp({
       email,
       password,
       options: {
