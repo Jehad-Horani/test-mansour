@@ -49,7 +49,7 @@ async function createMissingProfiles() {
           id: user.id,
           name: user.user_metadata?.name || user.email?.split('@')[0] || 'مستخدم جديد',
           phone: user.user_metadata?.phone || '000000000', // Provide default phone
-          university: user.user_metadata?.university || 'جامعة افتراضية',
+          university: user.user_metadata?.university ? [user.user_metadata.university] : ['جامعة افتراضية'],
           major: user.user_metadata?.major || 'law',
           year: user.user_metadata?.year || '1',
           role: user.user_metadata?.role || 'student',
