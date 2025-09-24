@@ -157,12 +157,12 @@ export default function DashboardPage() {
                   </p>
                   <div className="flex items-center gap-3 mb-4">
                     <Badge
-                      className={`bg-${getTierColor(profile.subscription_tier)}-100 text-${getTierColor(profile.subscription_tier)}-800`}
+                      className={`bg-${getTierColor(user.subscription_tier)}-100 text-${getTierColor(user.subscription_tier)}-800`}
                       style={{ background: "var(--accent)", color: "white" }}
                     >
-                      الخطة الحالية: {getTierLabel(profile.subscription_tier)}
+                      الخطة الحالية: {getTierLabelSafe(user.subscription_tier)}
                     </Badge>
-                    {profile.subscription_tier === "free" && (
+                    {user.subscription_tier === "free" && (
                       <Button
                         asChild
                         size="sm"
