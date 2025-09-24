@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { RetroWindow } from "@/app/components/retro-window"
 
 export default function AdminDashboard() {
-  const { user, loading } = useAuth()
+  const { profile, user, loading } = useAuth()
   const router = useRouter()
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -20,7 +20,7 @@ export default function AdminDashboard() {
     pendingSummaries: 0,
   })
 
- 
+
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -48,9 +48,12 @@ export default function AdminDashboard() {
     }
   }, [user])
 
-  if (loading || !user || user.role !== "admin") {
+  if (loading) return null
+  if (!user || profile?.role !== "admin") {
+    router.push("/dashboard") // أو الصفحة العادية
     return null
   }
+
 
   const quickActions = [
     {
@@ -198,15 +201,14 @@ export default function AdminDashboard() {
                   {recentActivity.map((activity, index) => (
                     <div key={index} className="flex items-start gap-3 p-2 bg-gray-50 border border-gray-200">
                       <div
-                        className={`w-2 h-2 rounded-full mt-2 ${
-                          activity.type === "user"
+                        className={`w-2 h-2 rounded-full mt-2 ${activity.type === "user"
                             ? "bg-green-500"
                             : activity.type === "content"
                               ? "bg-blue-500"
                               : activity.type === "report"
                                 ? "bg-red-500"
                                 : "bg-purple-500"
-                        }`}
+                          }`}
                       />
                       <div className="flex-1">
                         <div className="text-sm text-black">{activity.action}</div>
