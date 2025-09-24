@@ -39,7 +39,7 @@ export function AuthDebug() {
               <div className="text-sm text-gray-600 mb-2">
                 <p>الاسم: {profile.name}</p>
                 <p>الدور: {profile.role}</p>
-                <p>الاشتراك: {profile.subscription_tier}</p>
+                <p>الاشتراك: {profile.role}</p>
               </div>
             )}
             <Button onClick={signOut} variant="outline" className="w-full bg-transparent">

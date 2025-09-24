@@ -20,13 +20,7 @@ export default function AdminDashboard() {
     pendingSummaries: 0,
   })
 
-  useEffect(() => {
-    console.log("[v0] Admin dashboard - user:", user, "loading:", loading)
-    if (!loading && (!user || user.role !== "admin")) {
-      console.log("[v0] Redirecting to login - not authorized")
-      router.push("/auth/login")
-    }
-  }, [user, loading, router])
+ 
 
   useEffect(() => {
     const fetchStats = async () => {
