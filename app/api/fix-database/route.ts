@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
           id: user.id,
           name: user.user_metadata?.name || user.email?.split('@')[0] || 'مستخدم جديد',
           phone: user.user_metadata?.phone,
-          university: user.user_metadata?.university,
+          university: user.user_metadata?.university ? [user.user_metadata.university] : null,
           major: user.user_metadata?.major,
           year: user.user_metadata?.year,
           role: user.user_metadata?.role || 'student',
