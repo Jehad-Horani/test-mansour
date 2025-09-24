@@ -15,7 +15,7 @@ export function RetroSidebar() {
   const { tier } = useTier()
 
   const getQuickActions = () => {
-    if (!user) {
+    if (!profile) {
       return [
         { title: "تسجيل الدخول", href: "/auth/login" },
         { title: "إنشاء حساب", href: "/auth/register" },
