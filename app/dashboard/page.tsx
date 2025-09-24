@@ -143,7 +143,7 @@ export default function DashboardPage() {
             <div className="p-6">
               <div className="flex flex-col md:flex-row items-start gap-6">
                 <img
-                  src={profile.avatar_url || "/diverse-user-avatars.png"}
+                  src={user.avatar_url || "/diverse-user-avatars.png"}
                   alt="صورة المستخدم"
                   className="w-20 h-20 border-2 border-gray-300"
                   style={{ background: "var(--panel)" }}
