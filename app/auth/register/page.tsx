@@ -54,7 +54,7 @@ export default function RegisterPage() {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const { signUp, loading, error, clearError } = useAuth()
+  const { loading } = useUserContext()
   const router = useRouter()
 
   const validateForm = () => {
