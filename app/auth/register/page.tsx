@@ -54,6 +54,10 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  
+  const clearError = () => {
+    setErrors({})
+  }
 
   const { loading, refreshUser } = useUserContext()
   const router = useRouter()
