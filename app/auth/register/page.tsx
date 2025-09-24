@@ -237,10 +237,10 @@ export default function RegisterPage() {
         <RetroWindow title="إنشاء حساب جديد">
           <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
-              {(errors.submit || error) && (
+              {errors.submit && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-red-600" />
-                  <span className="text-red-600 text-sm">{errors.submit || error}</span>
+                  <span className="text-red-600 text-sm">{errors.submit}</span>
                 </div>
               )}
 
