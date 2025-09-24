@@ -84,31 +84,53 @@ export function useAuth() {
   }, [])
 
   // Sign Up
-  const signUp = async (data: Profile) => {
-    setLoading(true)
-    setError(null)
+const signUp = async (data: Profile & { password: string }) => {
+  setLoading(true);
+  setError(null);
 
-    try {
-      console.log("[v0] Starting signUp process...")
-      const result = await authClient.signUp(data)
+  try {
+    console.log("[v0] Starting signUp process...");
 
-      console.log("[v0] SignUp completed, waiting for session...")
+    const { data: signUpData, error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          role: data.role,
+          name: data.name,
+          year: data.year,
+          university: data.university,
+          major: data.major,
+          subscription_tier: data.subscription_tier,
+          avatar_url: data.avatar_url,
+          bio: data.bio,
+        },
+      },
+    });
 
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      await fetchSession()
-
-      console.log("[v0] SignUp process completed")
-      return result
-
-    } catch (err: any) {
-      console.error("[v0] SignUp error:", err)
-      setError(err.message || "حدث خطأ أثناء إنشاء الحساب")
-      throw err
-    } finally {
-      setLoading(false)
+    if (error) {
+      throw error;
     }
+
+    console.log("[v0] SignUp completed, waiting for session...");
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await fetchSession();
+
+    console.log("[v0] SignUp process completed");
+    return { user: signUpData.user };
+
+  } catch (err: any) {
+    console.error("[v0] SignUp error:", err);
+    setError(err.message || "حدث خطأ أثناء إنشاء الحساب");
+    throw err;
+  } finally {
+    setLoading(false);
   }
+};
+
+
+
+
 
   // Sign In
   const signIn = async (data: LoginData) => {

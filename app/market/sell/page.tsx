@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation"
 import { useUser } from "@/hooks/use-user"
 
 export default function SellPage() {
-  const { isLoggedIn } = useUser()
+  const { user } = useUser()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -28,7 +28,7 @@ export default function SellPage() {
     images: [] as File[],
   })
 
-  if (!isLoggedIn) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <RetroWindow title="تسجيل الدخول مطلوب" className="w-full max-w-md">
