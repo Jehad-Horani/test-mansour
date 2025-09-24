@@ -24,9 +24,9 @@ export async function POST(req: Request) {
         id: userId,
         name,
         phone,
-        university: university ? [university] : [null], // Array format
-        major: major || null, // String or null
-        year: year || null, // String or null
+        university: university || null, // String format
+        major: major || null,
+        year: year || null,
         role: "student",
         subscription_tier: "free",
         preferences: {
