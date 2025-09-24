@@ -99,7 +99,7 @@ export default function DashboardPage() {
   }
 
 
-  if (!profile) {
+  if (!user) {
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
       <RetroWindow title="خطأ">
