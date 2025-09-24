@@ -130,7 +130,7 @@ export default function DashboardPage() {
 
  const recentActivity = [
   { type: "upload", title: `رفع محاضرة جديدة: ${getMajorLabelSafe(user?.major)}`, time: "منذ ساعتين" },
-  { type: "exam", title: `امتحان ${getMajorLabelSafe(profile?.major)} غداً`, time: "منذ 4 ساعات" },
+  { type: "exam", title: `امتحان ${getMajorLabelSafe(user?.major)} غداً`, time: "منذ 4 ساعات" },
   { type: "community", title: "إجابة جديدة على سؤالك", time: "منذ يوم" },
 ]
 
