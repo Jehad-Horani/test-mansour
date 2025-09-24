@@ -55,8 +55,9 @@ export default function RegisterPage() {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const { loading } = useUserContext()
+  const { loading, refreshUser } = useUserContext()
   const router = useRouter()
+  const supabase = createClient()
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
