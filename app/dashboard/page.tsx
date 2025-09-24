@@ -216,7 +216,7 @@ export default function DashboardPage() {
                   <div className="retro-window bg-white p-4">
                     <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {profile.stats?.booksOwned || 0}
+                      {user.stats?.booksOwned || 0}
                     </div>
                     <div className="text-sm text-gray-600">الكتب المملوكة</div>
                   </div>
