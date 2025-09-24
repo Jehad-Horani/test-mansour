@@ -136,18 +136,7 @@ export function RetroSidebar() {
                     {profile?.major}
                   </div>
                 </div>
-                <div
-                  className={cn(
-                    "text-xs px-2 py-1 rounded",
-                    tier === "premium"
-                      ? "bg-yellow-600 text-white"
-                      : tier === "standard"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-600 text-gray-200",
-                  )}
-                >
-                  {tier === "premium" ? "مميز" : tier === "standard" ? "معياري" : "مجاني"}
-                </div>
+               
               </div>
               <div className="text-xs text-gray-300">{profile?.university}</div>
             </div>
