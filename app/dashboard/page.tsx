@@ -39,7 +39,7 @@ const getTierLabelSafe = (tier: string | null | undefined) => {
   }
 }
 export default function DashboardPage() {
-  const { user, profile, loading, isLoggedIn, getMajorLabel, getTierLabel } = useAuth()
+  const { user, loading, isLoggedIn } = useUserContext()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [redirectTimeout, setRedirectTimeout] = useState<NodeJS.Timeout | null>(null)
