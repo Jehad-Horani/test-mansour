@@ -165,17 +165,46 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Function to refresh user data
   const refreshUser = async () => {
-    const { data: { session: currentSession } } = await supabase.auth.getSession()
-    
-    if (currentSession?.user) {
-      const profile = await fetchUserProfile(currentSession.user.id, currentSession.user)
-      setUser(profile)
-      setSession(currentSession)
-    } else {
+    try {
+      setError(null)
+      console.log('[AUTH] Refreshing user data...')
+      
+      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError) {
+        console.error('[AUTH] Session error:', sessionError)
+        setError('Session error occurred')
+        setUser(null)
+        setSession(null)
+        return
+      }
+      
+      if (currentSession?.user) {
+        console.log('[AUTH] Valid session found, fetching profile...')
+        setSession(currentSession)
+        
+        const profile = await fetchUserProfile(currentSession.user.id, currentSession.user)
+        setUser(profile)
+        
+        if (profile) {
+          console.log(`[AUTH] User refreshed successfully: ${profile.name}`)
+        } else {
+          console.warn('[AUTH] Profile could not be loaded')
+          setError('Profile could not be loaded')
+        }
+      } else {
+        console.log('[AUTH] No valid session found')
+        setUser(null)
+        setSession(null)
+      }
+    } catch (err) {
+      console.error('[AUTH] Error refreshing user:', err)
+      setError('Failed to refresh user data')
       setUser(null)
       setSession(null)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   // Initialize and listen for auth changes
