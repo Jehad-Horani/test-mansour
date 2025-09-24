@@ -39,6 +39,8 @@ interface UserContextType {
   isAdmin: () => boolean
   hasPermission: (permission: string) => boolean
   refreshUser: () => Promise<void>
+  error: string | null
+  clearError: () => void
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -48,6 +50,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [initialized, setInitialized] = useState(false)
 
   // Function to fetch user profile from database with fallback
   const fetchUserProfile = async (userId: string, authUser?: any): Promise<User | null> => {
