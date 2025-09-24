@@ -29,8 +29,6 @@ export function RetroSidebar() {
       { title: "ملفي الشخصي", href: "/profile" },
       { title: "السوق", href: "/market" },
       { title: "السفراء", href: "/ambassadors" },
-      { title: "المجتمع", href: "/community" },
-      { title: "الرسائل", href: "/messages" },
     ]
 
     if (tier === "free") {
@@ -50,7 +48,6 @@ export function RetroSidebar() {
         title: "لوحة التحكم",
         items: [
           { title: "الجدول الدراسي", href: "/dashboard/schedule" },
-          { title: "الملاحظات", href: "/dashboard/notebooks" },
           { title: "المحاضرات اليومية", href: "/dashboard/daily-lectures" },
           { title: "الامتحانات", href: "/dashboard/exams" },
           { title: "الجلسات الدراسية", href: "/dashboard/sessions" },
@@ -100,7 +97,7 @@ export function RetroSidebar() {
   const notifications = getNotifications()
 
   return (
-    <>
+    <div className="overflow-hidden">
       <Button
         variant="ghost"
         size="sm"
@@ -227,6 +224,6 @@ export function RetroSidebar() {
           )}
         </div>
       </div>
-    </>
+    </div>
   )
 }
