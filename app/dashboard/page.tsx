@@ -345,7 +345,7 @@ export default function DashboardPage() {
                     الجلسات الدراسية
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">جلسات دراسية جماعية</p>
-                  {profile.subscription_tier === "free" && (
+                  {user.subscription_tier === "free" && (
                     <Badge className="text-xs" style={{ background: "var(--accent)", color: "white" }}>
                       مميز
                     </Badge>
