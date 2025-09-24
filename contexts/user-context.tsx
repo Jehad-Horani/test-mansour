@@ -211,50 +211,112 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true
 
-    // Get initial session
+    // Get initial session with proper error handling
     const getInitialSession = async () => {
-      const { data: { session: initialSession } } = await supabase.auth.getSession()
-      
-      if (!mounted) return
+      try {
+        console.log('[AUTH] Initializing auth state...')
+        setError(null)
+        
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession()
+        
+        if (!mounted) return
 
-      console.log("Initial session:", !!initialSession?.user)
+        if (sessionError) {
+          console.error('[AUTH] Initial session error:', sessionError)
+          setError('Session initialization failed')
+          setLoading(false)
+          setInitialized(true)
+          return
+        }
 
-      if (initialSession?.user) {
-        setSession(initialSession)
-        const profile = await fetchUserProfile(initialSession.user.id, initialSession.user)
-        setUser(profile)
-        console.log("Initial profile loaded:", !!profile)
+        console.log(`[AUTH] Initial session: ${initialSession?.user ? 'Found' : 'None'}`)
+
+        if (initialSession?.user) {
+          setSession(initialSession)
+          
+          const profile = await fetchUserProfile(initialSession.user.id, initialSession.user)
+          if (mounted) {
+            setUser(profile)
+            console.log(`[AUTH] Initial profile loaded: ${profile ? 'Success' : 'Failed'}`)
+          }
+        } else {
+          console.log('[AUTH] No initial session found')
+          setUser(null)
+          setSession(null)
+        }
+      } catch (err) {
+        console.error('[AUTH] Error during initialization:', err)
+        if (mounted) {
+          setError('Auth initialization failed')
+          setUser(null)
+          setSession(null)
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false)
+          setInitialized(true)
+        }
       }
-      
-      setLoading(false)
     }
 
     getInitialSession()
 
-    // Listen for auth changes
+    // Listen for auth changes with debouncing
+    let debounceTimer: NodeJS.Timeout
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return
 
-        console.log("Auth state changed:", event, !!session?.user)
-
-        if (session?.user) {
-          setSession(session)
-          const profile = await fetchUserProfile(session.user.id, session.user)
-          setUser(profile)
-          console.log("Profile loaded after auth change:", !!profile)
-        } else {
-          setUser(null)
-          setSession(null)
-          console.log("User logged out")
-        }
+        console.log(`[AUTH] Auth state changed: ${event}`, !!session?.user)
         
-        setLoading(false)
+        // Clear any pending debounced calls
+        clearTimeout(debounceTimer)
+        
+        // Debounce rapid auth changes
+        debounceTimer = setTimeout(async () => {
+          if (!mounted) return
+          
+          try {
+            setError(null)
+            
+            if (event === 'SIGNED_OUT' || !session?.user) {
+              console.log('[AUTH] User signed out')
+              setUser(null)
+              setSession(null)
+              setLoading(false)
+              return
+            }
+
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+              console.log('[AUTH] User signed in or token refreshed')
+              setSession(session)
+              
+              if (session?.user) {
+                const profile = await fetchUserProfile(session.user.id, session.user)
+                if (mounted) {
+                  setUser(profile)
+                  console.log(`[AUTH] Profile loaded after auth change: ${profile ? 'Success' : 'Failed'}`)
+                }
+              }
+            }
+          } catch (err) {
+            console.error('[AUTH] Error handling auth state change:', err)
+            if (mounted) {
+              setError('Auth state update failed')
+            }
+          } finally {
+            if (mounted) {
+              setLoading(false)
+            }
+          }
+        }, 100) // 100ms debounce
       }
     )
 
     return () => {
       mounted = false
+      clearTimeout(debounceTimer)
       subscription.unsubscribe()
     }
   }, [])
