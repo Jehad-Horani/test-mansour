@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
     // Original registration flow (shouldn't be used now, but kept for compatibility)
     const { name, email, password, phone, university, major, year } = body
-    const supabase = createClient()
+const supabase = await createClient()
 
     console.log("[v0] Registration API - Starting full registration for:", email)
 

@@ -57,7 +57,7 @@ export interface Profile {
 // Client-side auth functions
 export const authClient = {
   async signUp(data: RegisterData) {
-    const supabase = createClient()
+const supabase = await createClient()
 
     console.log("[v0] Starting signUp process for:", data.email)
 
@@ -95,7 +95,7 @@ export const authClient = {
   },
 
   async signIn(data: LoginData) {
-    const supabase = createClient()
+const supabase = await createClient()
     
     console.log("[v0] Starting signIn process for:", data.email)
     
@@ -114,7 +114,7 @@ export const authClient = {
   },
 
   async signOut() {
-    const supabase = createClient()
+const supabase = await createClient()
     
     console.log("[v0] Starting signOut process")
     
@@ -128,7 +128,7 @@ export const authClient = {
   },
 
   async resetPassword(email: string) {
-    const supabase = createClient()
+const supabase = await createClient()
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     })
@@ -136,13 +136,13 @@ export const authClient = {
   },
 
   async updatePassword(newPassword: string) {
-    const supabase = createClient()
+const supabase = await createClient()
     const { error } = await supabase.auth.updateUser({ password: newPassword })
     if (error) throw error
   },
 
   async getProfile(): Promise<Profile | null> {
-    const supabase = createClient()
+const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
     
@@ -157,7 +157,7 @@ export const authClient = {
   },
 
   async updateProfile(updates: Partial<Profile>) {
-    const supabase = createClient()
+const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error("User not authenticated")
     
@@ -170,14 +170,14 @@ export const authClient = {
   },
 
   async getCurrentUser() {
-    const supabase = createClient()
+const supabase = await createClient()
     const { data: { user }, error } = await supabase.auth.getUser()
     if (error) throw error
     return user
   },
 
   async getSession() {
-    const supabase = createClient()
+const supabase = await createClient()
     const { data: { session }, error } = await supabase.auth.getSession()
     if (error) throw error
     return session
