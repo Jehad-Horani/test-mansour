@@ -266,7 +266,7 @@ export default function DashboardPage() {
                     إدارة المحاضرات
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">ارفع وإدارة محاضراتك</p>
-                  <div className="text-xs text-gray-500">{profile.stats?.uploadsCount || 0} محاضرة مرفوعة</div>
+                  <div className="text-xs text-gray-500">{user.stats?.uploadsCount || 0} محاضرة مرفوعة</div>
                 </div>
               </RetroWindow>
             </Link>
