@@ -45,7 +45,7 @@ export default function DashboardPage() {
   const [redirectTimeout, setRedirectTimeout] = useState<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    console.log("[v0] Dashboard - Auth state:", { loading, isLoggedIn, user: !!user, profile: !!profile })
+    console.log("[v0] Dashboard - Auth state:", { loading, isLoggedIn, user: !!user, profile: !!user })
     
     if (!loading) {
       if (!isLoggedIn) {
