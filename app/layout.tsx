@@ -9,6 +9,7 @@ import { Breadcrumbs } from "@/app/components/breadcrumbs"
 import { UserProvider } from "@/contexts/user-context"
 import { MessagesProvider } from "@/contexts/messages-context"
 import { AuthDebug } from "@/components/auth/auth-debug"
+import { Toaster } from "sonner"
 import { Toaster } from "@/app/components/ui/sonner"
 
 const cairo = Cairo({
