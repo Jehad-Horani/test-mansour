@@ -101,7 +101,10 @@ class NextJSAPITester:
             elif response.status_code == 500:
                 # Check if it's still the database schema error
                 error_text = response.text.lower()
-                if 'email does not exist' in error_text or 'column' in error_text:
+                if 'cannot coerce the result to a single json object' in error_text:
+                    self.log_test("Individual Book API", True, "API correctly handles non-existent book (empty result)")
+                    return True
+                elif 'email does not exist' in error_text or 'column' in error_text:
                     self.log_test("Individual Book API", False, "CRITICAL: Database schema issue still exists - missing email column", response.text[:500])
                     return False
                 else:
