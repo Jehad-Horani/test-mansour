@@ -38,20 +38,49 @@ export default function AdminDashboardPage() {
   const [recentActivities, setRecentActivities] = useState([])
 
   useEffect(() => {
-
-
-    if (profile?.role === "admin") {
-      router.push('/admin')
-    }
-    else {
-      const password = prompt("Enter admin password:")
-      if (password === "takhassusJH123") {
-        router.push('/admin')
-      }
+    if (!isLoggedIn) {
+      router.push('/auth')
       return
     }
 
-  }, [])
+    // Check if user is admin or prompt for admin password
+    if (profile?.role === "admin") {
+      loadDashboardData()
+    } else if (profile) {
+      const password = prompt("كلمة مرور المدير:")
+      if (password === "takhassusJH123") {
+        loadDashboardData()
+      } else {
+        toast.error("كلمة مرور خاطئة")
+        router.push('/dashboard')
+        return
+      }
+    }
+  }, [isLoggedIn, profile])
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true)
+      
+      // Load book stats
+      const bookStatsData = await marketplaceApi.getBookStats()
+      setBookStats(bookStatsData)
+      
+      // Load user stats
+      const userStatsData = await marketplaceApi.getUserStats()
+      setUserStats(userStatsData)
+      
+      // Load recent admin activities
+      const activitiesData = await marketplaceApi.getAdminActivities(10)
+      setRecentActivities(activitiesData.data || [])
+      
+    } catch (error: any) {
+      console.error("Error loading dashboard data:", error)
+      toast.error("حدث خطأ أثناء تحميل البيانات")
+    } finally {
+      setLoading(false)
+    }
+  }
 
 
 
