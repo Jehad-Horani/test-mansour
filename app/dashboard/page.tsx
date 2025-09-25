@@ -413,16 +413,7 @@ export default function DashboardPage() {
                   </Link>
                 </Button>
 
-                <Button
-                  asChild
-                  className="retro-button h-auto p-4 flex flex-col items-center gap-2"
-                  style={{ background: "var(--accent)", color: "white" }}
-                >
-                  <Link href="/community">
-                    <MessageSquare className="w-6 h-6" />
-                    <span>المجتمع</span>
-                  </Link>
-                </Button>
+              
 
                 <Button
                   asChild

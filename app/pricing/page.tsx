@@ -16,7 +16,6 @@ export default function PricingPage() {
       features: [
         { name: "عرض محدود للكتب (5 كتب شهرياً)", included: true },
         { name: "رفع 3 ملفات شهرياً", included: true },
-        { name: "مشاركة في المجتمع", included: true },
         { name: "دعم عبر البريد الإلكتروني", included: true },
         { name: "وصول للكتب المجانية", included: true },
         { name: "تحميل الكتب", included: false },
@@ -40,7 +39,6 @@ export default function PricingPage() {
         { name: "وصول كامل لجميع الكتب", included: true },
         { name: "رفع غير محدود للملفات", included: true },
         { name: "تحميل جميع الكتب", included: true },
-        { name: "مشاركة متقدمة في المجتمع", included: true },
         { name: "جدولة الامتحانات والمهام", included: true },
         { name: "دعم فني أولوية", included: true },
         { name: "إحصائيات التقدم", included: true },

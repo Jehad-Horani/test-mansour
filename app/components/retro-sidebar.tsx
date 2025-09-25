@@ -65,7 +65,6 @@ export function RetroSidebar() {
           { title: "السوق", href: "/admin/market" },
           { title: "الملخصات", href: "/admin/summaries" },
           { title: "المحاضرات اليومية", href: "/admin/daily-lectures" },
-          { title: "الرسائل", href: "/admin/messages" },
           { title: "الإعدادات", href: "/admin/settings" },
         ],
       }

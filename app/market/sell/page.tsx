@@ -34,9 +34,57 @@ export default function SellBookPage() {
     selling_price: "",
     currency: "JOD"
   })
+  
+  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [uploading, setUploading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    
+    // Validate files
+    const validFiles = files.filter(file => {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`الملف ${file.name} كبير جداً (أكثر من 5 ميجابايت)`)
+        return false
+      }
+      if (!file.type.startsWith('image/')) {
+        toast.error(`الملف ${file.name} ليس صورة`)
+        return false
+      }
+      return true
+    })
+
+    if (selectedImages.length + validFiles.length > 5) {
+      toast.error("يمكن رفع 5 صور كحد أقصى")
+      return
+    }
+
+    setSelectedImages(prev => [...prev, ...validFiles])
+  }
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const uploadBookImages = async (bookId: string) => {
+    if (selectedImages.length === 0) return []
+
+    const uploadPromises = selectedImages.map(async (file, index) => {
+      try {
+        const result = await marketplaceApi.uploadBookImage(bookId, file, index === 0)
+        return result
+      } catch (error) {
+        console.error(`Error uploading image ${index}:`, error)
+        return null
+      }
+    })
+
+    const results = await Promise.all(uploadPromises)
+    return results.filter(result => result !== null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +101,13 @@ export default function SellBookPage() {
       return
     }
 
+    if (selectedImages.length === 0) {
+      toast.error("يرجى إضافة صورة واحدة على الأقل للكتاب")
+      return
+    }
+
     setLoading(true)
+    setUploading(true)
 
     try {
       const bookData = {
@@ -65,11 +119,15 @@ export default function SellBookPage() {
         is_available: true
       }
 
-      const { error } = await marketplaceApi.createBook(bookData)
+      // Create book first
+      const { data: book, error: bookError } = await marketplaceApi.createBook(bookData)
       
-      if (error) throw error
+      if (bookError || !book) throw bookError || new Error("Failed to create book")
       
-      toast.success("تم إضافة الكتاب بنجاح!")
+      // Upload images
+      const uploadedImages = await uploadBookImages(book.id)
+      
+      toast.success(`تم إرسال الكتاب للمراجعة! سيظهر في السوق بعد موافقة الإدارة. تم رفع ${uploadedImages.length} صورة.`)
       router.push("/market")
       
     } catch (error: any) {
@@ -77,6 +135,7 @@ export default function SellBookPage() {
       toast.error("حدث خطأ أثناء إضافة الكتاب")
     } finally {
       setLoading(false)
+      setUploading(false)
     }
   }
 
@@ -311,6 +370,63 @@ export default function SellBookPage() {
                   style={{ background: "white", border: "2px inset #c0c0c0" }}
                   placeholder="اكتب وصفاً مختصراً عن الكتاب وحالته..."
                 />
+              </div>
+
+              {/* Image Upload Section */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--ink)" }}>
+                  صور الكتاب *
+                </h3>
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600 mb-2">اسحب الصور هنا أو انقر للتحديد</p>
+                    <p className="text-sm text-gray-500 mb-4">يمكن رفع حتى 5 صور، كل صورة أقل من 5 ميجابايت</p>
+                    <Input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="book-images"
+                    />
+                    <Button asChild variant="outline" className="retro-button bg-transparent">
+                      <label htmlFor="book-images" className="cursor-pointer">
+                        اختيار الصور
+                      </label>
+                    </Button>
+                  </div>
+
+                  {selectedImages.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium mb-3">الصور المحددة ({selectedImages.length}/5):</p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        {selectedImages.map((file, index) => (
+                          <div key={index} className="relative">
+                            <img 
+                              src={URL.createObjectURL(file)} 
+                              alt={`صورة ${index + 1}`} 
+                              className="w-full h-24 object-cover rounded border"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="absolute top-1 right-1 w-6 h-6 p-0 bg-red-500 text-white border-0"
+                              onClick={() => removeImage(index)}
+                            >
+                              ×
+                            </Button>
+                            {index === 0 && (
+                              <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                                رئيسية
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Action Buttons */}

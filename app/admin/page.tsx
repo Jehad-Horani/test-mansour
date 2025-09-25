@@ -1,259 +1,297 @@
 "use client"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { useAuth } from "@/hooks/use-auth"
+
+import { useState, useEffect } from "react"
+import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
+import Link from "next/link"
+import {
+  BookOpen,
+  Users,
+  Activity,
+  CheckCircle,
+  XCircle,
+  Clock,
+  BarChart3,
+  Settings,
+  AlertTriangle
+} from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { marketplaceApi } from "@/lib/supabase/marketplace"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
-export default function AdminDashboard() {
-  const { profile, user, loading } = useAuth()
+export default function AdminDashboardPage() {
+  const { user, isLoggedIn, isAdmin, profile } = useAuth()
   const router = useRouter()
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    pendingContent: 0,
-    totalPosts: 0,
-    activeReports: 0,
-    totalBooks: 0,
-    monthlyRevenue: "0",
-    newUsersToday: 0,
-    contentApprovedToday: 0,
-    pendingSummaries: 0,
+  const [loading, setLoading] = useState(true)
+  const [bookStats, setBookStats] = useState({
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0
   })
-
-
+  const [userStats, setUserStats] = useState({
+    total: 0,
+    admins: 0,
+    students: 0
+  })
+  const [recentActivities, setRecentActivities] = useState([])
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        // This would fetch real stats from your admin API
-        // For now, using mock data
-        setStats({
-          totalUsers: 1247,
-          pendingContent: 23,
-          totalPosts: 3456,
-          activeReports: 8,
-          totalBooks: 892,
-          monthlyRevenue: "15,420",
-          newUsersToday: 12,
-          contentApprovedToday: 34,
-          pendingSummaries: 15,
-        })
-      } catch (error) {
-        console.error("[v0] Error fetching admin stats:", error)
+
+
+    if (profile?.role === "admin") {
+      router.push('/admin')
+    }
+    else {
+      const password = prompt("Enter admin password:")
+      if (password === "takhassusJH123") {
+        router.push('/admin')
       }
+      return
     }
 
-    if (user?.role === "admin") {
-      fetchStats()
-    }
-  }, [user])
+  }, [])
 
-  if (loading) return null
-  if (!user || profile?.role !== "admin") {
-    router.push("/dashboard") // أو الصفحة العادية
-    return null
+
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
+        <RetroWindow title="لوحة تحكم الإدارة">
+          <div className="p-6 text-center">
+            <p className="text-gray-600 mb-4">يجب تسجيل الدخول أولاً</p>
+            <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
+              <Link href="/auth">تسجيل الدخول</Link>
+            </Button>
+          </div>
+        </RetroWindow>
+      </div>
+    )
   }
 
 
-  const quickActions = [
-    {
-      title: "إدارة المستخدمين",
-      desc: "عرض وإدارة حسابات المستخدمين",
-      icon: "👥",
-      href: "/admin/users",
-      badge: stats.newUsersToday,
-    },
-    {
-      title: "إدارة السوق",
-      desc: "إدارة الكتب والمنتجات المعروضة",
-      icon: "📚",
-      href: "/admin/market",
-      badge: null,
-    },
-    {
-      title: "إدارة الملخصات",
-      desc: "مراجعة وقبول/رفض الملخصات المرفوعة",
-      icon: "📋",
-      href: "/admin/summaries",
-      badge: stats.pendingSummaries,
-    },
-    {
-      title: "الرسائل",
-      desc: "إرسال رسائل للمستخدمين",
-      icon: "💬",
-      href: "/admin/messages",
-      badge: null,
-    },
-    {
-      title: "الإعدادات",
-      desc: "إعدادات النظام والصلاحيات",
-      icon: "⚙️",
-      href: "/admin/settings",
-      badge: null,
-    },
-    {
-      title: "سجل النشاط",
-      desc: "مراقبة نشاط النظام والمستخدمين",
-      icon: "📈",
-      href: "/admin/activity",
-      badge: null,
-    },
-  ]
 
-  const recentActivity = [
-    { type: "user", action: "مستخدم جديد انضم", user: "أحمد محمد", time: "منذ 5 دقائق" },
-    { type: "content", action: "تم رفع ملف جديد", user: "فاطمة النمر", time: "منذ 12 دقيقة" },
-    { type: "report", action: "تقرير جديد", user: "نورا الشهري", time: "منذ 20 دقيقة" },
-    { type: "book", action: "كتاب جديد في السوق", user: "خالد الأحمد", time: "منذ 35 دقيقة" },
-    { type: "content", action: "تم قبول محتوى", user: "سارة العتيبي", time: "منذ ساعة" },
-  ]
+  if (loading) {
+    return (
+      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
+        <RetroWindow title="لوحة تحكم الإدارة">
+          <div className="p-6 text-center">
+            <p className="text-gray-600">جاري تحميل البيانات...</p>
+          </div>
+        </RetroWindow>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-retro-bg p-4">
+    <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-6">
-          <RetroWindow title="لوحة تحكم المدير">
-            <div className="p-4">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--ink)" }}>
+            لوحة تحكم الإدارة
+          </h1>
+          <p className="text-gray-600">إدارة النظام والمحتوى</p>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Book Stats */}
+          <RetroWindow title="إحصائيات الكتب">
+            <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-xl font-bold text-black">مرحباً،</h1>
-                  <p className="text-gray-600">لوحة التحكم الرئيسية - منصة تخصصكُم</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-600">آخر تسجيل دخول</div>
-                  <div className="text-black font-medium">{new Date().toLocaleDateString("ar-SA")}</div>
-                </div>
+                <span className="text-sm text-gray-600">إجمالي الكتب</span>
+                <span className="font-bold text-lg">{bookStats.total}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-yellow-600">في الانتظار</span>
+                <span className="font-bold text-lg text-yellow-600">{bookStats.pending}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-green-600">مقبولة</span>
+                <span className="font-bold text-lg text-green-600">{bookStats.approved}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-red-600">مرفوضة</span>
+                <span className="font-bold text-lg text-red-600">{bookStats.rejected}</span>
               </div>
             </div>
           </RetroWindow>
-        </div>
 
-        {/* Statistics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <RetroWindow title="إجمالي المستخدمين">
-            <div className="p-4 text-center">
-              <div className="text-2xl font-bold text-retro-accent">{stats.totalUsers.toLocaleString()}</div>
-              <div className="text-sm text-gray-600">مستخدم مسجل</div>
-              <div className="text-xs text-green-600 mt-1">+{stats.newUsersToday} اليوم</div>
+          {/* User Stats */}
+          <RetroWindow title="إحصائيات المستخدمين">
+            <div className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">إجمالي المستخدمين</span>
+                <span className="font-bold text-lg">{userStats.total}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-blue-600">المديرون</span>
+                <span className="font-bold text-lg text-blue-600">{userStats.admins}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-green-600">الطلاب</span>
+                <span className="font-bold text-lg text-green-600">{userStats.students}</span>
+              </div>
             </div>
           </RetroWindow>
 
-          <RetroWindow title="المحتوى المعلق">
-            <div className="p-4 text-center">
-              <div className="text-2xl font-bold text-orange-600">{stats.pendingContent}</div>
-              <div className="text-sm text-gray-600">في انتظار المراجعة</div>
-              <div className="text-xs text-blue-600 mt-1">+{stats.contentApprovedToday} تم قبولها اليوم</div>
-            </div>
-          </RetroWindow>
-
-          <RetroWindow title="إجمالي المنشورات">
-            <div className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{stats.totalPosts.toLocaleString()}</div>
-              <div className="text-sm text-gray-600">منشور ومحتوى</div>
-            </div>
-          </RetroWindow>
-
-          <RetroWindow title="الإيرادات الشهرية">
-            <div className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.monthlyRevenue} د.أ</div>
-              <div className="text-sm text-gray-600">هذا الشهر</div>
-            </div>
-          </RetroWindow>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Quick Actions */}
-          <div className="lg:col-span-2">
-            <RetroWindow title="الإجراءات السريعة">
-              <div className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {quickActions.map((action, index) => (
-                    <Link
-                      key={index}
-                      href={action.href}
-                      className="retro-button bg-white hover:bg-gray-50 p-4 text-right border border-gray-400 relative"
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">{action.icon}</span>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-black">{action.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1">{action.desc}</p>
-                        </div>
-                        {action.badge && (
-                          <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                            {action.badge}
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </RetroWindow>
-          </div>
-
-          {/* Recent Activity */}
-          <div>
-            <RetroWindow title="النشاط الأخير">
-              <div className="p-4">
-                <div className="space-y-3">
-                  {recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start gap-3 p-2 bg-gray-50 border border-gray-200">
-                      <div
-                        className={`w-2 h-2 rounded-full mt-2 ${activity.type === "user"
-                            ? "bg-green-500"
-                            : activity.type === "content"
-                              ? "bg-blue-500"
-                              : activity.type === "report"
-                                ? "bg-red-500"
-                                : "bg-purple-500"
-                          }`}
-                      />
-                      <div className="flex-1">
-                        <div className="text-sm text-black">{activity.action}</div>
-                        <div className="text-xs text-gray-600">{activity.user}</div>
-                        <div className="text-xs text-gray-500">{activity.time}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <Link
-                  href="/admin/activity"
-                  className="block text-center text-sm text-retro-accent hover:underline mt-3"
-                >
-                  عرض جميع الأنشطة
+          <RetroWindow title="إجراءات سريعة">
+            <div className="p-4 space-y-2">
+              <Button
+                asChild
+                className="retro-button w-full"
+                style={{ background: "var(--accent)", color: "white" }}
+              >
+                <Link href="/admin/books">
+                  <Clock className="w-4 h-4 ml-2" />
+                  مراجعة الكتب ({bookStats.pending})
                 </Link>
-              </div>
-            </RetroWindow>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="retro-button w-full bg-transparent"
+              >
+                <Link href="/admin/users">
+                  <Users className="w-4 h-4 ml-2" />
+                  إدارة المستخدمين
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="retro-button w-full bg-transparent"
+              >
+                <Link href="/admin/reports">
+                  <BarChart3 className="w-4 h-4 ml-2" />
+                  التقارير
+                </Link>
+              </Button>
+            </div>
+          </RetroWindow>
 
-            {/* System Status */}
-            <div className="mt-4">
-              <RetroWindow title="حالة النظام">
-                <div className="p-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-black">الخادم</span>
-                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1">متصل</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-black">قاعدة البيانات</span>
-                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1">متصل</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-black">التخزين</span>
-                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1">75%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-black">النسخ الاحتياطي</span>
-                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1">محدث</span>
+          {/* System Status */}
+          <RetroWindow title="حالة النظام">
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm">قاعدة البيانات</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm">التخزين السحابي</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm">نظام المراسلة</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm">الإشعارات</span>
+              </div>
+            </div>
+          </RetroWindow>
+        </div>
+
+        {/* Main Actions Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Button
+            asChild
+            className="retro-button h-24 flex flex-col items-center justify-center gap-2"
+            style={{ background: "var(--primary)", color: "white" }}
+          >
+            <Link href="/admin/books">
+              <BookOpen className="w-8 h-8" />
+              <span className="font-semibold">إدارة الكتب</span>
+              <span className="text-sm opacity-80">مراجعة وقبول الكتب</span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            className="retro-button h-24 flex flex-col items-center justify-center gap-2"
+            style={{ background: "var(--accent)", color: "white" }}
+          >
+            <Link href="/admin/users">
+              <Users className="w-8 h-8" />
+              <span className="font-semibold">إدارة المستخدمين</span>
+              <span className="text-sm opacity-80">عرض وإدارة الحسابات</span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            className="retro-button h-24 flex flex-col items-center justify-center gap-2"
+            style={{ background: "var(--primary)", color: "white" }}
+          >
+            <Link href="/admin/activities">
+              <Activity className="w-8 h-8" />
+              <span className="font-semibold">سجل النشاطات</span>
+              <span className="text-sm opacity-80">مراقبة أنشطة النظام</span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            className="retro-button h-24 flex flex-col items-center justify-center gap-2"
+            style={{ background: "var(--accent)", color: "white" }}
+          >
+            <Link href="/admin/reports">
+              <BarChart3 className="w-8 h-8" />
+              <span className="font-semibold">التقارير</span>
+              <span className="text-sm opacity-80">إحصائيات مفصلة</span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            className="retro-button h-24 flex flex-col items-center justify-center gap-2"
+            style={{ background: "var(--primary)", color: "white" }}
+          >
+            <Link href="/admin/settings">
+              <Settings className="w-8 h-8" />
+              <span className="font-semibold">إعدادات النظام</span>
+              <span className="text-sm opacity-80">تكوين النظام</span>
+            </Link>
+          </Button>
+        </div>
+
+        {/* Recent Activities */}
+        <RetroWindow title="النشاطات الأخيرة">
+          <div className="p-6">
+            {recentActivities.length === 0 ? (
+              <p className="text-center text-gray-600 py-8">لا توجد أنشطة حديثة</p>
+            ) : (
+              <div className="space-y-4">
+                {recentActivities.map((activity: any) => (
+                  <div key={activity.id} className="retro-window bg-white p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {activity.action === 'approve_book' && <CheckCircle className="w-5 h-5 text-green-500" />}
+                        {activity.action === 'reject_book' && <XCircle className="w-5 h-5 text-red-500" />}
+                        <div>
+                          <p className="font-medium">
+                            {activity.admin?.name} {" "}
+                            {activity.action === 'approve_book' && 'قبل كتاب'}
+                            {activity.action === 'reject_book' && 'رفض كتاب'}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {activity.details?.book_title}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {new Date(activity.created_at).toLocaleDateString('ar-SA')}
+                      </span>
                     </div>
                   </div>
-                </div>
-              </RetroWindow>
-            </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        </RetroWindow>
       </div>
     </div>
   )
