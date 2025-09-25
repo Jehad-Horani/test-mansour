@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Textarea } from "@/app/components/ui/textarea"
@@ -12,7 +10,9 @@ import { Badge } from "@/app/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/app/components/ui/dialog"
 import { Progress } from "@/app/components/ui/progress"
 import { useAuth } from "@/hooks/use-auth"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
+import { toast } from "sonner"
 import {
   ArrowRight,
   Upload,
@@ -29,77 +29,176 @@ import {
   MessageCircle,
 } from "lucide-react"
 
-// Mock data for daily lectures
-const mockLectures = [
-  {
-    id: 1,
-    title: "محاضرة القانون الدستوري - الفصل الثالث",
-    course: "LAW 301",
-    courseName: "القانون الدستوري",
-    professor: "د. أحمد محمد",
-    date: "2024-01-15",
-    time: "10:00 AM",
-    uploadedBy: "سارة أحمد",
-    uploadDate: "2024-01-15T14:30:00",
-    status: "approved" as const,
-    views: 125,
-    likes: 23,
-    comments: 8,
-    images: ["/placeholder-3e1wz.png"],
-    description: "محاضرة شاملة حول مبادئ القانون الدستوري والنظام السياسي",
-    tags: ["قانون", "دستوري", "نظام سياسي"],
-  },
-  {
-    id: 2,
-    title: "محاضرة البرمجة الكائنية - Java",
-    course: "CS 201",
-    courseName: "البرمجة الكائنية",
-    professor: "د. محمد علي",
-    date: "2024-01-16",
-    time: "2:00 PM",
-    uploadedBy: "أحمد خالد",
-    uploadDate: "2024-01-16T16:45:00",
-    status: "pending" as const,
-    views: 0,
-    likes: 0,
-    comments: 0,
-    images: ["/java-code-snippet.png"],
-    description: "شرح مفصل للبرمجة الكائنية باستخدام لغة Java",
-    tags: ["برمجة", "java", "كائنية"],
-  },
-  {
-    id: 3,
-    title: "محاضرة التشريح - الجهاز التنفسي",
-    course: "MED 102",
-    courseName: "علم التشريح",
-    professor: "د. فاطمة حسن",
-    date: "2024-01-14",
-    time: "9:00 AM",
-    uploadedBy: "ليلى محمود",
-    uploadDate: "2024-01-14T12:20:00",
-    status: "rejected" as const,
-    views: 0,
-    likes: 0,
-    comments: 0,
-    images: ["/placeholder-z1r7g.png"],
-    description: "دراسة تفصيلية للجهاز التنفسي وأجزائه",
-    tags: ["طب", "تشريح", "تنفسي"],
-    rejectionReason: "جودة الصور غير واضحة، يرجى إعادة التصوير",
-  },
-]
+interface DailyLecture {
+  id: string
+  title: string
+  description?: string
+  subject: string
+  instructor_id: string
+  scheduled_date: string
+  start_time: string
+  end_time: string
+  location?: string
+  meeting_url?: string
+  status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled'
+  max_attendees: number
+  current_attendees: number
+  approval_status: 'pending' | 'approved' | 'rejected'
+  approved_by?: string
+  approved_at?: string
+  rejection_reason?: string
+  created_at: string
+  updated_at: string
+  instructor?: {
+    name: string
+    university?: string
+    phone?: string
+  }
+}
 
 export default function DailyLecturesPage() {
   const { user, profile, isLoggedIn } = useAuth()
+  const supabase = createClient()
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
-  const [uploadStep, setUploadStep] = useState(1)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [lectures, setLectures] = useState(mockLectures)
-  const [selectedLecture, setSelectedLecture] = useState<any>(null)
+  const [uploading, setUploading] = useState(false)
+  const [lectures, setLectures] = useState<DailyLecture[]>([])
+  const [selectedLecture, setSelectedLecture] = useState<DailyLecture | null>(null)
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
-  const [filterCourse, setFilterCourse] = useState("all")
-  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Form state for new lecture
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    subject: "",
+    scheduled_date: "",
+    start_time: "",
+    end_time: "",
+    location: "",
+    meeting_url: "",
+    max_attendees: 50
+  })
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      loadLectures()
+      
+      // Real-time updates
+      const channel = supabase
+        .channel('lectures-changes')
+        .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'daily_lectures' },
+          (payload) => {
+            console.log('Lecture updated:', payload)
+            loadLectures()
+          }
+        )
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [isLoggedIn])
+
+  const loadLectures = async () => {
+    try {
+      setLoading(true)
+      
+      let query = supabase
+        .from('daily_lectures')
+        .select(`
+          *,
+          instructor:profiles!daily_lectures_instructor_id_fkey(name, university, phone)
+        `)
+        .order('created_at', { ascending: false })
+
+      const { data, error } = await query
+      
+      if (error) throw error
+      setLectures(data || [])
+    } catch (error: any) {
+      console.error("Error loading lectures:", error)
+      toast.error("حدث خطأ أثناء تحميل المحاضرات")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!user || !formData.title.trim() || !formData.subject.trim() || !formData.scheduled_date) {
+      toast.error("يرجى ملء الحقول المطلوبة")
+      return
+    }
+
+    try {
+      setUploading(true)
+      
+      const lectureData = {
+        ...formData,
+        instructor_id: user.id,
+        approval_status: 'pending' as const,
+        status: 'scheduled' as const,
+        current_attendees: 0
+      }
+
+      const { data, error } = await supabase
+        .from('daily_lectures')
+        .insert([lectureData])
+        .select()
+
+      if (error) throw error
+
+      toast.success("تم إرسال المحاضرة للمراجعة! سيتم إشعارك عند الموافقة عليها.")
+      
+      // Reset form
+      setFormData({
+        title: "",
+        description: "",
+        subject: "",
+        scheduled_date: "",
+        start_time: "",
+        end_time: "",
+        location: "",
+        meeting_url: "",
+        max_attendees: 50
+      })
+      
+      setUploadModalOpen(false)
+      loadLectures()
+      
+    } catch (error: any) {
+      console.error("Error creating lecture:", error)
+      toast.error("حدث خطأ أثناء إضافة المحاضرة")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const resubmitLecture = async (lectureId: string) => {
+    try {
+      const { error } = await supabase
+        .from('daily_lectures')
+        .update({ 
+          approval_status: 'pending',
+          rejection_reason: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', lectureId)
+
+      if (error) throw error
+
+      toast.success("تم إعادة إرسال المحاضرة للمراجعة")
+      loadLectures()
+    } catch (error: any) {
+      console.error("Error resubmitting lecture:", error)
+      toast.error("حدث خطأ أثناء إعادة الإرسال")
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -127,71 +226,40 @@ export default function DailyLecturesPage() {
     }
   }
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || [])
-    if (files.length > 5) {
-      alert("يمكنك رفع 5 صور كحد أقصى")
-      return
-    }
-    setSelectedImages(files)
-  }
-
-  const handleUpload = () => {
-    if (selectedImages.length === 0) {
-      alert("يرجى اختيار صور المحاضرة")
-      return
-    }
-
-    setUploadStep(2)
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setUploadStep(3)
-          return 100
-        }
-        return prev + 10
-      })
-    }, 200)
-  }
-
-  const resetUpload = () => {
-    setUploadStep(1)
-    setUploadProgress(0)
-    setSelectedImages([])
-    setUploadModalOpen(false)
-  }
-
-  const handleViewLecture = (lecture: any) => {
+  const handleViewLecture = (lecture: DailyLecture) => {
     setSelectedLecture(lecture)
     setViewModalOpen(true)
-  }
-
-  const handleReUpload = (lectureId: number) => {
-    setLectures((prev) =>
-      prev.map((lecture) =>
-        lecture.id === lectureId ? { ...lecture, status: "pending" as const, rejectionReason: undefined } : lecture,
-      ),
-    )
-    alert("تم إعادة رفع المحاضرة للمراجعة")
   }
 
   const filteredLectures = lectures.filter((lecture) => {
     const matchesSearch =
       lecture.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lecture.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lecture.professor.toLowerCase().includes(searchTerm.toLowerCase())
+      lecture.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lecture.instructor?.name?.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesStatus = filterStatus === "all" || lecture.status === filterStatus
-    const matchesCourse = filterCourse === "all" || lecture.course === filterCourse
+    const matchesStatus = filterStatus === "all" || lecture.approval_status === filterStatus
 
-    return matchesSearch && matchesStatus && matchesCourse
+    return matchesSearch && matchesStatus
   })
 
-  const approvedLectures = lectures.filter((l) => l.status === "approved")
-  const pendingLectures = lectures.filter((l) => l.status === "pending")
-  const myLectures = lectures.filter((l) => l.uploadedBy === profile?.name)
+  const approvedLectures = lectures.filter((l) => l.approval_status === "approved")
+  const pendingLectures = lectures.filter((l) => l.approval_status === "pending")
+  const myLectures = lectures.filter((l) => l.instructor_id === user?.id)
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
+        <RetroWindow title="المحاضرات اليومية">
+          <div className="p-6 text-center">
+            <p className="text-gray-600 mb-4">يجب تسجيل الدخول لعرض المحاضرات</p>
+            <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
+              <Link href="/auth">تسجيل الدخول</Link>
+            </Button>
+          </div>
+        </RetroWindow>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
@@ -211,7 +279,7 @@ export default function DailyLecturesPage() {
               <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--ink)" }}>
                 المحاضرات اليومية
               </h1>
-              <p className="text-gray-600">شارك صور محاضراتك اليومية مع زملائك الطلاب</p>
+              <p className="text-gray-600">شارك محاضراتك اليومية مع زملائك الطلاب</p>
             </div>
           </RetroWindow>
         </div>
@@ -247,9 +315,9 @@ export default function DailyLecturesPage() {
                 <div className="text-center retro-window bg-white p-4">
                   <Eye className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
                   <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                    {approvedLectures.reduce((sum, l) => sum + l.views, 0)}
+                    {lectures.length}
                   </div>
-                  <div className="text-sm text-gray-600">إجمالي المشاهدات</div>
+                  <div className="text-sm text-gray-600">إجمالي المحاضرات</div>
                 </div>
               </div>
             </div>
@@ -277,7 +345,7 @@ export default function DailyLecturesPage() {
                   <div className="flex gap-2">
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
                       <SelectTrigger
-                        className="retro-window w-32"
+                        className="retro-window w-40"
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
                       >
                         <SelectValue />
@@ -289,20 +357,6 @@ export default function DailyLecturesPage() {
                         <SelectItem value="rejected">مرفوض</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Select value={filterCourse} onValueChange={setFilterCourse}>
-                      <SelectTrigger
-                        className="retro-window w-32"
-                        style={{ background: "white", border: "2px inset #c0c0c0" }}
-                      >
-                        <SelectValue placeholder="المقرر" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">جميع المقررات</SelectItem>
-                        <SelectItem value="LAW 301">LAW 301</SelectItem>
-                        <SelectItem value="CS 201">CS 201</SelectItem>
-                        <SelectItem value="MED 102">MED 102</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
 
@@ -310,227 +364,209 @@ export default function DailyLecturesPage() {
                   <DialogTrigger asChild>
                     <Button className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
                       <Upload className="w-4 h-4 ml-1" />
-                      رفع محاضرة جديدة
+                      إضافة محاضرة جديدة
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="retro-window max-w-2xl">
                     <DialogHeader>
-                      <DialogTitle style={{ color: "var(--ink)" }}>رفع محاضرة يومية جديدة</DialogTitle>
+                      <DialogTitle style={{ color: "var(--ink)" }}>إضافة محاضرة يومية جديدة</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
-                      {uploadStep === 1 && (
-                        <>
-                          <Input
-                            placeholder="عنوان المحاضرة"
-                            className="retro-window"
-                            style={{ background: "white", border: "2px inset #c0c0c0" }}
-                          />
-                          <div className="grid grid-cols-2 gap-4">
-                            <Select>
-                              <SelectTrigger
-                                className="retro-window"
-                                style={{ background: "white", border: "2px inset #c0c0c0" }}
-                              >
-                                <SelectValue placeholder="اختر المقرر" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="law-301">LAW 301 - القانون الدستوري</SelectItem>
-                                <SelectItem value="cs-201">CS 201 - البرمجة الكائنية</SelectItem>
-                                <SelectItem value="med-102">MED 102 - علم التشريح</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Input
-                              placeholder="اسم الأستاذ"
-                              className="retro-window"
-                              style={{ background: "white", border: "2px inset #c0c0c0" }}
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <Input
-                              type="date"
-                              className="retro-window"
-                              style={{ background: "white", border: "2px inset #c0c0c0" }}
-                            />
-                            <Input
-                              type="time"
-                              className="retro-window"
-                              style={{ background: "white", border: "2px inset #c0c0c0" }}
-                            />
-                          </div>
-                          <Textarea
-                            placeholder="وصف المحاضرة (اختياري)"
-                            className="retro-window"
-                            style={{ background: "white", border: "2px inset #c0c0c0" }}
-                            rows={3}
-                          />
-                          <div>
-                            <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
-                              صور المحاضرة (حد أقصى 5 صور)
-                            </label>
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              onChange={handleImageUpload}
-                              className="retro-window"
-                              style={{ background: "white", border: "2px inset #c0c0c0" }}
-                            />
-                            {selectedImages.length > 0 && (
-                              <div className="mt-2 text-sm text-gray-600">تم اختيار {selectedImages.length} صورة</div>
-                            )}
-                          </div>
-                          <Input
-                            placeholder="الكلمات المفتاحية (مفصولة بفواصل)"
-                            className="retro-window"
-                            style={{ background: "white", border: "2px inset #c0c0c0" }}
-                          />
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={handleUpload}
-                              className="retro-button flex-1"
-                              style={{ background: "var(--primary)", color: "white" }}
-                            >
-                              رفع المحاضرة
-                            </Button>
-                            <Button variant="outline" onClick={resetUpload} className="retro-button bg-transparent">
-                              إلغاء
-                            </Button>
-                          </div>
-                        </>
-                      )}
-                      {uploadStep === 2 && (
-                        <div className="space-y-4 text-center">
-                          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                            <Upload className="w-8 h-8 text-blue-600" />
-                          </div>
-                          <p className="font-medium">جاري رفع المحاضرة...</p>
-                          <Progress value={uploadProgress} className="w-full" />
-                          <p className="text-sm text-gray-600">{uploadProgress}% مكتمل</p>
-                        </div>
-                      )}
-                      {uploadStep === 3 && (
-                        <div className="space-y-4 text-center">
-                          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                            <span className="text-green-600 text-2xl">✓</span>
-                          </div>
-                          <p className="font-semibold">تم رفع المحاضرة بنجاح!</p>
-                          <p className="text-sm text-gray-600">
-                            ستتم مراجعة المحاضرة من قبل الإدارة وإشعارك بالنتيجة خلال 24 ساعة
-                          </p>
-                          <Button onClick={resetUpload} className="retro-button">
-                            إغلاق
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <Input
+                        placeholder="عنوان المحاضرة *"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        className="retro-window"
+                        style={{ background: "white", border: "2px inset #c0c0c0" }}
+                        required
+                      />
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input
+                          placeholder="اسم المادة *"
+                          value={formData.subject}
+                          onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                          className="retro-window"
+                          style={{ background: "white", border: "2px inset #c0c0c0" }}
+                          required
+                        />
+                        <Input
+                          placeholder="المكان (اختياري)"
+                          value={formData.location}
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                          className="retro-window"
+                          style={{ background: "white", border: "2px inset #c0c0c0" }}
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-4">
+                        <Input
+                          type="date"
+                          value={formData.scheduled_date}
+                          onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
+                          className="retro-window"
+                          style={{ background: "white", border: "2px inset #c0c0c0" }}
+                          required
+                        />
+                        <Input
+                          type="time"
+                          placeholder="وقت البداية"
+                          value={formData.start_time}
+                          onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                          className="retro-window"
+                          style={{ background: "white", border: "2px inset #c0c0c0" }}
+                        />
+                        <Input
+                          type="time"
+                          placeholder="وقت النهاية"
+                          value={formData.end_time}
+                          onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                          className="retro-window"
+                          style={{ background: "white", border: "2px inset #c0c0c0" }}
+                        />
+                      </div>
+                      
+                      <Input
+                        placeholder="رابط الاجتماع (اختياري)"
+                        value={formData.meeting_url}
+                        onChange={(e) => setFormData({ ...formData, meeting_url: e.target.value })}
+                        className="retro-window"
+                        style={{ background: "white", border: "2px inset #c0c0c0" }}
+                      />
+                      
+                      <Input
+                        type="number"
+                        placeholder="الحد الأقصى للمشاركين"
+                        value={formData.max_attendees}
+                        onChange={(e) => setFormData({ ...formData, max_attendees: parseInt(e.target.value) || 50 })}
+                        className="retro-window"
+                        style={{ background: "white", border: "2px inset #c0c0c0" }}
+                        min="1"
+                        max="200"
+                      />
+                      
+                      <Textarea
+                        placeholder="وصف المحاضرة (اختياري)"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="retro-window"
+                        style={{ background: "white", border: "2px inset #c0c0c0" }}
+                        rows={3}
+                      />
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          type="submit"
+                          disabled={uploading}
+                          className="retro-button flex-1"
+                          style={{ background: "var(--primary)", color: "white" }}
+                        >
+                          {uploading ? "جاري الإضافة..." : "إضافة المحاضرة"}
+                        </Button>
+                        <Button 
+                          type="button"
+                          variant="outline" 
+                          onClick={() => setUploadModalOpen(false)} 
+                          className="retro-button bg-transparent"
+                        >
+                          إلغاء
+                        </Button>
+                      </div>
+                    </form>
                   </DialogContent>
                 </Dialog>
               </div>
 
               {/* Lectures Grid */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredLectures.map((lecture) => (
-                  <div key={lecture.id} className="retro-window bg-white hover:shadow-lg transition-shadow">
-                    <div className="retro-titlebar mb-4">
-                      <h3 className="text-sm font-bold text-white">{lecture.course}</h3>
-                    </div>
-                    <div className="p-4 space-y-4">
-                      {/* Lecture Image */}
-                      <div className="retro-window bg-gray-100 h-32 flex items-center justify-center">
-                        <img
-                          src={lecture.images[0] || "/placeholder.svg"}
-                          alt="معاينة المحاضرة"
-                          className="max-h-full max-w-full object-contain"
-                        />
+              {loading ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-600">جاري تحميل المحاضرات...</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredLectures.map((lecture) => (
+                    <div key={lecture.id} className="retro-window bg-white hover:shadow-lg transition-shadow">
+                      <div className="retro-titlebar mb-4">
+                        <h3 className="text-sm font-bold text-white">{lecture.subject}</h3>
                       </div>
+                      <div className="p-4 space-y-4">
+                        {/* Lecture Info */}
+                        <div>
+                          <h4 className="font-semibold mb-2 line-clamp-2" style={{ color: "var(--ink)" }}>
+                            {lecture.title}
+                          </h4>
+                          <p className="text-sm text-gray-600 mb-1">
+                            <Calendar className="w-4 h-4 inline ml-1" />
+                            {new Date(lecture.scheduled_date).toLocaleDateString('ar-SA')}
+                          </p>
+                          {lecture.start_time && (
+                            <p className="text-sm text-gray-600 mb-1">
+                              <Clock className="w-4 h-4 inline ml-1" />
+                              {lecture.start_time} - {lecture.end_time}
+                            </p>
+                          )}
+                          <p className="text-sm text-gray-600 mb-1">
+                            <User className="w-4 h-4 inline ml-1" />
+                            {lecture.instructor?.name}
+                          </p>
+                          {lecture.location && (
+                            <p className="text-sm text-gray-600">📍 {lecture.location}</p>
+                          )}
+                        </div>
 
-                      {/* Lecture Info */}
-                      <div>
-                        <h4 className="font-semibold mb-2 line-clamp-2" style={{ color: "var(--ink)" }}>
-                          {lecture.title}
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-1">
-                          <Calendar className="w-4 h-4 inline ml-1" />
-                          {lecture.date} - {lecture.time}
-                        </p>
-                        <p className="text-sm text-gray-600 mb-1">
-                          <User className="w-4 h-4 inline ml-1" />
-                          {lecture.professor}
-                        </p>
-                        <p className="text-sm text-gray-600">رفع بواسطة: {lecture.uploadedBy}</p>
-                      </div>
+                        {/* Status */}
+                        <div className="flex items-center justify-between">
+                          <Badge className={`${getStatusColor(lecture.approval_status)} retro-button`}>
+                            {getStatusLabel(lecture.approval_status)}
+                          </Badge>
+                          <div className="text-xs text-gray-500">
+                            {lecture.current_attendees}/{lecture.max_attendees} مشارك
+                          </div>
+                        </div>
 
-                      {/* Status and Stats */}
-                      <div className="flex items-center justify-between">
-                        <Badge className={`${getStatusColor(lecture.status)} retro-button`}>
-                          {getStatusLabel(lecture.status)}
-                        </Badge>
-                        {lecture.status === "approved" && (
-                          <div className="flex items-center gap-3 text-sm text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <Eye className="w-4 h-4" />
-                              {lecture.views}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Heart className="w-4 h-4" />
-                              {lecture.likes}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MessageCircle className="w-4 h-4" />
-                              {lecture.comments}
-                            </span>
+                        {/* Rejection Reason */}
+                        {lecture.approval_status === "rejected" && lecture.rejection_reason && (
+                          <div className="retro-window bg-red-50 p-3" style={{ border: "2px inset #ffcccc" }}>
+                            <p className="text-sm text-red-700">
+                              <strong>سبب الرفض:</strong> {lecture.rejection_reason}
+                            </p>
                           </div>
                         )}
-                      </div>
 
-                      {/* Rejection Reason */}
-                      {lecture.status === "rejected" && lecture.rejectionReason && (
-                        <div className="retro-window bg-red-50 p-3" style={{ border: "2px inset #ffcccc" }}>
-                          <p className="text-sm text-red-700">
-                            <strong>سبب الرفض:</strong> {lecture.rejectionReason}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 retro-button bg-transparent"
-                          onClick={() => handleViewLecture(lecture)}
-                        >
-                          <Eye className="w-4 h-4 ml-1" />
-                          عرض
-                        </Button>
-                        {lecture.status === "rejected" && lecture.uploadedBy === profile?.name && (
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
                           <Button
                             size="sm"
-                            className="flex-1 retro-button"
-                            style={{ background: "var(--accent)", color: "white" }}
-                            onClick={() => handleReUpload(lecture.id)}
+                            variant="outline"
+                            className="flex-1 retro-button bg-transparent"
+                            onClick={() => handleViewLecture(lecture)}
                           >
-                            <RefreshCw className="w-4 h-4 ml-1" />
-                            إعادة رفع
+                            <Eye className="w-4 h-4 ml-1" />
+                            عرض
                           </Button>
-                        )}
-                        {lecture.status === "approved" && (
-                          <Button size="sm" variant="outline" className="retro-button bg-transparent">
-                            <Download className="w-4 h-4 ml-1" />
-                            تحميل
-                          </Button>
-                        )}
+                          {lecture.approval_status === "rejected" && lecture.instructor_id === user?.id && (
+                            <Button
+                              size="sm"
+                              className="flex-1 retro-button"
+                              style={{ background: "var(--accent)", color: "white" }}
+                              onClick={() => resubmitLecture(lecture.id)}
+                            >
+                              <RefreshCw className="w-4 h-4 ml-1" />
+                              إعادة إرسال
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
 
-              {filteredLectures.length === 0 && (
+              {filteredLectures.length === 0 && !loading && (
                 <div className="text-center py-12">
                   <FileText className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-500 text-lg mb-2">لا توجد محاضرات</p>
-                  <p className="text-gray-400">جرب تغيير معايير البحث أو الفلترة</p>
+                  <p className="text-gray-400">جرب تغيير معايير البحث أو ابدأ بإضافة محاضرة جديدة</p>
                 </div>
               )}
             </div>
@@ -551,86 +587,36 @@ export default function DailyLecturesPage() {
                 <h3 className="font-bold text-lg mb-2">{selectedLecture.title}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
                   <div>
-                    <p>
-                      <strong>المقرر:</strong> {selectedLecture.courseName} ({selectedLecture.course})
-                    </p>
-                    <p>
-                      <strong>الأستاذ:</strong> {selectedLecture.professor}
-                    </p>
+                    <p><strong>المادة:</strong> {selectedLecture.subject}</p>
+                    <p><strong>المدرس:</strong> {selectedLecture.instructor?.name}</p>
                   </div>
                   <div>
-                    <p>
-                      <strong>التاريخ:</strong> {selectedLecture.date} - {selectedLecture.time}
-                    </p>
-                    <p>
-                      <strong>رفع بواسطة:</strong> {selectedLecture.uploadedBy}
-                    </p>
+                    <p><strong>التاريخ:</strong> {new Date(selectedLecture.scheduled_date).toLocaleDateString('ar-SA')}</p>
+                    <p><strong>الوقت:</strong> {selectedLecture.start_time} - {selectedLecture.end_time}</p>
                   </div>
                 </div>
-                {selectedLecture.description && <p className="mt-3 text-gray-700">{selectedLecture.description}</p>}
+                {selectedLecture.description && (
+                  <p className="mt-3 text-gray-700">{selectedLecture.description}</p>
+                )}
                 <div className="flex items-center gap-4 mt-3">
-                  <Badge className={getStatusColor(selectedLecture.status)}>
-                    {getStatusLabel(selectedLecture.status)}
+                  <Badge className={getStatusColor(selectedLecture.approval_status)}>
+                    {getStatusLabel(selectedLecture.approval_status)}
                   </Badge>
-                  {selectedLecture.tags && (
-                    <div className="flex gap-1">
-                      {selectedLecture.tags.map((tag: string, index: number) => (
-                        <span key={index} className="text-xs bg-gray-200 px-2 py-1 rounded">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                  {selectedLecture.location && (
+                    <span className="text-sm">📍 {selectedLecture.location}</span>
+                  )}
+                  {selectedLecture.meeting_url && (
+                    <a 
+                      href={selectedLecture.meeting_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-sm"
+                    >
+                      رابط الاجتماع
+                    </a>
                   )}
                 </div>
               </div>
-
-              {/* Lecture Images */}
-              <div className="space-y-4">
-                <h4 className="font-semibold">صور المحاضرة</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedLecture.images.map((image: string, index: number) => (
-                    <div key={index} className="retro-window bg-white p-2">
-                      <img
-                        src={image || "/placeholder.svg"}
-                        alt={`صورة المحاضرة ${index + 1}`}
-                        className="w-full h-64 object-contain"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Stats and Actions */}
-              {selectedLecture.status === "approved" && (
-                <div className="retro-window bg-blue-50 p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-6 text-sm">
-                      <span className="flex items-center gap-1">
-                        <Eye className="w-4 h-4" />
-                        {selectedLecture.views} مشاهدة
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Heart className="w-4 h-4" />
-                        {selectedLecture.likes} إعجاب
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MessageCircle className="w-4 h-4" />
-                        {selectedLecture.comments} تعليق
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="retro-button bg-transparent">
-                        <Heart className="w-4 h-4 ml-1" />
-                        إعجاب
-                      </Button>
-                      <Button size="sm" variant="outline" className="retro-button bg-transparent">
-                        <Download className="w-4 h-4 ml-1" />
-                        تحميل
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               <div className="flex justify-end">
                 <Button onClick={() => setViewModalOpen(false)} className="retro-button">
