@@ -54,7 +54,7 @@ export default function CartPage() {
           table: 'cart_items',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
+        (payload: any) => {
           console.log('Cart updated:', payload)
           loadCart() // Reload cart when changes occur
         }
