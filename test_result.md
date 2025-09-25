@@ -195,14 +195,15 @@ metadata:
 test_plan:
   current_focus:
     - "Core Summaries API"
-    - "Cart Management API"
-    - "Admin Analytics API"
-    - "Authentication System"
-    - "Books Listing API"
-  stuck_tasks: []
+    - "Individual Book Details API"
+  stuck_tasks:
+    - "Core Summaries API"
+    - "Individual Book Details API"
   test_all: true
   test_priority: "high_first"
 
 agent_communication:
   - agent: "testing"
     message: "Starting comprehensive backend API testing for Next.js + Supabase application. Will test all core APIs, admin endpoints, cart functionality, and authentication system as requested in review."
+  - agent: "testing"
+    message: "TESTING COMPLETE: Comprehensive backend API testing completed. 19/21 tests passed. 2 CRITICAL database schema issues found: 1) Summaries API - missing foreign key relationship between summaries and user_id, 2) Individual Book API - missing email column in profiles table. All other APIs working correctly including authentication, admin endpoints, cart management, and file uploads."
