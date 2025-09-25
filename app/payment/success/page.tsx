@@ -65,7 +65,7 @@ export default function PaymentSuccessPage() {
 
               <div className="flex gap-3">
                 <Button asChild variant="outline" className="retro-button flex-1 bg-transparent">
-                  <Link href="/store">متابعة التسوق</Link>
+                  <Link href="/market">متابعة التسوق</Link>
                 </Button>
                 <Button asChild variant="outline" className="retro-button flex-1 bg-transparent">
                   <Link href="/">العودة للرئيسية</Link>

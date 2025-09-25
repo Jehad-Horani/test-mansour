@@ -36,7 +36,6 @@ export default function ProfilePage() {
 
   const recentActivity = [
     { type: "book", title: `اشترى كتاب: أساسيات ${getMajorLabel(profile?.major)}`, date: "منذ يومين" },
-    { type: "consultation", title: "حجز استشارة مع مختص", date: "منذ 3 أيام" },
     { type: "course", title: `انضم لمقرر: ${getMajorLabel(profile?.major)} المتقدم`, date: "منذ أسبوعين" },
   ]
 
@@ -227,7 +226,7 @@ export default function ProfilePage() {
                 >
                   <Link href="/ambassadors">
                     <Users className="w-6 h-6" />
-                    <span>احجز استشارة</span>
+                    <span>السفراء</span>
                   </Link>
                 </Button>
               </div>

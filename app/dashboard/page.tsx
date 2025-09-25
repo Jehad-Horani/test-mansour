@@ -407,7 +407,7 @@ export default function DashboardPage() {
                   className="retro-button h-auto p-4 flex flex-col items-center gap-2"
                   style={{ background: "var(--primary)", color: "white" }}
                 >
-                  <Link href="/store">
+                  <Link href="/market">
                     <BookOpen className="w-6 h-6" />
                     <span>تصفح الكتب</span>
                   </Link>
@@ -422,7 +422,7 @@ export default function DashboardPage() {
                 >
                   <Link href="/ambassadors">
                     <Users className="w-6 h-6" />
-                    <span>احجز استشارة</span>
+                    <span>السفراء</span>
                   </Link>
                 </Button>
 

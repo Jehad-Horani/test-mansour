@@ -119,7 +119,7 @@ export default function HomePage() {
                     className="retro-button"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
-                    <Link href="/ambassadors">احجز استشارة</Link>
+                    <Link href="/ambassadors">السفراء</Link>
                   </Button>
                 </div>
               </div>
