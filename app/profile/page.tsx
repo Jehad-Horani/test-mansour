@@ -13,13 +13,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    if (!profile) {
-      router.push("/auth/login")
-    } else {
-      setIsLoading(false)
-    }
-  }, [isLoggedIn, router])
+
 
   if (isLoading || !user) {
     return (
