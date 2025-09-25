@@ -59,9 +59,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link href="/admin/summaries" className="text-white hover:text-gray-200">
                 الملخصات
               </Link>
-              <Link href="/admin/messages" className="text-white hover:text-gray-200">
-                الرسائل
-              </Link>
               <Link href="/admin/settings" className="text-white hover:text-gray-200">
                 الإعدادات
               </Link>

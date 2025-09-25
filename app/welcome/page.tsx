@@ -2,14 +2,14 @@
 
 import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
-import { useUserContext } from "@/contexts/user-context"
+import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { Sparkles, ArrowLeft, CheckCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function WelcomePage() {
-  const { user, isLoggedIn, getMajorLabel } = useUserContext()
+  const { user, isLoggedIn, getMajorLabel ,profile } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function WelcomePage() {
                 <Sparkles className="w-12 h-12" style={{ color: "var(--primary)" }} />
               </div>
               <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--ink)" }}>
-                أهلاً وسهلاً، {user.name}!
+                أهلاً وسهلاً، {profile?.name}!
               </h1>
               <p className="text-lg text-gray-600 mb-6">مرحباً بك في منصة تخصص الأكاديمية</p>
             </div>
@@ -46,15 +46,15 @@ export default function WelcomePage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <CheckCircle className="w-5 h-5" style={{ color: "var(--accent)" }} />
-                  <span>التخصص: {getMajorLabel(user.major)}</span>
+                  <span>التخصص: {getMajorLabel(profile?.major)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <CheckCircle className="w-5 h-5" style={{ color: "var(--accent)" }} />
-                  <span>الجامعة: {user.university}</span>
+                  <span>الجامعة: {profile?.university}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <CheckCircle className="w-5 h-5" style={{ color: "var(--accent)" }} />
-                  <span>المستوى: {user.year}</span>
+                  <span>المستوى: {profile?.year}</span>
                 </div>
               </div>
             </div>
