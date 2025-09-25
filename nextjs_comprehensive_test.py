@@ -83,8 +83,8 @@ class NextJSAPITester:
     def test_individual_book_api(self):
         """Test Individual Book Details API - previously had missing email column issue"""
         try:
-            # Test with a sample book ID
-            test_book_id = "test-book-123"
+            # Test with a proper UUID format
+            test_book_id = "123e4567-e89b-12d3-a456-426614174000"
             response = requests.get(f"{self.api_base}/books/{test_book_id}", headers=self.headers, timeout=10)
             
             if response.status_code == 404:
