@@ -157,9 +157,7 @@ export default function SettingsPage() {
               {/* Settings Tabs */}
               <div className="grid md:grid-cols-4 gap-4 mb-6">
                 {[
-                  { id: "notifications", label: "الإشعارات", icon: "bell" },
                   { id: "appearance", label: "المظهر", icon: "palette" },
-                  { id: "privacy", label: "الخصوصية", icon: "shield" },
                   { id: "advanced", label: "متقدم", icon: "settings" },
                 ].map((tab) => (
                   <button
