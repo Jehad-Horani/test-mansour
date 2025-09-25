@@ -8,7 +8,7 @@ export async function GET() {
       .from("summaries")
       .select(`
         *,
-        profiles!summaries_user_id_fkey (
+        profiles (
           name,
           avatar_url
         )
