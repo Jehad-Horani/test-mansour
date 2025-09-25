@@ -94,6 +94,7 @@ export default function EditProfilePage() {
       setLoading(false)
     }
   }
+const universities = ["الجامعة الأردنية", "جامعة العلوم والتكنولوجيا الأردنية", "جامعة اليرموك", "جامعة مؤتة", "جامعة عمان العربية"]
 
   return (
     <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
@@ -178,13 +179,11 @@ export default function EditProfilePage() {
                       className="w-full p-2 retro-window"
                       style={{ background: "white", border: "2px inset #c0c0c0" }}
                     >
-                      <option value="">اختر الجامعة</option>
-                      <option value="جامعة الملك سعود">جامعة الملك سعود</option>
-                      <option value="جامعة الملك عبدالعزيز">جامعة الملك عبدالعزيز</option>
-                      <option value="جامعة الإمام محمد بن سعود">جامعة الإمام محمد بن سعود</option>
-                      <option value="جامعة الملك فهد للبترول والمعادن">جامعة الملك فهد للبترول والمعادن</option>
-                      <option value="الجامعة الأردنية">الجامعة الأردنية</option>
-                      <option value="جامعة العلوم والتكنولوجيا الأردنية">جامعة العلوم والتكنولوجيا الأردنية</option>
+                  {universities.map((uni) => (
+                    <option key={uni} value={uni}>
+                      {uni}
+                    </option>
+                     ))}
                     </select>
                   </div>
                   <div>
