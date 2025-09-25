@@ -63,18 +63,19 @@ export default function EditProfilePage() {
     setLoading(true)
 
     try {
-      // Update profile in database - Fixed the API call
+      // Update profile in database - Fixed the API call and schema
       const { error } = await supabase
         .from("profiles")
         .update({
           name: form.name,
-          phone: form.phone,
-          birth_date: form.birth_date,
-          university: form.university,
-          major: form.major,
-          study_level: form.study_level,
-          student_id: form.student_id,
-          bio: form.bio,
+          phone: form.phone || null,
+          birth_date: form.birth_date || null,
+          university: form.university || null, // Ensure this is stored as TEXT, not array
+          major: form.major || null,
+          study_level: form.study_level || null,
+          student_id: form.student_id || null,
+          bio: form.bio || null,
+          updated_at: new Date().toISOString()
         })
         .eq("id", user.id)
 
