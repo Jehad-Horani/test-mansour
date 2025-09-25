@@ -61,27 +61,33 @@ backend:
 
   - task: "Admin Users API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/app/api/admin/users/route.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial testing required - user management with pagination, requires admin access"
+      - working: true
+        agent: "testing"
+        comment: "API correctly requires admin access for both GET and PATCH operations. Authentication and authorization working properly"
 
   - task: "Admin Books API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/app/api/admin/books/route.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial testing required - book management with status filters, requires admin access"
+      - working: true
+        agent: "testing"
+        comment: "API correctly requires admin access for GET, PATCH, and DELETE operations. All endpoints properly protected"
 
   - task: "Admin Analytics API"
     implemented: true
