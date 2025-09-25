@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-25T09:50:41.467799",
+  "timestamp": "2025-09-25T17:00:18.140957",
   "total_tests": 13,
   "passed_tests": 9,
   "success_rate": 69.23076923076923,
@@ -80,7 +80,7 @@
       "test_name": "Auth Signup",
       "success": false,
       "message": "HTTP 400",
-      "error_details": "{\"code\":400,\"error_code\":\"email_address_invalid\",\"msg\":\"Email address \\\"test_20250925_095041@test.com\\\" is invalid\"}"
+      "error_details": "{\"code\":400,\"error_code\":\"email_address_invalid\",\"msg\":\"Email address \\\"test_20250925_170017@test.com\\\" is invalid\"}"
     }
   ]
 }
