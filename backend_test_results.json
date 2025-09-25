@@ -1,0 +1,86 @@
+{
+  "timestamp": "2025-09-25T09:37:50.430308",
+  "total_tests": 13,
+  "passed_tests": 9,
+  "success_rate": 69.23076923076923,
+  "test_details": [
+    {
+      "test_name": "Database Connection",
+      "success": true,
+      "message": "Successfully connected to Supabase",
+      "error_details": ""
+    },
+    {
+      "test_name": "Table Exists: profiles",
+      "success": true,
+      "message": "Table accessible",
+      "error_details": ""
+    },
+    {
+      "test_name": "Table Exists: books",
+      "success": true,
+      "message": "Table accessible",
+      "error_details": ""
+    },
+    {
+      "test_name": "Table Exists: cart_items",
+      "success": false,
+      "message": "HTTP 404",
+      "error_details": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.profiles'\",\"message\":\"Could not find the table 'public.cart_items' in the schema cache\"}"
+    },
+    {
+      "test_name": "Table Exists: daily_lectures",
+      "success": true,
+      "message": "Table accessible",
+      "error_details": ""
+    },
+    {
+      "test_name": "Table Exists: admin_activities",
+      "success": false,
+      "message": "HTTP 404",
+      "error_details": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.user_activities'\",\"message\":\"Could not find the table 'public.admin_activities' in the schema cache\"}"
+    },
+    {
+      "test_name": "Profiles Schema",
+      "success": true,
+      "message": "Profiles table accessible",
+      "error_details": ""
+    },
+    {
+      "test_name": "Books Schema",
+      "success": true,
+      "message": "Books table accessible",
+      "error_details": ""
+    },
+    {
+      "test_name": "Cart Items Schema",
+      "success": false,
+      "message": "HTTP 404",
+      "error_details": "{\"code\":\"PGRST205\",\"details\":null,\"hint\":\"Perhaps you meant the table 'public.profiles'\",\"message\":\"Could not find the table 'public.cart_items' in the schema cache\"}"
+    },
+    {
+      "test_name": "Daily Lectures Schema",
+      "success": true,
+      "message": "Daily lectures table accessible",
+      "error_details": ""
+    },
+    {
+      "test_name": "Storage Bucket: avatars",
+      "success": true,
+      "message": "Bucket accessible",
+      "error_details": ""
+    },
+    {
+      "test_name": "Storage Bucket: book-images",
+      "success": true,
+      "message": "Bucket accessible",
+      "error_details": ""
+    },
+    {
+      "test_name": "Auth Signup",
+      "success": false,
+      "message": "HTTP 400",
+      "error_details": "{\"code\":400,\"error_code\":\"email_address_invalid\",\"msg\":\"Email address \\\"test_20250925_093750@test.com\\\" is invalid\"}"
+    }
+  ]
+}
