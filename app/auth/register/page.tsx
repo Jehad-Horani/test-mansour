@@ -159,7 +159,7 @@ export default function RegisterPage() {
       await refreshUser()
       
       setIsSuccess(true)
-      setTimeout(() => router.push("/dashboard"), 8000)
+      setTimeout(() => router.push("/dashboard"), 2000)
       
     } catch (err: any) {
       console.error('[REGISTER] Registration error:', err)
@@ -429,7 +429,7 @@ export default function RegisterPage() {
                 </label>
                 <div className="relative">
                   <Input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={(e) => handleInputChange("password", e.target.value)}
                     placeholder="••••••••"
@@ -459,7 +459,7 @@ export default function RegisterPage() {
                 </label>
                 <div className="relative">
                   <Input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                     placeholder="••••••••"
