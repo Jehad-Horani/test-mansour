@@ -121,7 +121,14 @@ export class AdminService {
   }
 
   async approveBook(bookId: string) {
-    const { data, error } = await this.supabase.from("books").update({ status: "approved" }).eq("id", bookId).select()
+    const { data, error } = await this.supabase
+      .from("books")
+      .update({ 
+        approval_status: "approved",
+        approved_at: new Date().toISOString()
+      })
+      .eq("id", bookId)
+      .select()
 
     if (!error) {
       await this.logAction("content_moderation", "book", bookId, "تم الموافقة على الكتاب")
@@ -134,14 +141,50 @@ export class AdminService {
     const { data, error } = await this.supabase
       .from("books")
       .update({
-        status: "rejected",
+        approval_status: "rejected",
         rejection_reason: reason,
+        approved_at: new Date().toISOString()
       })
       .eq("id", bookId)
       .select()
 
     if (!error) {
       await this.logAction("content_moderation", "book", bookId, `تم رفض الكتاب: ${reason}`)
+    }
+
+    return { data, error }
+  }
+
+  async approveLecture(lectureId: string) {
+    const { data, error } = await this.supabase
+      .from("daily_lectures")
+      .update({ 
+        approval_status: "approved",
+        approved_at: new Date().toISOString()
+      })
+      .eq("id", lectureId)
+      .select()
+
+    if (!error) {
+      await this.logAction("content_moderation", "lecture", lectureId, "تم الموافقة على المحاضرة")
+    }
+
+    return { data, error }
+  }
+
+  async rejectLecture(lectureId: string, reason: string) {
+    const { data, error } = await this.supabase
+      .from("daily_lectures")
+      .update({
+        approval_status: "rejected",
+        rejection_reason: reason,
+        approved_at: new Date().toISOString()
+      })
+      .eq("id", lectureId)
+      .select()
+
+    if (!error) {
+      await this.logAction("content_moderation", "lecture", lectureId, `تم رفض المحاضرة: ${reason}`)
     }
 
     return { data, error }
