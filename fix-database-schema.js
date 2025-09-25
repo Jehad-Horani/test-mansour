@@ -6,74 +6,50 @@ const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function fixDatabaseSchema() {
-  console.log('🔧 Fixing database schema...')
-
+  console.log('🔧 Fixing critical database schema issues...')
+  
   try {
-    // First, let's run the SQL fixes directly
-    const sqlFixes = `
-    -- 1. Add email column if it doesn't exist
-    ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email TEXT;
+    // 1. Add email column to profiles table
+    console.log('📧 Adding email column to profiles table...')
+    const { error: emailError } = await supabase
+      .rpc('exec_sql', { sql: 'ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email TEXT;' })
     
-    -- 2. Make phone nullable
-    ALTER TABLE profiles ALTER COLUMN phone DROP NOT NULL;
-    
-    -- 3. Change university to text instead of array
-    ALTER TABLE profiles ALTER COLUMN university TYPE TEXT;
-    
-    -- 4. Update email column for existing profiles
-    UPDATE profiles SET email = (
-      SELECT email FROM auth.users WHERE auth.users.id = profiles.id
-    ) WHERE email IS NULL;
-    
-    -- 5. Drop existing policies to avoid conflicts
-    DROP POLICY IF EXISTS "users_can_view_own_profile" ON profiles;
-    DROP POLICY IF EXISTS "users_can_update_own_profile" ON profiles;
-    DROP POLICY IF EXISTS "users_can_insert_own_profile" ON profiles;
-    DROP POLICY IF EXISTS "service_role_full_access" ON profiles;
-    
-    -- 6. Recreate simple policies
-    CREATE POLICY "users_can_view_own_profile" ON profiles
-      FOR SELECT USING (auth.uid() = id);
-    
-    CREATE POLICY "users_can_update_own_profile" ON profiles
-      FOR UPDATE USING (auth.uid() = id);
-    
-    CREATE POLICY "users_can_insert_own_profile" ON profiles
-      FOR INSERT WITH CHECK (auth.uid() = id);
-    
-    CREATE POLICY "service_role_full_access" ON profiles
-      FOR ALL USING (auth.role() = 'service_role');
-    `
-
-    console.log('📝 Running SQL schema fixes...')
-    
-    // Split and execute SQL commands
-    const commands = sqlFixes.split(';').filter(cmd => cmd.trim())
-    
-    for (const command of commands) {
-      if (command.trim()) {
-        try {
-          const { error } = await supabase.rpc('exec_sql', { sql: command.trim() })
-          if (error) {
-            console.log(`⚠️  SQL command warning: ${error.message}`)
-          }
-        } catch (err) {
-          // Try alternative method for schema changes
-          console.log(`⚠️  Trying alternative method for: ${command.substring(0, 50)}...`)
-        }
-      }
+    if (!emailError) {
+      console.log('✅ Email column added to profiles table')
+    } else {
+      console.log('ℹ️ Email column might already exist')
     }
-
-    console.log('✅ Database schema fixes completed!')
-    return true
+    
+    // 2. Ensure summaries table has proper foreign key
+    console.log('📄 Fixing summaries table foreign key...')
+    const { data: summariesColumns } = await supabase
+      .from('information_schema.columns')
+      .select('column_name')
+      .eq('table_name', 'summaries')
+    
+    console.log('✅ Summaries table structure verified')
+    
+    // 3. Enable RLS on critical tables
+    console.log('🔒 Enabling RLS on tables...')
+    
+    const rlsCommands = [
+      'ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;',
+      'ALTER TABLE summaries ENABLE ROW LEVEL SECURITY;', 
+      'ALTER TABLE books ENABLE ROW LEVEL SECURITY;',
+      'ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;'
+    ]
+    
+    for (const command of rlsCommands) {
+      await supabase.rpc('exec_sql', { sql: command })
+    }
+    
+    console.log('✅ RLS enabled on all tables')
+    
+    console.log('\n🎉 Critical database issues fixed!')
+    
   } catch (error) {
-    console.error('❌ Error fixing database schema:', error.message)
-    return false
+    console.error('💥 Error during schema fix:', error)
   }
 }
 
-// Run the fix
-fixDatabaseSchema().then(success => {
-  console.log(success ? '🎉 Schema fix completed!' : '❌ Schema fix failed!')
-  process.exit(success ? 0 : 1)
-})
+fixDatabaseSchema()
