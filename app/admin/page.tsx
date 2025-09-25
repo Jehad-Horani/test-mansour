@@ -21,7 +21,7 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 export default function AdminDashboardPage() {
-  const { user, isLoggedIn, isAdmin } = useAuth()
+  const { user, isLoggedIn, isAdmin , profile } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [bookStats, setBookStats] = useState({
@@ -38,10 +38,7 @@ export default function AdminDashboardPage() {
   const [recentActivities, setRecentActivities] = useState([])
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push('/auth')
-      return
-    }
+    
 
     if (!isAdmin()) {
       toast.error("غير مصرح لك بالوصول لهذه الصفحة")
@@ -49,32 +46,11 @@ export default function AdminDashboardPage() {
       return
     }
 
-    loadDashboardData()
-  }, [isLoggedIn, user])
+  }, [profile, user])
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true)
-      
-      const [booksResult, usersResult, activitiesResult] = await Promise.all([
-        marketplaceApi.getBookStats(),
-        marketplaceApi.getUserStats(),
-        marketplaceApi.getAdminActivities(10)
-      ])
 
-      setBookStats(booksResult)
-      setUserStats(usersResult)
-      setRecentActivities(activitiesResult.data || [])
 
-    } catch (error: any) {
-      console.error("Error loading dashboard:", error)
-      toast.error("حدث خطأ أثناء تحميل لوحة التحكم")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (!isLoggedIn) {
+  if (!profile) {
     return (
       <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
         <RetroWindow title="لوحة تحكم الإدارة">
