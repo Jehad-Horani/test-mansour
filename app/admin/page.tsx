@@ -190,12 +190,12 @@ export default function AdminDashboardPage() {
               </Button>
               <Button
                 asChild
-                variant="outline"
-                className="retro-button w-full bg-transparent"
+                className="retro-button w-full"
+                style={{ background: "var(--primary)", color: "white" }}
               >
-                <Link href="/admin/reports">
-                  <BarChart3 className="w-4 h-4 ml-2" />
-                  التقارير
+                <Link href="/admin/daily-lectures">
+                  <Clock className="w-4 h-4 ml-2" />
+                  مراجعة المحاضرات
                 </Link>
               </Button>
             </div>
