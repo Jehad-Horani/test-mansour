@@ -364,9 +364,9 @@ useEffect(() => {
               <div className="p-4 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                    {book.seller.avatar_url ? (
+                    {book?.seller?.avatar_url ? (
                       <img 
-                        src={book.seller.avatar_url} 
+                        src={book?.seller?.avatar_url} 
                         alt={book.seller.name}
                         className="w-12 h-12 rounded-full object-cover"
                       />
