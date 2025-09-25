@@ -208,20 +208,7 @@ export default function AdminDailyLecturesPage() {
     }
   }
 
-  if (!isAdmin()) {
-    return (
-      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
-        <RetroWindow title="غير مصرح">
-          <div className="p-6 text-center">
-            <p className="text-gray-600 mb-4">غير مصرح لك بالوصول لهذه الصفحة</p>
-            <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
-              <Link href="/auth">تسجيل الدخول</Link>
-            </Button>
-          </div>
-        </RetroWindow>
-      </div>
-    )
-  }
+ 
 
   if (loading) {
     return (
