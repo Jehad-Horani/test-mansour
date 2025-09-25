@@ -236,11 +236,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Core Summaries API"
-    - "Individual Book Details API"
-  stuck_tasks:
-    - "Core Summaries API"
-    - "Individual Book Details API"
+    - "All critical fixes verified"
+  stuck_tasks: []
   test_all: true
   test_priority: "high_first"
 
