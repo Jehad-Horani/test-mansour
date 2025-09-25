@@ -15,18 +15,6 @@ export default function ProfilePage() {
 
 
 
-  if (isLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
-        <RetroWindow title="جاري التحميل...">
-          <div className="p-6 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p style={{ color: "var(--ink)" }}>يرجى الانتظار...</p>
-          </div>
-        </RetroWindow>
-      </div>
-    )
-  }
 
   const stats = profile?.stats
 
@@ -65,7 +53,7 @@ export default function ProfilePage() {
                     <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--ink)" }}>
                       {profile?.name}
                     </h2>
-                    <p className="text-gray-600 mb-1">{user.email}</p>
+                    <p className="text-gray-600 mb-1">{user?.email}</p>
                     <p className="text-gray-600 mb-1">{profile?.university}</p>
                     <p className="text-gray-600 mb-4">تخصص: {getMajorLabel(profile?.major)}</p>
                   </div>
