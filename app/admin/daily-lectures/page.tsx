@@ -1,458 +1,416 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/app/components/ui/button"
-import { Input } from "@/app/components/ui/input"
-import { RetroWindow } from "@/app/components/retro-window"
-import { Badge } from "@/app/components/ui/badge"
-import Link from "next/link"
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Eye, 
-  ArrowRight,
-  Search,
-  Filter,
-  Star,
-  StarOff
-} from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
-import { adminService } from "@/lib/supabase/admin"
-import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { useUserContext } from "@/contexts/user-context"
+import { RetroWindow } from "@/app/components/retro-window"
+import { Button } from "@/app/components/ui/button"
+import { Badge } from "@/app/components/ui/badge"
+import { 
+  GraduationCap,
+  User,
+  Clock,
+  Check,
+  X,
+  Eye,
+  Calendar,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react"
+import { toast } from "sonner"
 
-interface DailyLecture {
+interface Lecture {
   id: string
   title: string
-  description?: string
-  subject: string
-  instructor_id: string
-  scheduled_date: string
-  start_time: string
-  end_time: string
-  location?: string
-  meeting_url?: string
-  status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled'
-  max_attendees: number
-  current_attendees: number
+  description: string
+  subject_name: string
+  university_name: string
+  major: string
+  lecture_date: string
+  duration_minutes: number
   approval_status: 'pending' | 'approved' | 'rejected'
-  approved_by?: string
-  approved_at?: string
-  rejection_reason?: string
   created_at: string
-  updated_at: string
-  instructor?: {
+  rejection_reason?: string
+  instructor: {
     name: string
+    email: string
     university?: string
     phone?: string
   }
 }
 
 export default function AdminDailyLecturesPage() {
-  const { user, isLoggedIn, isAdmin } = useAuth()
+  const { isLoggedIn, isAdmin } = useUserContext()
   const router = useRouter()
-  const supabase = createClient()
+  const [lectures, setLectures] = useState<Lecture[]>([])
   const [loading, setLoading] = useState(true)
-  const [pendingLectures, setPendingLectures] = useState<DailyLecture[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [processingLectureId, setProcessingLectureId] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 1
+  })
+  const [updating, setUpdating] = useState<string | null>(null)
+  const [rejectionModal, setRejectionModal] = useState<{ lectureId: string; title: string } | null>(null)
+  const [rejectionReason, setRejectionReason] = useState("")
 
   useEffect(() => {
-  
-
-    loadPendingLectures()
-
-    // Real-time updates for new lecture submissions
-    const channel = supabase
-      .channel('admin-lectures-changes')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'daily_lectures' },
-        (payload: any) => {
-          console.log('New lecture submitted:', payload)
-          loadPendingLectures()
-        }
-      )
-      .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'daily_lectures' },
-        (payload: any) => {
-          console.log('Lecture updated:', payload)
-          loadPendingLectures()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
+    if (!isLoggedIn || !isAdmin()) {
+      router.push('/')
+      return
     }
-  }, [ user])
+    fetchLectures()
+  }, [isLoggedIn, isAdmin, router, filter, page])
 
-  const loadPendingLectures = async () => {
+  const fetchLectures = async () => {
     try {
       setLoading(true)
+      const params = new URLSearchParams({
+        status: filter,
+        page: page.toString(),
+        limit: '20'
+      })
       
-      let query = supabase
-        .from('daily_lectures')
-        .select(`
-          *,
-          instructor:profiles!daily_lectures_instructor_id_fkey(name, university, phone)
-        `)
-        .order('created_at', { ascending: false })
-
-      // Apply filters
-      if (filter !== 'all') {
-        query = query.eq('approval_status', filter)
+      const res = await fetch(`/api/admin/lectures?${params}`)
+      const data = await res.json()
+      
+      if (res.ok) {
+        setLectures(data.lectures || [])
+        setPagination(data.pagination)
+      } else {
+        console.error("Error fetching lectures:", data.error)
+        toast.error("خطأ في جلب المحاضرات")
       }
-
-      const { data, error } = await query
-      
-      if (error) throw error
-      setPendingLectures(data || [])
-    } catch (error: any) {
-      console.error("Error loading lectures:", error)
-      toast.error("حدث خطأ أثناء تحميل المحاضرات")
+    } catch (error) {
+      console.error("Error fetching lectures:", error)
+      toast.error("خطأ في الاتصال")
     } finally {
       setLoading(false)
     }
   }
 
-  const approveLecture = async (lectureId: string) => {
-    if (!confirm("هل أنت متأكد من قبول هذه المحاضرة؟")) return
+  const handleApprove = async (lectureId: string) => {
+    if (!confirm('هل تريد الموافقة على هذه المحاضرة؟')) return
 
     try {
-      setProcessingLectureId(lectureId)
-      
-      const { data, error } = await supabase
-        .from('daily_lectures')
-        .update({
-          approval_status: 'approved',
-          approved_by: user!.id,
-          approved_at: new Date().toISOString()
+      setUpdating(lectureId)
+      const res = await fetch('/api/admin/lectures', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lectureId,
+          action: 'approve'
         })
-        .eq('id', lectureId)
-        .select()
+      })
 
-      if (error) throw error
-      
-      toast.success("تم قبول المحاضرة بنجاح")
-      loadPendingLectures()
-    } catch (error: any) {
+      const data = await res.json()
+
+      if (res.ok) {
+        setLectures(prev => prev.map(lecture => 
+          lecture.id === lectureId ? { ...lecture, approval_status: 'approved' } : lecture
+        ))
+        toast.success("تم قبول المحاضرة بنجاح")
+      } else {
+        console.error("Error approving lecture:", data.error)
+        toast.error("خطأ في قبول المحاضرة")
+      }
+    } catch (error) {
       console.error("Error approving lecture:", error)
-      toast.error("حدث خطأ أثناء قبول المحاضرة")
+      toast.error("خطأ في الاتصال")
     } finally {
-      setProcessingLectureId(null)
+      setUpdating(null)
     }
   }
 
-  const rejectLecture = async (lectureId: string) => {
-    const reason = prompt("يرجى إدخال سبب رفض المحاضرة:")
-    if (!reason) return
+  const handleReject = async () => {
+    if (!rejectionModal || !rejectionReason.trim()) return
 
     try {
-      setProcessingLectureId(lectureId)
-      
-      const { data, error } = await supabase
-        .from('daily_lectures')
-        .update({
-          approval_status: 'rejected',
-          approved_by: user!.id,
-          approved_at: new Date().toISOString(),
-          rejection_reason: reason
+      setUpdating(rejectionModal.lectureId)
+      const res = await fetch('/api/admin/lectures', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lectureId: rejectionModal.lectureId,
+          action: 'reject',
+          reason: rejectionReason
         })
-        .eq('id', lectureId)
-        .select()
+      })
 
-      if (error) throw error
-      
-      toast.success("تم رفض المحاضرة")
-      loadPendingLectures()
-    } catch (error: any) {
+      const data = await res.json()
+
+      if (res.ok) {
+        setLectures(prev => prev.map(lecture => 
+          lecture.id === rejectionModal.lectureId 
+            ? { ...lecture, approval_status: 'rejected', rejection_reason: rejectionReason } 
+            : lecture
+        ))
+        toast.success("تم رفض المحاضرة")
+        setRejectionModal(null)
+        setRejectionReason("")
+      } else {
+        console.error("Error rejecting lecture:", data.error)
+        toast.error("خطأ في رفض المحاضرة")
+      }
+    } catch (error) {
       console.error("Error rejecting lecture:", error)
-      toast.error("حدث خطأ أثناء رفض المحاضرة")
+      toast.error("خطأ في الاتصال")
     } finally {
-      setProcessingLectureId(null)
+      setUpdating(null)
     }
   }
-
-  const filteredLectures = pendingLectures.filter(lecture =>
-    lecture.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lecture.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lecture.instructor?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'approved':
-        return 'bg-green-100 text-green-800'
-      case 'rejected':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'approved': return 'bg-green-100 text-green-800'
+      case 'rejected': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
     }
   }
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'في الانتظار'
-      case 'approved':
-        return 'مقبول'
-      case 'rejected':
-        return 'مرفوض'
-      default:
-        return status
+      case 'pending': return 'في الانتظار'
+      case 'approved': return 'مقبولة'
+      case 'rejected': return 'مرفوضة'
+      default: return status
     }
   }
 
- 
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    if (hours > 0) {
+      return `${hours} ساعة ${mins > 0 ? `و ${mins} دقيقة` : ''}`
+    }
+    return `${mins} دقيقة`
+  }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
-        <RetroWindow title="مراجعة المحاضرات">
-          <div className="p-6 text-center">
-            <p className="text-gray-600">جاري تحميل المحاضرات المعلقة...</p>
-          </div>
-        </RetroWindow>
-      </div>
-    )
+  if (!isLoggedIn || !isAdmin()) {
+    return null
   }
 
   return (
-    <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
+    <div className="min-h-screen bg-retro-bg p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <Button asChild variant="outline" className="retro-button bg-transparent mb-4">
-            <Link href="/admin">
-              <ArrowRight className="w-4 h-4 ml-1" />
-              العودة للوحة التحكم
-            </Link>
-          </Button>
-          <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--ink)" }}>
-            مراجعة المحاضرات اليومية
-          </h1>
-          <p className="text-gray-600">مراجعة وقبول أو رفض المحاضرات المرسلة من الأساتذة</p>
-        </div>
+          <RetroWindow title="إدارة المحاضرات اليومية">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-xl font-bold text-black">إدارة المحاضرات اليومية</h1>
+                <div className="flex gap-2">
+                  {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setFilter(status)}
+                      className={`px-3 py-1 text-sm border border-gray-400 ${
+                        filter === status ? "bg-retro-accent text-white" : "bg-white text-black hover:bg-gray-50"
+                      }`}
+                    >
+                      {status === 'all' ? 'الكل' : getStatusText(status)}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-        {/* Filters */}
-        <RetroWindow title="الفلاتر والبحث">
-          <div className="p-4">
-            <div className="flex flex-col md:flex-row gap-4 mb-4">
-              <div className="relative flex-1">
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input 
-                  placeholder="البحث في المحاضرات..." 
-                  className="retro-button pr-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              {/* Statistics */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div className="bg-yellow-50 border border-yellow-200 p-3 text-center">
+                  <div className="text-lg font-bold text-yellow-800">
+                    {lectures.filter(l => l.approval_status === 'pending').length}
+                  </div>
+                  <div className="text-sm text-yellow-600">في الانتظار</div>
+                </div>
+                <div className="bg-green-50 border border-green-200 p-3 text-center">
+                  <div className="text-lg font-bold text-green-800">
+                    {lectures.filter(l => l.approval_status === 'approved').length}
+                  </div>
+                  <div className="text-sm text-green-600">مقبولة</div>
+                </div>
+                <div className="bg-red-50 border border-red-200 p-3 text-center">
+                  <div className="text-lg font-bold text-red-800">
+                    {lectures.filter(l => l.approval_status === 'rejected').length}
+                  </div>
+                  <div className="text-sm text-red-600">مرفوضة</div>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 p-3 text-center">
+                  <div className="text-lg font-bold text-blue-800">{pagination.total}</div>
+                  <div className="text-sm text-blue-600">إجمالي</div>
+                </div>
               </div>
-              <div className="flex gap-2">
-                {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
-                  <Button
-                    key={status}
-                    variant={filter === status ? "default" : "outline"}
-                    size="sm"
-                    className="retro-button"
-                    style={filter === status ? { background: "var(--primary)", color: "white" } : {}}
-                    onClick={() => setFilter(status)}
-                  >
-                    {status === 'all' ? 'الكل' :
-                     status === 'pending' ? 'في الانتظار' :
-                     status === 'approved' ? 'مقبول' : 'مرفوض'}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </RetroWindow>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 mt-6">
-          <RetroWindow title="في الانتظار">
-            <div className="p-4 text-center">
-              <div className="text-3xl font-bold text-yellow-600">
-                {pendingLectures.filter(l => l.approval_status === 'pending').length}
-              </div>
-              <p className="text-sm text-gray-600">محاضرة معلقة</p>
-            </div>
-          </RetroWindow>
-          
-          <RetroWindow title="مقبولة">
-            <div className="p-4 text-center">
-              <div className="text-3xl font-bold text-green-600">
-                {pendingLectures.filter(l => l.approval_status === 'approved').length}
-              </div>
-              <p className="text-sm text-gray-600">محاضرة مقبولة</p>
-            </div>
-          </RetroWindow>
-
-          <RetroWindow title="مرفوضة">
-            <div className="p-4 text-center">
-              <div className="text-3xl font-bold text-red-600">
-                {pendingLectures.filter(l => l.approval_status === 'rejected').length}
-              </div>
-              <p className="text-sm text-gray-600">محاضرة مرفوضة</p>
-            </div>
-          </RetroWindow>
-
-          <RetroWindow title="المجموع">
-            <div className="p-4 text-center">
-              <div className="text-3xl font-bold" style={{ color: "var(--primary)" }}>
-                {filteredLectures.length}
-              </div>
-              <p className="text-sm text-gray-600">نتيجة البحث</p>
             </div>
           </RetroWindow>
         </div>
 
         {/* Lectures List */}
-        <RetroWindow title={`المحاضرات (${filteredLectures.length})`}>
-          <div className="p-6">
-            {filteredLectures.length === 0 ? (
-              <div className="text-center py-12">
-                {pendingLectures.length === 0 ? (
-                  <>
-                    <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
-                    <p className="text-gray-600 text-lg">ممتاز! لا توجد محاضرات في الانتظار</p>
-                    <p className="text-gray-500 text-sm mt-2">جميع المحاضرات تمت مراجعتها</p>
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-600">لا توجد نتائج للبحث "{searchTerm}"</p>
-                    <Button 
-                      variant="outline" 
-                      className="retro-button bg-transparent mt-4"
-                      onClick={() => setSearchTerm("")}
-                    >
-                      مسح البحث
-                    </Button>
-                  </>
-                )}
-              </div>
+        <RetroWindow title="قائمة المحاضرات">
+          <div className="p-4">
+            {loading ? (
+              <div className="text-center py-8">جاري التحميل...</div>
+            ) : lectures.length === 0 ? (
+              <div className="text-center py-8">لا توجد محاضرات</div>
             ) : (
-              <div className="space-y-6">
-                {filteredLectures.map((lecture) => (
-                  <div key={lecture.id} className="retro-window bg-white">
-                    <div className="p-6">
-                      <div className="grid lg:grid-cols-4 gap-6">
-                        {/* Lecture Info */}
-                        <div className="lg:col-span-3">
-                          <div className="flex items-center gap-3 mb-4">
-                            <h3 className="text-xl font-bold">{lecture.title}</h3>
+              <>
+                <div className="space-y-4 mb-6">
+                  {lectures.map((lecture) => (
+                    <div key={lecture.id} className="bg-white border border-gray-400 p-4">
+                      <div className="flex items-start gap-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+                          <GraduationCap className="w-8 h-8 text-white" />
+                        </div>
+                        
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-black">{lecture.title}</h3>
                             <Badge className={getStatusColor(lecture.approval_status)}>
                               {getStatusText(lecture.approval_status)}
                             </Badge>
                           </div>
-                          
-                          <div className="grid md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                              <p className="text-gray-600 mb-1"><strong>المادة:</strong> {lecture.subject}</p>
-                              <p className="text-gray-600 mb-1"><strong>المدرس:</strong> {lecture.instructor?.name}</p>
-                              <p className="text-gray-600 mb-1"><strong>الجامعة:</strong> {lecture.instructor?.university}</p>
-                              <p className="text-gray-600 mb-1"><strong>التاريخ:</strong> {new Date(lecture.scheduled_date).toLocaleDateString('ar-SA')}</p>
+
+                          <p className="text-gray-600 text-sm mb-3 line-clamp-2">{lecture.description}</p>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mb-3">
+                            <div><strong>المادة:</strong> {lecture.subject_name}</div>
+                            <div><strong>الجامعة:</strong> {lecture.university_name}</div>
+                            <div><strong>التخصص:</strong> {lecture.major}</div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              <strong>موعد المحاضرة:</strong> {new Date(lecture.lecture_date).toLocaleDateString('ar-SA')}
                             </div>
-                            <div>
-                              <p className="text-gray-600 mb-1"><strong>وقت البداية:</strong> {lecture.start_time}</p>
-                              <p className="text-gray-600 mb-1"><strong>وقت النهاية:</strong> {lecture.end_time}</p>
-                              <p className="text-gray-600 mb-1"><strong>المكان:</strong> {lecture.location || 'غير محدد'}</p>
-                              <p className="text-gray-600 mb-1"><strong>الحد الأقصى:</strong> {lecture.max_attendees} مشارك</p>
-                            </div>
+                            <div><strong>المدة:</strong> {formatDuration(lecture.duration_minutes)}</div>
                           </div>
 
-                          {lecture.description && (
-                            <div className="mb-4">
-                              <h4 className="font-semibold mb-2">الوصف:</h4>
-                              <p className="text-gray-600 text-sm">{lecture.description}</p>
-                            </div>
-                          )}
-
-                          {lecture.meeting_url && (
-                            <div className="mb-4">
-                              <h4 className="font-semibold mb-2">رابط الاجتماع:</h4>
-                              <a 
-                                href={lecture.meeting_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline text-sm"
-                              >
-                                {lecture.meeting_url}
-                              </a>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                            <span className="flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              المحاضر: {lecture.instructor.name}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              تم الرفع: {new Date(lecture.created_at).toLocaleDateString('ar-SA')}
+                            </span>
+                          </div>
 
                           {lecture.rejection_reason && (
-                            <div className="bg-red-50 border border-red-200 p-3 mb-4">
-                              <h4 className="font-semibold text-red-800 mb-1">سبب الرفض:</h4>
-                              <p className="text-red-600 text-sm">{lecture.rejection_reason}</p>
+                            <div className="bg-red-50 border border-red-200 p-2 text-sm text-red-800 mb-3">
+                              <strong>سبب الرفض:</strong> {lecture.rejection_reason}
                             </div>
                           )}
-
-                          <div className="text-xs text-gray-500">
-                            <p>تاريخ الإرسال: {new Date(lecture.created_at).toLocaleDateString('ar-SA')}</p>
-                            <p>الحالة الحالية: {lecture.status}</p>
-                            <p>المشاركون الحاليون: {lecture.current_attendees}</p>
-                          </div>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-2">
                           {lecture.approval_status === 'pending' && (
                             <>
                               <Button
-                                className="retro-button"
-                                style={{ background: "green", color: "white" }}
-                                onClick={() => approveLecture(lecture.id)}
-                                disabled={processingLectureId === lecture.id}
+                                size="sm"
+                                onClick={() => handleApprove(lecture.id)}
+                                disabled={updating === lecture.id}
+                                className="retro-button bg-green-500 text-white hover:bg-green-600"
                               >
-                                <CheckCircle className="w-4 h-4 ml-2" />
-                                {processingLectureId === lecture.id ? "جاري القبول..." : "قبول المحاضرة"}
+                                <Check className="w-4 h-4 mr-1" />
+                                قبول
                               </Button>
-
                               <Button
-                                variant="outline"
-                                className="retro-button text-red-600 border-red-600 bg-transparent"
-                                onClick={() => rejectLecture(lecture.id)}
-                                disabled={processingLectureId === lecture.id}
+                                size="sm"
+                                onClick={() => setRejectionModal({ lectureId: lecture.id, title: lecture.title })}
+                                disabled={updating === lecture.id}
+                                className="retro-button bg-red-500 text-white hover:bg-red-600"
                               >
-                                <XCircle className="w-4 h-4 ml-2" />
-                                {processingLectureId === lecture.id ? "جاري الرفض..." : "رفض المحاضرة"}
+                                <X className="w-4 h-4 mr-1" />
+                                رفض
                               </Button>
                             </>
                           )}
 
                           <Button
+                            size="sm"
                             variant="outline"
                             className="retro-button bg-transparent"
                           >
-                            <Eye className="w-4 h-4 ml-2" />
+                            <Eye className="w-4 h-4 mr-1" />
                             عرض التفاصيل
                           </Button>
-
-                          <div className="mt-4 p-3 bg-gray-50 rounded">
-                            <h5 className="font-semibold text-xs mb-1">معلومات المدرس:</h5>
-                            <p className="text-xs text-gray-600">{lecture.instructor?.name}</p>
-                            <p className="text-xs text-gray-600">{lecture.instructor?.university}</p>
-                            {lecture.instructor?.phone && (
-                              <p className="text-xs text-gray-600">{lecture.instructor?.phone}</p>
-                            )}
-                          </div>
                         </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      صفحة {pagination.page} من {pagination.totalPages} ({pagination.total} محاضرة)
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setPage(page - 1)}
+                        disabled={page <= 1}
+                        className="retro-button bg-transparent"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                        السابق
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setPage(page + 1)}
+                        disabled={page >= pagination.totalPages}
+                        className="retro-button bg-transparent"
+                      >
+                        التالي
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         </RetroWindow>
       </div>
+
+      {/* Rejection Modal */}
+      {rejectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white border-4 border-black p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold text-black mb-4">رفض المحاضرة</h3>
+            <p className="text-gray-600 mb-4">سبب رفض محاضرة "{rejectionModal.title}":</p>
+
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="اكتب سبب الرفض هنا..."
+              className="w-full p-3 border border-gray-400 mb-4 h-24 resize-none"
+              dir="rtl"
+            />
+
+            <div className="flex gap-2 justify-end">
+              <Button
+                onClick={() => {
+                  setRejectionModal(null)
+                  setRejectionReason("")
+                }}
+                variant="outline"
+                className="retro-button bg-transparent"
+              >
+                إلغاء
+              </Button>
+              <Button
+                onClick={handleReject}
+                disabled={!rejectionReason.trim() || updating === rejectionModal.lectureId}
+                className="retro-button bg-red-500 text-white hover:bg-red-600"
+              >
+                رفض المحاضرة
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
