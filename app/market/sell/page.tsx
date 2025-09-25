@@ -42,6 +42,51 @@ export default function SellBookPage() {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    
+    // Validate files
+    const validFiles = files.filter(file => {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`الملف ${file.name} كبير جداً (أكثر من 5 ميجابايت)`)
+        return false
+      }
+      if (!file.type.startsWith('image/')) {
+        toast.error(`الملف ${file.name} ليس صورة`)
+        return false
+      }
+      return true
+    })
+
+    if (selectedImages.length + validFiles.length > 5) {
+      toast.error("يمكن رفع 5 صور كحد أقصى")
+      return
+    }
+
+    setSelectedImages(prev => [...prev, ...validFiles])
+  }
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const uploadBookImages = async (bookId: string) => {
+    if (selectedImages.length === 0) return []
+
+    const uploadPromises = selectedImages.map(async (file, index) => {
+      try {
+        const result = await marketplaceApi.uploadBookImage(bookId, file, index === 0)
+        return result
+      } catch (error) {
+        console.error(`Error uploading image ${index}:`, error)
+        return null
+      }
+    })
+
+    const results = await Promise.all(uploadPromises)
+    return results.filter(result => result !== null)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
