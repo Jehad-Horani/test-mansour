@@ -7,6 +7,8 @@ import { useUserContext } from "@/contexts/user-context"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { useAuth } from "@/hooks/use-auth"
+
 import {
   BookOpen,
   Calendar,
@@ -39,6 +41,7 @@ const getTierLabelSafe = (tier: string | null | undefined) => {
   }
 }
 export default function DashboardPage() {
+  const {  profile } = useAuth()
   const { user, loading, isLoggedIn } = useUserContext()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
@@ -129,10 +132,12 @@ export default function DashboardPage() {
   }
 
  const recentActivity = [
-  { type: "upload", title: `رفع محاضرة جديدة: ${getMajorLabelSafe(user?.major)}`, time: "منذ ساعتين" },
-  { type: "exam", title: `امتحان ${getMajorLabelSafe(user?.major)} غداً`, time: "منذ 4 ساعات" },
+  { type: "upload", title: `رفع محاضرة جديدة: ${getMajorLabelSafe(profile?.major)}`, time: "منذ ساعتين" },
+  { type: "exam", title: `امتحان ${getMajorLabelSafe(profile?.major)} غداً`, time: "منذ 4 ساعات" },
   { type: "community", title: "إجابة جديدة على سؤالك", time: "منذ يوم" },
 ]
+
+
 
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
@@ -143,26 +148,26 @@ export default function DashboardPage() {
             <div className="p-6">
               <div className="flex flex-col md:flex-row items-start gap-6">
                 <img
-                  src={user.avatar_url || "/diverse-user-avatars.png"}
+                  src={profile?.avatar_url || "/diverse-user-avatars.png"}
                   alt="صورة المستخدم"
                   className="w-20 h-20 border-2 border-gray-300"
                   style={{ background: "var(--panel)" }}
                 />
                 <div className="flex-1">
                   <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--ink)" }}>
-                    مرحباً، {user.name}
+                    مرحباً، {profile?.name}
                   </h1>
                   <p className="text-gray-600 mb-2">
-                    {user.university} - {getMajorLabelSafe(user?.major)}
+                    {profile?.university} - {getMajorLabelSafe(profile?.major)}
                   </p>
                   <div className="flex items-center gap-3 mb-4">
                     <Badge
-                      className={`bg-${getTierColor(user.subscription_tier)}-100 text-${getTierColor(user.subscription_tier)}-800`}
+                      className={`bg-${(profile?.subscription_tier)}-100 text-${(profile?.subscription_tier)}-800`}
                       style={{ background: "var(--accent)", color: "white" }}
                     >
-                      الخطة الحالية: {getTierLabelSafe(user.subscription_tier)}
+                      الخطة الحالية: {getTierLabelSafe(profile?.subscription_tier)}
                     </Badge>
-                    {user.subscription_tier === "free" && (
+                    {profile?.subscription_tier === "free" && (
                       <Button
                         asChild
                         size="sm"
@@ -198,7 +203,7 @@ export default function DashboardPage() {
                   <div className="retro-window bg-white p-4">
                     <TrendingUp className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {user.stats?.uploadsCount || 0}
+                      {profile?.stats?.uploadsCount || 0}
                     </div>
                     <div className="text-sm text-gray-600">المحاضرات المرفوعة</div>
                   </div>
@@ -207,7 +212,7 @@ export default function DashboardPage() {
                   <div className="retro-window bg-white p-4">
                     <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {user.stats?.coursesEnrolled || 0}
+                      {profile?.stats?.coursesEnrolled || 0}
                     </div>
                     <div className="text-sm text-gray-600">المقررات المتابعة</div>
                   </div>
@@ -216,7 +221,7 @@ export default function DashboardPage() {
                   <div className="retro-window bg-white p-4">
                     <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {user.stats?.booksOwned || 0}
+                      {profile?.stats?.booksOwned || 0}
                     </div>
                     <div className="text-sm text-gray-600">الكتب المملوكة</div>
                   </div>
@@ -225,7 +230,7 @@ export default function DashboardPage() {
                   <div className="retro-window bg-white p-4">
                     <MessageSquare className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {user.stats?.communityPoints || 0}
+                      {profile?.stats?.communityPoints || 0}
                     </div>
                     <div className="text-sm text-gray-600">نقاط المجتمع</div>
                   </div>
@@ -266,7 +271,7 @@ export default function DashboardPage() {
                     إدارة المحاضرات
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">ارفع وإدارة محاضراتك</p>
-                  <div className="text-xs text-gray-500">{user.stats?.uploadsCount || 0} محاضرة مرفوعة</div>
+                  <div className="text-xs text-gray-500">{profile?.stats?.uploadsCount || 0} محاضرة مرفوعة</div>
                 </div>
               </RetroWindow>
             </Link>
@@ -283,7 +288,7 @@ export default function DashboardPage() {
                     الجدول الدراسي
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">نظم جدولك الدراسي</p>
-                  <div className="text-xs text-gray-500">{user.stats?.coursesEnrolled || 0} مقررات مسجلة</div>
+                  <div className="text-xs text-gray-500">{profile?.stats?.coursesEnrolled || 0} مقررات مسجلة</div>
                 </div>
               </RetroWindow>
             </Link>

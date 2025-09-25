@@ -108,7 +108,7 @@ export function RetroSidebar() {
       >
         <div className="p-4 space-y-4 max-h-screen overflow-y-auto">
           <div className="retro-window-title mb-4">
-            <span>{isLoggedIn ? `مرحباً ${profile?.name?.split(" ")[0]}` : "القائمة الجانبية"}</span>
+            <span>{isLoggedIn ? `مرحباً ${profile?.name.split(" ")[0]}` : "القائمة الجانبية"}</span>
             <button className="md:hidden text-white hover:text-gray-300" onClick={() => setIsOpen(false)}>
               ×
             </button>
