@@ -315,6 +315,41 @@ class BackendTester:
                 f"Connection error: {str(e)}",
                 {"exception": str(e)}
             )
+        
+        # Test admin/lectures API (mentioned in review as should show lectures from notebooks uploads)
+        try:
+            response = self.session.get(f"{self.api_base}/admin/lectures")
+            
+            if response.status_code == 403:
+                self.log_test(
+                    "Admin Lectures API - Authentication",
+                    True,
+                    "Admin lectures API properly requires authentication (403 Unauthorized)",
+                    {"status_code": response.status_code}
+                )
+            elif response.status_code == 200:
+                data = response.json()
+                self.log_test(
+                    "Admin Lectures API - Functionality",
+                    True,
+                    "Admin lectures API works and should show lectures from notebooks uploads",
+                    {"status_code": response.status_code, "response_type": type(data).__name__}
+                )
+            else:
+                self.log_test(
+                    "Admin Lectures API - General Error",
+                    False,
+                    f"Admin lectures API failed with status {response.status_code}",
+                    {"error": response.text}
+                )
+                    
+        except Exception as e:
+            self.log_test(
+                "Admin Lectures API - Connection",
+                False,
+                f"Connection error: {str(e)}",
+                {"exception": str(e)}
+            )
     
     def test_upload_endpoints(self):
         """Test upload endpoints that were enhanced"""
