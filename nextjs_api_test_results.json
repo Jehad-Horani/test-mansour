@@ -1,0 +1,176 @@
+{
+  "timestamp": "2025-09-25T16:11:55.511765",
+  "total_tests": 21,
+  "passed_tests": 19,
+  "success_rate": 90.47619047619048,
+  "test_details": [
+    {
+      "test_name": "GET /api/summaries",
+      "success": false,
+      "message": "HTTP 500",
+      "error_details": "{\"error\":\"Could not find a relationship between 'summaries' and 'user_id' in the schema cache\"}",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:52.286919"
+    },
+    {
+      "test_name": "POST /api/summaries/upload",
+      "success": true,
+      "message": "Correctly requires authentication",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:52.660074"
+    },
+    {
+      "test_name": "POST /api/summaries/approve",
+      "success": true,
+      "message": "Correctly requires admin access",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:52.848160"
+    },
+    {
+      "test_name": "POST /api/summaries/reject",
+      "success": true,
+      "message": "Correctly requires admin access",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:53.023143"
+    },
+    {
+      "test_name": "GET /api/cart",
+      "success": true,
+      "message": "Correctly requires authentication",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:53.202235"
+    },
+    {
+      "test_name": "POST /api/cart",
+      "success": true,
+      "message": "Correctly requires authentication",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:53.215268"
+    },
+    {
+      "test_name": "PATCH /api/cart",
+      "success": true,
+      "message": "Correctly requires authentication",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:53.229628"
+    },
+    {
+      "test_name": "DELETE /api/cart",
+      "success": true,
+      "message": "Correctly requires authentication",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:53.244689"
+    },
+    {
+      "test_name": "GET /api/books",
+      "success": true,
+      "message": "Returns 2 books with pagination",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:53.770132"
+    },
+    {
+      "test_name": "GET /api/books (with params)",
+      "success": true,
+      "message": "Search and filter parameters work",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:53.882534"
+    },
+    {
+      "test_name": "POST /api/books",
+      "success": true,
+      "message": "Correctly requires authentication",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:53.897725"
+    },
+    {
+      "test_name": "GET /api/books/[id]",
+      "success": false,
+      "message": "HTTP 500",
+      "error_details": "{\"error\":\"column profiles_1.email does not exist\"}",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:54.461830"
+    },
+    {
+      "test_name": "POST /api/books/upload-image",
+      "success": true,
+      "message": "Correctly requires authentication",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:54.550814"
+    },
+    {
+      "test_name": "GET /api/admin/users",
+      "success": true,
+      "message": "Correctly requires admin access",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:54.717386"
+    },
+    {
+      "test_name": "PATCH /api/admin/users",
+      "success": true,
+      "message": "Correctly requires admin access",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:54.729194"
+    },
+    {
+      "test_name": "GET /api/admin/books",
+      "success": true,
+      "message": "Correctly requires admin access",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:54.849530"
+    },
+    {
+      "test_name": "PATCH /api/admin/books",
+      "success": true,
+      "message": "Correctly requires admin access",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:54.901893"
+    },
+    {
+      "test_name": "DELETE /api/admin/books",
+      "success": true,
+      "message": "Correctly requires admin access",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:54.915401"
+    },
+    {
+      "test_name": "GET /api/admin/analytics",
+      "success": true,
+      "message": "Correctly requires admin access",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:55.226922"
+    },
+    {
+      "test_name": "GET /api/admin/settings",
+      "success": true,
+      "message": "Correctly requires admin access",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:55.349648"
+    },
+    {
+      "test_name": "GET /api/admin/lectures",
+      "success": true,
+      "message": "Correctly requires admin access",
+      "error_details": "",
+      "response_data": null,
+      "timestamp": "2025-09-25T16:11:55.511688"
+    }
+  ]
+}

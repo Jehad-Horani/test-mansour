@@ -1,525 +1,452 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useUserContext } from "@/contexts/user-context"
 import { RetroWindow } from "@/app/components/retro-window"
+import { Button } from "@/app/components/ui/button"
+import { Badge } from "@/app/components/ui/badge"
+import { 
+  Package,
+  User,
+  Clock,
+  Check,
+  X,
+  Eye,
+  Trash2,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react"
+import { toast } from "sonner"
 
-interface BookListing {
+interface Book {
   id: string
   title: string
   author: string
-  isbn?: string
-  condition: "new" | "like-new" | "good" | "fair" | "poor"
-  price: number
-  originalPrice?: number
-  category: "textbook" | "reference" | "novel" | "research" | "other"
-  major: "law" | "it" | "medical" | "business" | "general"
+  subject_name: string
+  university_name: string
+  major: string
+  condition: string
+  selling_price: number
+  currency: string
+  approval_status: 'pending' | 'approved' | 'rejected'
+  created_at: string
+  rejection_reason?: string
   seller: {
-    id: string
     name: string
-    university: string
-    rating: number
+    email: string
+    university?: string
+    phone?: string
   }
-  status: "pending" | "approved" | "rejected" | "sold" | "removed"
-  images: string[]
-  description: string
-  publishDate: string
-  views: number
-  inquiries: number
-  reports: number
-  isOfficial: boolean
-  stock?: number
+  book_images: Array<{
+    id: string
+    image_url: string
+    is_primary: boolean
+  }>
 }
 
-export default function MarketManagementPage() {
-  const [selectedCategory, setSelectedCategory] = useState<
-    "all" | "textbook" | "reference" | "novel" | "research" | "other"
-  >("all")
-  const [selectedStatus, setSelectedStatus] = useState<
-    "all" | "pending" | "approved" | "rejected" | "sold" | "removed"
-  >("all")
-  const [selectedMajor, setSelectedMajor] = useState<"all" | "law" | "it" | "medical" | "business" | "general">("all")
-  const [showAddBookForm, setShowAddBookForm] = useState(false)
-  const [selectedBooks, setSelectedBooks] = useState<string[]>([])
-
-  // Mock book listings data
-  const mockBookListings: BookListing[] = [
-    {
-      id: "book-1",
-      title: "أساسيات القانون المدني",
-      author: "د. محمد العبدالله",
-      isbn: "978-603-8000-12-3",
-      condition: "good",
-      price: 85,
-      originalPrice: 120,
-      category: "textbook",
-      major: "law",
-      seller: {
-        id: "user-law-1",
-        name: "أحمد محمد السالم",
-        university: "جامعة الملك سعود",
-        rating: 4.5,
-      },
-      status: "pending",
-      images: ["/law-book.png"],
-      description: "كتاب في حالة جيدة، تم استخدامه لفصل دراسي واحد فقط. يحتوي على بعض الملاحظات المفيدة.",
-      publishDate: "2024-01-15T10:00:00Z",
-      views: 45,
-      inquiries: 8,
-      reports: 0,
-      isOfficial: false,
-    },
-    {
-      id: "book-2",
-      title: "البرمجة بلغة Java - الإصدار الحديث",
-      author: "د. فاطمة النمر",
-      isbn: "978-603-8000-45-6",
-      condition: "like-new",
-      price: 95,
-      originalPrice: 130,
-      category: "textbook",
-      major: "it",
-      seller: {
-        id: "user-it-1",
-        name: "فاطمة عبدالله النمر",
-        university: "جامعة الملك فهد للبترول والمعادن",
-        rating: 4.8,
-      },
-      status: "approved",
-      images: ["/programming-book.png"],
-      description: "كتاب ممتاز لتعلم البرمجة بلغة Java، في حالة ممتازة تقريباً جديد.",
-      publishDate: "2024-01-12T14:30:00Z",
-      views: 123,
-      inquiries: 15,
-      reports: 0,
-      isOfficial: false,
-    },
-    {
-      id: "book-3",
-      title: "أطلس التشريح البشري",
-      author: "د. نورا الشهري",
-      isbn: "978-603-8000-78-9",
-      condition: "new",
-      price: 200,
-      category: "reference",
-      major: "medical",
-      seller: {
-        id: "admin-1",
-        name: "المكتبة الرسمية",
-        university: "منصة تخصص",
-        rating: 5.0,
-      },
-      status: "approved",
-      images: ["/open-anatomy-book.png"],
-      description: "أطلس تشريح شامل ومفصل، نسخة جديدة من المكتبة الرسمية.",
-      publishDate: "2024-01-10T09:00:00Z",
-      views: 234,
-      inquiries: 28,
-      reports: 0,
-      isOfficial: true,
-      stock: 15,
-    },
-    {
-      id: "book-4",
-      title: "مبادئ إدارة الأعمال الحديثة",
-      author: "د. خالد الأحمد",
-      isbn: "978-603-8000-91-2",
-      condition: "fair",
-      price: 60,
-      originalPrice: 110,
-      category: "textbook",
-      major: "business",
-      seller: {
-        id: "user-bus-1",
-        name: "خالد الأحمد",
-        university: "جامعة الملك عبدالعزيز",
-        rating: 4.2,
-      },
-      status: "rejected",
-      images: ["/management-book.png"],
-      description: "كتاب مستعمل، يحتوي على ملاحظات كثيرة وبعض الصفحات مطوية.",
-      publishDate: "2024-01-08T16:45:00Z",
-      views: 67,
-      inquiries: 3,
-      reports: 2,
-      isOfficial: false,
-    },
-  ]
-
-  const filteredBooks = mockBookListings.filter((book) => {
-    const categoryMatch = selectedCategory === "all" || book.category === selectedCategory
-    const statusMatch = selectedStatus === "all" || book.status === selectedStatus
-    const majorMatch = selectedMajor === "all" || book.major === selectedMajor
-    return categoryMatch && statusMatch && majorMatch
+export default function AdminMarketPage() {
+  const { isLoggedIn, isAdmin } = useUserContext()
+  const router = useRouter()
+  const [books, setBooks] = useState<Book[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 1
   })
+  const [updating, setUpdating] = useState<string | null>(null)
+  const [rejectionModal, setRejectionModal] = useState<{ bookId: string; title: string } | null>(null)
+  const [rejectionReason, setRejectionReason] = useState("")
 
-  const handleBookAction = (bookId: string, action: "approve" | "reject" | "remove" | "feature") => {
-    console.log(`[v0] Book action: ${action} for book: ${bookId}`)
-    // Here you would implement the actual book management actions
-  }
-
-  const handleBulkAction = (action: "approve" | "reject" | "remove") => {
-    console.log(`[v0] Bulk ${action} for books:`, selectedBooks)
-    setSelectedBooks([])
-  }
-
-  const toggleBookSelection = (bookId: string) => {
-    setSelectedBooks((prev) => (prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]))
-  }
-
-  const getCategoryLabel = (category: string) => {
-    const labels = {
-      textbook: "كتاب دراسي",
-      reference: "مرجع",
-      novel: "رواية",
-      research: "بحثي",
-      other: "أخرى",
+  useEffect(() => {
+    if (!isLoggedIn || !isAdmin()) {
+      router.push('/')
+      return
     }
-    return labels[category as keyof typeof labels] || category
+    fetchBooks()
+  }, [isLoggedIn, isAdmin, router, filter, page])
+
+  const fetchBooks = async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        status: filter,
+        page: page.toString(),
+        limit: '20'
+      })
+      
+      const res = await fetch(`/api/admin/books?${params}`)
+      const data = await res.json()
+      
+      if (res.ok) {
+        setBooks(data.books || [])
+        setPagination(data.pagination)
+      } else {
+        console.error("Error fetching books:", data.error)
+        toast.error("خطأ في جلب الكتب")
+      }
+    } catch (error) {
+      console.error("Error fetching books:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const getConditionLabel = (condition: string) => {
-    const labels = {
-      new: "جديد",
-      "like-new": "شبه جديد",
-      good: "جيد",
-      fair: "مقبول",
-      poor: "ضعيف",
+  const handleApprove = async (bookId: string) => {
+    if (!confirm('هل تريد الموافقة على هذا الكتاب؟')) return
+
+    try {
+      setUpdating(bookId)
+      const res = await fetch('/api/admin/books', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookId,
+          action: 'approve'
+        })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setBooks(prev => prev.map(book => 
+          book.id === bookId ? { ...book, approval_status: 'approved' } : book
+        ))
+        toast.success("تم قبول الكتاب بنجاح")
+      } else {
+        console.error("Error approving book:", data.error)
+        toast.error("خطأ في قبول الكتاب")
+      }
+    } catch (error) {
+      console.error("Error approving book:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setUpdating(null)
     }
-    return labels[condition as keyof typeof labels] || condition
+  }
+
+  const handleReject = async () => {
+    if (!rejectionModal || !rejectionReason.trim()) return
+
+    try {
+      setUpdating(rejectionModal.bookId)
+      const res = await fetch('/api/admin/books', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookId: rejectionModal.bookId,
+          action: 'reject',
+          reason: rejectionReason
+        })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setBooks(prev => prev.map(book => 
+          book.id === rejectionModal.bookId 
+            ? { ...book, approval_status: 'rejected', rejection_reason: rejectionReason } 
+            : book
+        ))
+        toast.success("تم رفض الكتاب")
+        setRejectionModal(null)
+        setRejectionReason("")
+      } else {
+        console.error("Error rejecting book:", data.error)
+        toast.error("خطأ في رفض الكتاب")
+      }
+    } catch (error) {
+      console.error("Error rejecting book:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setUpdating(null)
+    }
+  }
+
+  const handleDelete = async (bookId: string, title: string) => {
+    if (!confirm(`هل تريد حذف كتاب "${title}" نهائياً؟`)) return
+
+    try {
+      setUpdating(bookId)
+      const res = await fetch('/api/admin/books', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookId })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setBooks(prev => prev.filter(book => book.id !== bookId))
+        toast.success("تم حذف الكتاب")
+      } else {
+        console.error("Error deleting book:", data.error)
+        toast.error("خطأ في حذف الكتاب")
+      }
+    } catch (error) {
+      console.error("Error deleting book:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setUpdating(null)
+    }
   }
 
   const getStatusColor = (status: string) => {
-    const colors = {
-      pending: "bg-yellow-100 text-yellow-800",
-      approved: "bg-green-100 text-green-800",
-      rejected: "bg-red-100 text-red-800",
-      sold: "bg-blue-100 text-blue-800",
-      removed: "bg-gray-100 text-gray-800",
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'approved': return 'bg-green-100 text-green-800'
+      case 'rejected': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
     }
-    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800"
   }
 
-  const getMajorLabel = (major: string) => {
-    const labels = {
-      law: "القانون",
-      it: "تقنية المعلومات",
-      medical: "الطب",
-      business: "إدارة الأعمال",
-      general: "عام",
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending': return 'في الانتظار'
+      case 'approved': return 'مقبول'
+      case 'rejected': return 'مرفوض'
+      default: return status
     }
-    return labels[major as keyof typeof labels] || major
+  }
+
+  if (!isLoggedIn || !isAdmin()) {
+    return null
   }
 
   return (
-    <div className="p-4">
+    <div className="min-h-screen bg-retro-bg p-4">
       <div className="max-w-7xl mx-auto">
-        <RetroWindow title="إدارة السوق الأكاديمي">
-          <div className="p-6">
-            {/* Header Actions */}
-            <div className="mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <h2 className="text-lg font-bold text-black">الكتب والمنتجات</h2>
-                <span className="text-sm text-gray-600">({filteredBooks.length} كتاب)</span>
+        {/* Header */}
+        <div className="mb-6">
+          <RetroWindow title="إدارة السوق">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-xl font-bold text-black">إدارة السوق</h1>
+                <div className="flex gap-2">
+                  {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setFilter(status)}
+                      className={`px-3 py-1 text-sm border border-gray-400 ${
+                        filter === status ? "bg-retro-accent text-white" : "bg-white text-black hover:bg-gray-50"
+                      }`}
+                    >
+                      {status === 'all' ? 'الكل' : getStatusText(status)}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowAddBookForm(true)}
-                  className="retro-button bg-green-500 text-white px-4 py-2 hover:bg-green-600"
-                >
-                  إضافة كتاب رسمي
-                </button>
-                <Link
-                  href="/admin/market/analytics"
-                  className="retro-button bg-purple-500 text-white px-4 py-2 hover:bg-purple-600"
-                >
-                  تقارير المبيعات
-                </Link>
+
+              {/* Statistics */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div className="bg-yellow-50 border border-yellow-200 p-3 text-center">
+                  <div className="text-lg font-bold text-yellow-800">
+                    {books.filter(b => b.approval_status === 'pending').length}
+                  </div>
+                  <div className="text-sm text-yellow-600">في الانتظار</div>
+                </div>
+                <div className="bg-green-50 border border-green-200 p-3 text-center">
+                  <div className="text-lg font-bold text-green-800">
+                    {books.filter(b => b.approval_status === 'approved').length}
+                  </div>
+                  <div className="text-sm text-green-600">مقبول</div>
+                </div>
+                <div className="bg-red-50 border border-red-200 p-3 text-center">
+                  <div className="text-lg font-bold text-red-800">
+                    {books.filter(b => b.approval_status === 'rejected').length}
+                  </div>
+                  <div className="text-sm text-red-600">مرفوض</div>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 p-3 text-center">
+                  <div className="text-lg font-bold text-blue-800">{pagination.total}</div>
+                  <div className="text-sm text-blue-600">إجمالي</div>
+                </div>
               </div>
             </div>
+          </RetroWindow>
+        </div>
 
-            {/* Filters */}
-            <div className="mb-6 flex flex-wrap gap-4 items-center">
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-black">الفئة:</label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value as any)}
-                  className="px-3 py-1 border border-gray-400 bg-white text-black text-sm"
-                >
-                  <option value="all">جميع الفئات</option>
-                  <option value="textbook">كتب دراسية</option>
-                  <option value="reference">مراجع</option>
-                  <option value="novel">روايات</option>
-                  <option value="research">بحثية</option>
-                  <option value="other">أخرى</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-black">الحالة:</label>
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value as any)}
-                  className="px-3 py-1 border border-gray-400 bg-white text-black text-sm"
-                >
-                  <option value="all">جميع الحالات</option>
-                  <option value="pending">في الانتظار</option>
-                  <option value="approved">مقبول</option>
-                  <option value="rejected">مرفوض</option>
-                  <option value="sold">مباع</option>
-                  <option value="removed">محذوف</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-black">التخصص:</label>
-                <select
-                  value={selectedMajor}
-                  onChange={(e) => setSelectedMajor(e.target.value as any)}
-                  className="px-3 py-1 border border-gray-400 bg-white text-black text-sm"
-                >
-                  <option value="all">جميع التخصصات</option>
-                  <option value="law">القانون</option>
-                  <option value="it">تقنية المعلومات</option>
-                  <option value="medical">الطب</option>
-                  <option value="business">إدارة الأعمال</option>
-                  <option value="general">عام</option>
-                </select>
-              </div>
-
-              {selectedBooks.length > 0 && (
-                <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200">
-                  <span className="text-sm text-black">تم تحديد {selectedBooks.length} كتاب</span>
-                  <button
-                    onClick={() => handleBulkAction("approve")}
-                    className="retro-button bg-green-500 text-white px-3 py-1 text-sm hover:bg-green-600"
-                  >
-                    قبول الكل
-                  </button>
-                  <button
-                    onClick={() => handleBulkAction("reject")}
-                    className="retro-button bg-red-500 text-white px-3 py-1 text-sm hover:bg-red-600"
-                  >
-                    رفض الكل
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Add Book Form */}
-            {showAddBookForm && (
-              <div className="mb-6 p-4 border border-gray-400 bg-gray-50">
-                <h3 className="font-semibold text-black mb-4">إضافة كتاب رسمي جديد</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">عنوان الكتاب</label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border border-gray-400 bg-white text-black"
-                      placeholder="اكتب عنوان الكتاب..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">المؤلف</label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border border-gray-400 bg-white text-black"
-                      placeholder="اسم المؤلف..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">السعر (ريال)</label>
-                    <input
-                      type="number"
-                      className="w-full px-3 py-2 border border-gray-400 bg-white text-black"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">الكمية المتوفرة</label>
-                    <input
-                      type="number"
-                      className="w-full px-3 py-2 border border-gray-400 bg-white text-black"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">الفئة</label>
-                    <select className="w-full px-3 py-2 border border-gray-400 bg-white text-black">
-                      <option value="textbook">كتاب دراسي</option>
-                      <option value="reference">مرجع</option>
-                      <option value="research">بحثي</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-black mb-1">التخصص</label>
-                    <select className="w-full px-3 py-2 border border-gray-400 bg-white text-black">
-                      <option value="general">عام</option>
-                      <option value="law">القانون</option>
-                      <option value="it">تقنية المعلومات</option>
-                      <option value="medical">الطب</option>
-                      <option value="business">إدارة الأعمال</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-black mb-1">وصف الكتاب</label>
-                  <textarea
-                    className="w-full px-3 py-2 border border-gray-400 bg-white text-black"
-                    rows={3}
-                    placeholder="اكتب وصفاً للكتاب..."
-                  />
-                </div>
-                <div className="flex items-center gap-2 mt-4">
-                  <button className="retro-button bg-green-500 text-white px-4 py-2 hover:bg-green-600">
-                    إضافة الكتاب
-                  </button>
-                  <button
-                    onClick={() => setShowAddBookForm(false)}
-                    className="retro-button bg-gray-500 text-white px-4 py-2 hover:bg-gray-600"
-                  >
-                    إلغاء
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Books List */}
-            <div className="space-y-4">
-              {filteredBooks.map((book) => (
-                <div key={book.id} className="border border-gray-400 bg-white">
-                  <div className="p-4">
-                    <div className="flex items-start gap-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedBooks.includes(book.id)}
-                        onChange={() => toggleBookSelection(book.id)}
-                        className="mt-1"
-                      />
-
-                      <div className="w-16 h-20 bg-gray-200 border border-gray-400 flex items-center justify-center">
-                        {book.images[0] ? (
-                          <img
-                            src={book.images[0] || "/placeholder.svg"}
-                            alt={book.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-gray-500 text-xs">صورة</span>
-                        )}
-                      </div>
-
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
+        {/* Books List */}
+        <RetroWindow title="قائمة الكتب">
+          <div className="p-4">
+            {loading ? (
+              <div className="text-center py-8">جاري التحميل...</div>
+            ) : books.length === 0 ? (
+              <div className="text-center py-8">لا توجد كتب</div>
+            ) : (
+              <>
+                <div className="space-y-4 mb-6">
+                  {books.map((book) => (
+                    <div key={book.id} className="bg-white border border-gray-400 p-4">
+                      <div className="flex items-start gap-4">
+                        <img
+                          src={book.book_images?.find(img => img.is_primary)?.image_url || "/placeholder.svg"}
+                          alt={book.title}
+                          className="w-16 h-20 object-cover bg-gray-200 rounded"
+                        />
+                        
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
                             <h3 className="font-semibold text-black">{book.title}</h3>
-                            <p className="text-sm text-gray-600">بواسطة: {book.author}</p>
-                            {book.isbn && <p className="text-xs text-gray-500">ISBN: {book.isbn}</p>}
+                            <Badge className={getStatusColor(book.approval_status)}>
+                              {getStatusText(book.approval_status)}
+                            </Badge>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-1 text-xs rounded ${getStatusColor(book.status)}`}>
-                              {book.status === "pending"
-                                ? "في الانتظار"
-                                : book.status === "approved"
-                                  ? "مقبول"
-                                  : book.status === "rejected"
-                                    ? "مرفوض"
-                                    : book.status === "sold"
-                                      ? "مباع"
-                                      : "محذوف"}
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mb-3">
+                            <div><strong>المؤلف:</strong> {book.author}</div>
+                            <div><strong>المادة:</strong> {book.subject_name}</div>
+                            <div><strong>الجامعة:</strong> {book.university_name}</div>
+                            <div><strong>التخصص:</strong> {book.major}</div>
+                            <div><strong>الحالة:</strong> {book.condition}</div>
+                            <div><strong>السعر:</strong> {book.selling_price} {book.currency}</div>
+                          </div>
+
+                          <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                            <span className="flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              البائع: {book.seller.name}
                             </span>
-                            {book.isOfficial && (
-                              <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">رسمي</span>
-                            )}
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {new Date(book.created_at).toLocaleDateString('ar-SA')}
+                            </span>
                           </div>
+
+                          {book.rejection_reason && (
+                            <div className="bg-red-50 border border-red-200 p-2 text-sm text-red-800 mb-3">
+                              <strong>سبب الرفض:</strong> {book.rejection_reason}
+                            </div>
+                          )}
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
-                          <div>
-                            <strong>السعر:</strong> {book.price} ر.س
-                            {book.originalPrice && (
-                              <span className="line-through text-gray-400 mr-2">{book.originalPrice} ر.س</span>
-                            )}
-                          </div>
-                          <div>
-                            <strong>الحالة:</strong> {getConditionLabel(book.condition)}
-                          </div>
-                          <div>
-                            <strong>الفئة:</strong> {getCategoryLabel(book.category)}
-                          </div>
-                          <div>
-                            <strong>التخصص:</strong> {getMajorLabel(book.major)}
-                          </div>
-                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="outline"
+                            className="retro-button bg-transparent"
+                          >
+                            <a href={`/market/${book.id}`} target="_blank">
+                              <Eye className="w-4 h-4 mr-1" />
+                              عرض
+                            </a>
+                          </Button>
 
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                          <span>البائع: {book.seller.name}</span>
-                          <span>⭐ {book.seller.rating}</span>
-                          <span>👁️ {book.views}</span>
-                          <span>💬 {book.inquiries}</span>
-                          {book.reports > 0 && <span className="text-red-600">⚠️ {book.reports} تقارير</span>}
-                          {book.stock && <span>📦 {book.stock} متوفر</span>}
-                        </div>
-
-                        <p className="text-sm text-gray-600 mb-3">{book.description}</p>
-
-                        <div className="flex items-center gap-2">
-                          {book.status === "pending" && (
+                          {book.approval_status === 'pending' && (
                             <>
-                              <button
-                                onClick={() => handleBookAction(book.id, "approve")}
-                                className="retro-button bg-green-500 text-white px-3 py-1 text-sm hover:bg-green-600"
+                              <Button
+                                size="sm"
+                                onClick={() => handleApprove(book.id)}
+                                disabled={updating === book.id}
+                                className="retro-button bg-green-500 text-white hover:bg-green-600"
                               >
+                                <Check className="w-4 h-4 mr-1" />
                                 قبول
-                              </button>
-                              <button
-                                onClick={() => handleBookAction(book.id, "reject")}
-                                className="retro-button bg-red-500 text-white px-3 py-1 text-sm hover:bg-red-600"
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => setRejectionModal({ bookId: book.id, title: book.title })}
+                                disabled={updating === book.id}
+                                className="retro-button bg-red-500 text-white hover:bg-red-600"
                               >
+                                <X className="w-4 h-4 mr-1" />
                                 رفض
-                              </button>
+                              </Button>
                             </>
                           )}
 
-                          <Link
-                            href={`/admin/market/${book.id}`}
-                            className="retro-button bg-blue-500 text-white px-3 py-1 text-sm hover:bg-blue-600"
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDelete(book.id, book.title)}
+                            disabled={updating === book.id}
+                            className="retro-button bg-transparent text-red-600 hover:bg-red-50"
                           >
-                            التفاصيل
-                          </Link>
-
-                          <button
-                            onClick={() => handleBookAction(book.id, "feature")}
-                            className="retro-button bg-purple-500 text-white px-3 py-1 text-sm hover:bg-purple-600"
-                          >
-                            ترويج
-                          </button>
-
-                          <button
-                            onClick={() => handleBookAction(book.id, "remove")}
-                            className="retro-button bg-gray-500 text-white px-3 py-1 text-sm hover:bg-gray-600"
-                          >
-                            حذف
-                          </button>
-
-                          <button className="retro-button bg-orange-500 text-white px-3 py-1 text-sm hover:bg-orange-600">
-                            مراسلة البائع
-                          </button>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            {filteredBooks.length === 0 && (
-              <div className="text-center py-8 text-gray-600">لا توجد كتب تطابق المعايير المحددة</div>
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      صفحة {pagination.page} من {pagination.totalPages} ({pagination.total} كتاب)
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setPage(page - 1)}
+                        disabled={page <= 1}
+                        className="retro-button bg-transparent"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                        السابق
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setPage(page + 1)}
+                        disabled={page >= pagination.totalPages}
+                        className="retro-button bg-transparent"
+                      >
+                        التالي
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </RetroWindow>
       </div>
+
+      {/* Rejection Modal */}
+      {rejectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white border-4 border-black p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold text-black mb-4">رفض الكتاب</h3>
+            <p className="text-gray-600 mb-4">سبب رفض كتاب "{rejectionModal.title}":</p>
+
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="اكتب سبب الرفض هنا..."
+              className="w-full p-3 border border-gray-400 mb-4 h-24 resize-none"
+              dir="rtl"
+            />
+
+            <div className="flex gap-2 justify-end">
+              <Button
+                onClick={() => {
+                  setRejectionModal(null)
+                  setRejectionReason("")
+                }}
+                variant="outline"
+                className="retro-button bg-transparent"
+              >
+                إلغاء
+              </Button>
+              <Button
+                onClick={handleReject}
+                disabled={!rejectionReason.trim() || updating === rejectionModal.bookId}
+                className="retro-button bg-red-500 text-white hover:bg-red-600"
+              >
+                رفض الكتاب
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
