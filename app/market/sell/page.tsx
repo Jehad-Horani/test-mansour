@@ -101,7 +101,13 @@ export default function SellBookPage() {
       return
     }
 
+    if (selectedImages.length === 0) {
+      toast.error("يرجى إضافة صورة واحدة على الأقل للكتاب")
+      return
+    }
+
     setLoading(true)
+    setUploading(true)
 
     try {
       const bookData = {
@@ -113,11 +119,15 @@ export default function SellBookPage() {
         is_available: true
       }
 
-      const { error } = await marketplaceApi.createBook(bookData)
+      // Create book first
+      const { data: book, error: bookError } = await marketplaceApi.createBook(bookData)
       
-      if (error) throw error
+      if (bookError || !book) throw bookError || new Error("Failed to create book")
       
-      toast.success("تم إضافة الكتاب بنجاح!")
+      // Upload images
+      const uploadedImages = await uploadBookImages(book.id)
+      
+      toast.success(`تم إرسال الكتاب للمراجعة! سيظهر في السوق بعد موافقة الإدارة. تم رفع ${uploadedImages.length} صورة.`)
       router.push("/market")
       
     } catch (error: any) {
@@ -125,6 +135,7 @@ export default function SellBookPage() {
       toast.error("حدث خطأ أثناء إضافة الكتاب")
     } finally {
       setLoading(false)
+      setUploading(false)
     }
   }
 
