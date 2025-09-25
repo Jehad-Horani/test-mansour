@@ -161,7 +161,6 @@ export default function ProfilePage() {
   const recentActivity = [
     { type: "book", title: `اشترى كتاب: أساسيات ${getMajorLabel(profile?.major)}`, date: "منذ يومين" },
     { type: "consultation", title: "حجز استشارة مع مختص", date: "منذ 3 أيام" },
-    { type: "community", title: "أجاب على سؤال في المجتمع", date: "منذ أسبوع" },
     { type: "course", title: `انضم لمقرر: ${getMajorLabel(profile?.major)} المتقدم`, date: "منذ أسبوعين" },
   ]
 

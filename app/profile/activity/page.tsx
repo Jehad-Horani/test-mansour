@@ -29,15 +29,7 @@ export default function ProfileActivityPage() {
       icon: ShoppingCart,
       color: "text-green-600",
     },
-    {
-      id: 3,
-      type: "community",
-      title: "أجبت على سؤال في المجتمع",
-      description: "حول موضوع قواعد البيانات",
-      date: "2024-01-13",
-      icon: MessageSquare,
-      color: "text-purple-600",
-    },
+  
     {
       id: 4,
       type: "achievement",
@@ -65,7 +57,6 @@ export default function ProfileActivityPage() {
     { id: "all", label: "جميع الأنشطة", count: activities.length },
     { id: "course", label: "الدورات", count: activities.filter((a) => a.type === "course").length },
     { id: "purchase", label: "المشتريات", count: activities.filter((a) => a.type === "purchase").length },
-    { id: "community", label: "المجتمع", count: activities.filter((a) => a.type === "community").length },
     { id: "achievement", label: "الإنجازات", count: activities.filter((a) => a.type === "achievement").length },
   ]
 

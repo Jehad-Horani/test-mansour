@@ -28,9 +28,7 @@ export default function HomePage() {
             <Button asChild className="retro-button text-white" style={{ background: "var(--primary)" }}>
               <Link href="/market">ادخل السوق</Link>
             </Button>
-            <Button asChild variant="outline" className="retro-button bg-transparent">
-              <Link href="/community">انضم للمجتمع</Link>
-            </Button>
+           
           </div>
         </div>
       </section>
@@ -103,26 +101,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Community Feature */}
-              <div className="retro-window bg-white">
-                <div className="p-6 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">💬</span>
-                  </div>
-                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-                    مجتمع الأسئلة
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">اسأل واجب على الأسئلة الأكاديمية مع زملائك الطلاب</p>
-                  <Button
-                    asChild
-                    size="sm"
-                    className="retro-button"
-                    style={{ background: "var(--primary)", color: "white" }}
-                  >
-                    <Link href="/community">انضم للمجتمع</Link>
-                  </Button>
-                </div>
-              </div>
+             
 
               {/* Ambassadors Feature */}
               <div className="retro-window bg-white">
@@ -339,11 +318,7 @@ export default function HomePage() {
                     سوق الكتب
                   </Link>
                 </li>
-                <li>
-                  <Link href="/community" className="hover:underline text-white/90 hover:text-white">
-                    المجتمع
-                  </Link>
-                </li>
+                
                 <li>
                   <Link href="/ambassadors" className="hover:underline text-white/90 hover:text-white">
                     السفراء
