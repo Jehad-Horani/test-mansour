@@ -372,6 +372,63 @@ export default function SellBookPage() {
                 />
               </div>
 
+              {/* Image Upload Section */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--ink)" }}>
+                  صور الكتاب *
+                </h3>
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600 mb-2">اسحب الصور هنا أو انقر للتحديد</p>
+                    <p className="text-sm text-gray-500 mb-4">يمكن رفع حتى 5 صور، كل صورة أقل من 5 ميجابايت</p>
+                    <Input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="book-images"
+                    />
+                    <Button asChild variant="outline" className="retro-button bg-transparent">
+                      <label htmlFor="book-images" className="cursor-pointer">
+                        اختيار الصور
+                      </label>
+                    </Button>
+                  </div>
+
+                  {selectedImages.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium mb-3">الصور المحددة ({selectedImages.length}/5):</p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        {selectedImages.map((file, index) => (
+                          <div key={index} className="relative">
+                            <img 
+                              src={URL.createObjectURL(file)} 
+                              alt={`صورة ${index + 1}`} 
+                              className="w-full h-24 object-cover rounded border"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="absolute top-1 right-1 w-6 h-6 p-0 bg-red-500 text-white border-0"
+                              onClick={() => removeImage(index)}
+                            >
+                              ×
+                            </Button>
+                            {index === 0 && (
+                              <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                                رئيسية
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Action Buttons */}
               <div className="flex gap-4 pt-4">
                 <Button
