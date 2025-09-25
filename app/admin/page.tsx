@@ -65,21 +65,7 @@ export default function AdminDashboardPage() {
     )
   }
 
-  if (profile?.role != "admin") {
-    return (
-      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
-        <RetroWindow title="غير مصرح">
-          <div className="p-6 text-center">
-            <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-500" />
-            <p className="text-gray-600 mb-4">غير مصرح لك بالوصول لهذه الصفحة</p>
-            <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
-              <Link href="/dashboard">العودة للرئيسية</Link>
-            </Button>
-          </div>
-        </RetroWindow>
-      </div>
-    )
-  }
+
 
   if (loading) {
     return (
