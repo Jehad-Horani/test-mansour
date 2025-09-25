@@ -153,13 +153,18 @@ export const marketplaceApi = {
       .single()
   },
 
-  // Create new book listing
-  async createBook(book: Omit<Book, 'id' | 'created_at' | 'updated_at' | 'images' | 'seller'>) {
+  // Create new book listing (defaults to pending approval)
+  async createBook(book: Omit<Book, 'id' | 'created_at' | 'updated_at' | 'images' | 'seller' | 'approval_status' | 'approved_by' | 'approved_at'>) {
     const supabase = createClient()
+    
+    const bookWithApproval = {
+      ...book,
+      approval_status: 'pending' as const
+    }
     
     return await supabase
       .from('books')
-      .insert([book])
+      .insert([bookWithApproval])
       .select()
       .single()
   },
