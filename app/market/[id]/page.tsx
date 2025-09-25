@@ -70,11 +70,12 @@ export default function BookDetailsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [addingToCart, setAddingToCart] = useState(false)
 
-  useEffect(() => {
-    if (params.id) {
-      fetchBook(params.id as string)
-    }
-  }, [params.id])
+useEffect(() => {
+  if (params?.id) {
+    fetchBook(params.id as string)
+  }
+}, [params])
+
 
   const fetchBook = async (bookId: string) => {
     try {
