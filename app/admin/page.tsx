@@ -40,13 +40,13 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     
 
-    if (!isAdmin()) {
+    if (profile?.role != "admin") {
       toast.error("غير مصرح لك بالوصول لهذه الصفحة")
       router.push('/dashboard')
       return
     }
 
-  }, [isAdmin, user])
+  }, [])
 
 
 
@@ -65,7 +65,7 @@ export default function AdminDashboardPage() {
     )
   }
 
-  if (!isAdmin()) {
+  if (profile?.role != "admin") {
     return (
       <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
         <RetroWindow title="غير مصرح">
