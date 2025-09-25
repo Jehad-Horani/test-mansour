@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { RetroWindow } from "@/app/components/retro-window"
@@ -8,15 +8,24 @@ import { Switch } from "@/app/components/ui/switch"
 import { Badge } from "@/app/components/ui/badge"
 import Link from "next/link"
 import { User, Bell, Shield, CreditCard, GraduationCap, ArrowRight, Save, Eye, EyeOff } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 export default function SettingsPage() {
+  const { user, profile, isLoggedIn } = useAuth()
+  const supabase = createClient()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("account")
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  
   const [settings, setSettings] = useState({
     // Account settings
-    name: "أحمد محمد السالم",
-    email: "ahmed.salem@example.com",
-    phone: "+966501234567",
+    name: "",
+    email: "",
+    phone: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -28,36 +37,167 @@ export default function SettingsPage() {
     weeklyDigest: true,
     examReminders: true,
 
-    // Privacy settings - removed profileVisibility option, accounts are now automatically public
+    // Privacy settings
     showEmail: false,
     showPhone: false,
     allowMessages: true,
 
     // Academic settings
-    university: "جامعة الملك سعود",
-    major: "علوم الحاسب",
-    graduationYear: "2025",
-    studyLevel: "بكالوريوس",
+    university: "",
+    major: "",
+    graduationYear: "",
+    studyLevel: "",
 
     language: "ar",
     timezone: "Asia/Riyadh",
   })
 
+  // Load current profile data
+  useEffect(() => {
+    if (profile && user) {
+      setSettings(prev => ({
+        ...prev,
+        name: profile.name || "",
+        email: user.email || "",
+        phone: profile.phone || "",
+        university: profile.university || "",
+        major: profile.major || "",
+        graduationYear: profile.graduation_year || "",
+        studyLevel: profile.study_level || "بكالوريوس",
+        // Load preferences if available
+        emailNotifications: profile.preferences?.emailNotifications ?? true,
+        pushNotifications: profile.preferences?.pushNotifications ?? true,
+        language: profile.preferences?.language ?? "ar",
+      }))
+    }
+  }, [profile, user])
+
   const tabs = [
     { id: "account", label: "الحساب", icon: User },
+    { id: "notifications", label: "الإشعارات", icon: Bell },
+    { id: "privacy", label: "الخصوصية", icon: Shield },
     { id: "subscription", label: "الاشتراك", icon: CreditCard },
     { id: "academic", label: "الأكاديمي", icon: GraduationCap },
   ]
 
-  const handleSave = () => {
-    console.log("Saving settings:", settings)
-    alert("تم حفظ الإعدادات بنجاح!")
+  const handleSave = async () => {
+    if (!user) {
+      toast.error("يجب تسجيل الدخول أولاً")
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Update profile information
+      const profileUpdates = {
+        name: settings.name,
+        phone: settings.phone,
+        university: settings.university,
+        major: settings.major,
+        graduation_year: settings.graduationYear,
+        study_level: settings.studyLevel,
+        preferences: {
+          theme: "retro",
+          language: settings.language,
+          emailNotifications: settings.emailNotifications,
+          pushNotifications: settings.pushNotifications,
+          profileVisibility: "public"
+        }
+      }
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update(profileUpdates)
+        .eq("id", user.id)
+
+      if (profileError) throw profileError
+
+      toast.success("تم حفظ الإعدادات بنجاح!")
+    } catch (error: any) {
+      console.error("Error saving settings:", error)
+      toast.error("حدث خطأ أثناء حفظ الإعدادات")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDeleteAccount = () => {
-    if (confirm("هل أنت متأكد من حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه.")) {
-      alert("سيتم حذف حسابك خلال 24 ساعة.")
+  const handlePasswordChange = async () => {
+    if (!settings.newPassword || !settings.confirmPassword) {
+      toast.error("يرجى إدخال كلمة المرور الجديدة وتأكيدها")
+      return
     }
+
+    if (settings.newPassword !== settings.confirmPassword) {
+      toast.error("كلمة المرور الجديدة وتأكيدها غير متطابقين")
+      return
+    }
+
+    if (settings.newPassword.length < 6) {
+      toast.error("كلمة المرور يجب أن تكون 6 أحرف على الأقل")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: settings.newPassword
+      })
+
+      if (error) throw error
+
+      toast.success("تم تغيير كلمة المرور بنجاح")
+      setSettings(prev => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      }))
+    } catch (error: any) {
+      console.error("Error changing password:", error)
+      toast.error("حدث خطأ أثناء تغيير كلمة المرور")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!confirm("هل أنت متأكد من حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه.")) {
+      return
+    }
+
+    if (!confirm("تأكيد نهائي: سيتم حذف جميع بياناتك نهائياً. هل تريد المتابعة؟")) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Note: In production, you might want to soft-delete or handle this server-side
+      toast.info("سيتم حذف حسابك خلال 24 ساعة. يمكنك إلغاء العملية بتسجيل الدخول مرة أخرى.")
+      
+      // For now, just sign out
+      await supabase.auth.signOut()
+      router.push("/")
+    } catch (error: any) {
+      console.error("Error deleting account:", error)
+      toast.error("حدث خطأ أثناء حذف الحساب")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
+        <RetroWindow title="الإعدادات">
+          <div className="p-6 text-center">
+            <p className="text-gray-600 mb-4">يجب تسجيل الدخول لعرض الإعدادات</p>
+            <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
+              <Link href="/auth">تسجيل الدخول</Link>
+            </Button>
+          </div>
+        </RetroWindow>
+      </div>
+    )
   }
 
   return (
@@ -128,9 +268,9 @@ export default function SettingsPage() {
                         <Input
                           type="email"
                           value={settings.email}
-                          onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                          disabled
                           className="retro-window"
-                          style={{ background: "white", border: "2px inset #c0c0c0" }}
+                          style={{ background: "#f0f0f0", border: "2px inset #c0c0c0" }}
                         />
                       </div>
                       <div>
@@ -197,6 +337,16 @@ export default function SettingsPage() {
                           style={{ background: "white", border: "2px inset #c0c0c0" }}
                         />
                       </div>
+                      <div className="md:col-span-2">
+                        <Button
+                          onClick={handlePasswordChange}
+                          className="retro-button"
+                          style={{ background: "var(--accent)", color: "white" }}
+                          disabled={loading}
+                        >
+                          تغيير كلمة المرور
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
@@ -206,6 +356,7 @@ export default function SettingsPage() {
                       onClick={handleDeleteAccount}
                       variant="outline"
                       className="retro-button text-red-600 border-red-600 bg-transparent"
+                      disabled={loading}
                     >
                       حذف الحساب نهائياً
                     </Button>
@@ -214,7 +365,111 @@ export default function SettingsPage() {
               </RetroWindow>
             )}
 
-     
+            {/* Notifications Settings */}
+            {activeTab === "notifications" && (
+              <RetroWindow title="إعدادات الإشعارات">
+                <div className="p-6 space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>الإشعارات عبر البريد الإلكتروني</h4>
+                        <p className="text-sm text-gray-600">تلقي إشعارات حول النشاطات والتحديثات</p>
+                      </div>
+                      <Switch
+                        checked={settings.emailNotifications}
+                        onCheckedChange={(checked) => setSettings({ ...settings, emailNotifications: checked })}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>الإشعارات الفورية</h4>
+                        <p className="text-sm text-gray-600">إشعارات فورية في المتصفح</p>
+                      </div>
+                      <Switch
+                        checked={settings.pushNotifications}
+                        onCheckedChange={(checked) => setSettings({ ...settings, pushNotifications: checked })}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>الرسائل التسويقية</h4>
+                        <p className="text-sm text-gray-600">عروض وأخبار المنصة</p>
+                      </div>
+                      <Switch
+                        checked={settings.marketingEmails}
+                        onCheckedChange={(checked) => setSettings({ ...settings, marketingEmails: checked })}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>التقرير الأسبوعي</h4>
+                        <p className="text-sm text-gray-600">ملخص أسبوعي لنشاطك</p>
+                      </div>
+                      <Switch
+                        checked={settings.weeklyDigest}
+                        onCheckedChange={(checked) => setSettings({ ...settings, weeklyDigest: checked })}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>تذكير الامتحانات</h4>
+                        <p className="text-sm text-gray-600">تذكير بمواعيد الامتحانات المهمة</p>
+                      </div>
+                      <Switch
+                        checked={settings.examReminders}
+                        onCheckedChange={(checked) => setSettings({ ...settings, examReminders: checked })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </RetroWindow>
+            )}
+
+            {/* Privacy Settings */}
+            {activeTab === "privacy" && (
+              <RetroWindow title="إعدادات الخصوصية">
+                <div className="p-6 space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>إظهار البريد الإلكتروني</h4>
+                        <p className="text-sm text-gray-600">السماح للآخرين برؤية بريدك الإلكتروني</p>
+                      </div>
+                      <Switch
+                        checked={settings.showEmail}
+                        onCheckedChange={(checked) => setSettings({ ...settings, showEmail: checked })}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>إظهار رقم الهاتف</h4>
+                        <p className="text-sm text-gray-600">السماح للآخرين برؤية رقم هاتفك</p>
+                      </div>
+                      <Switch
+                        checked={settings.showPhone}
+                        onCheckedChange={(checked) => setSettings({ ...settings, showPhone: checked })}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>السماح بالرسائل</h4>
+                        <p className="text-sm text-gray-600">السماح للمستخدمين الآخرين بإرسال رسائل لك</p>
+                      </div>
+                      <Switch
+                        checked={settings.allowMessages}
+                        onCheckedChange={(checked) => setSettings({ ...settings, allowMessages: checked })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </RetroWindow>
+            )}
 
             {/* Subscription Settings */}
             {activeTab === "subscription" && (
@@ -222,9 +477,14 @@ export default function SettingsPage() {
                 <div className="p-6 space-y-6">
                   <div className="text-center">
                     <Badge className="text-lg px-4 py-2 mb-4" style={{ background: "var(--accent)", color: "white" }}>
-                      الخطة المميزة
+                      {profile?.subscription_tier === 'premium' ? 'الخطة المميزة' : 
+                       profile?.subscription_tier === 'standard' ? 'الخطة القياسية' : 'الخطة المجانية'}
                     </Badge>
-                    <p className="text-gray-600 mb-4">اشتراكك نشط حتى 15 مارس 2024</p>
+                    <p className="text-gray-600 mb-4">
+                      {profile?.subscription_tier === 'free' 
+                        ? 'أنت تستخدم الخطة المجانية حالياً'
+                        : 'اشتراكك نشط'}
+                    </p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
@@ -233,13 +493,24 @@ export default function SettingsPage() {
                         الخطة الحالية
                       </h4>
                       <ul className="space-y-1 text-sm text-gray-600 mb-4">
-                        <li>✓ وصول لجميع الكتب</li>
-                        <li>✓ استشارات مع السفراء</li>
-                        <li>✓ الجلسات الدراسية</li>
-                        <li>✓ دعم فني متقدم</li>
+                        {profile?.subscription_tier === 'free' ? (
+                          <>
+                            <li>✓ وصول محدود للكتب</li>
+                            <li>✗ استشارات مع السفراء</li>
+                            <li>✗ الجلسات الدراسية</li>
+                            <li>✗ دعم فني متقدم</li>
+                          </>
+                        ) : (
+                          <>
+                            <li>✓ وصول لجميع الكتب</li>
+                            <li>✓ استشارات مع السفراء</li>
+                            <li>✓ الجلسات الدراسية</li>
+                            <li>✓ دعم فني متقدم</li>
+                          </>
+                        )}
                       </ul>
                       <p className="text-2xl font-bold" style={{ color: "var(--accent)" }}>
-                        20 ريال/شهر
+                        {profile?.subscription_tier === 'free' ? 'مجاني' : '20 ريال/شهر'}
                       </p>
                     </div>
 
@@ -257,12 +528,14 @@ export default function SettingsPage() {
                       <Button variant="outline" className="w-full retro-button bg-transparent">
                         تحميل الفواتير
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full retro-button text-red-600 border-red-600 bg-transparent"
-                      >
-                        إلغاء الاشتراك
-                      </Button>
+                      {profile?.subscription_tier !== 'free' && (
+                        <Button
+                          variant="outline"
+                          className="w-full retro-button text-red-600 border-red-600 bg-transparent"
+                        >
+                          إلغاء الاشتراك
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -284,10 +557,13 @@ export default function SettingsPage() {
                         className="w-full p-2 retro-window"
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
                       >
-                        <option>جامعة الملك سعود</option>
-                        <option>جامعة الملك عبدالعزيز</option>
-                        <option>جامعة الإمام محمد بن سعود</option>
-                        <option>جامعة الملك فهد للبترول والمعادن</option>
+                        <option value="">اختر الجامعة</option>
+                        <option value="جامعة الملك سعود">جامعة الملك سعود</option>
+                        <option value="جامعة الملك عبدالعزيز">جامعة الملك عبدالعزيز</option>
+                        <option value="جامعة الإمام محمد بن سعود">جامعة الإمام محمد بن سعود</option>
+                        <option value="جامعة الملك فهد للبترول والمعادن">جامعة الملك فهد للبترول والمعادن</option>
+                        <option value="الجامعة الأردنية">الجامعة الأردنية</option>
+                        <option value="جامعة العلوم والتكنولوجيا الأردنية">جامعة العلوم والتكنولوجيا الأردنية</option>
                       </select>
                     </div>
                     <div>
@@ -300,11 +576,11 @@ export default function SettingsPage() {
                         className="w-full p-2 retro-window"
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
                       >
-                        <option>علوم الحاسب</option>
-                        <option>هندسة البرمجيات</option>
-                        <option>القانون</option>
-                        <option>الطب</option>
-                        <option>إدارة الأعمال</option>
+                        <option value="">اختر التخصص</option>
+                        <option value="law">القانون</option>
+                        <option value="it">علوم الحاسب</option>
+                        <option value="medical">الطب</option>
+                        <option value="business">إدارة الأعمال</option>
                       </select>
                     </div>
                     <div>
@@ -316,6 +592,7 @@ export default function SettingsPage() {
                         onChange={(e) => setSettings({ ...settings, graduationYear: e.target.value })}
                         className="retro-window"
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
+                        placeholder="2025"
                       />
                     </div>
                     <div>
@@ -328,9 +605,9 @@ export default function SettingsPage() {
                         className="w-full p-2 retro-window"
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
                       >
-                        <option>بكالوريوس</option>
-                        <option>ماجستير</option>
-                        <option>دكتوراه</option>
+                        <option value="بكالوريوس">بكالوريوس</option>
+                        <option value="ماجستير">ماجستير</option>
+                        <option value="دكتوراه">دكتوراه</option>
                       </select>
                     </div>
                   </div>
@@ -344,9 +621,10 @@ export default function SettingsPage() {
                 onClick={handleSave}
                 className="retro-button w-full md:w-auto"
                 style={{ background: "var(--primary)", color: "white" }}
+                disabled={loading}
               >
                 <Save className="w-4 h-4 ml-1" />
-                حفظ جميع الإعدادات
+                {loading ? "جاري الحفظ..." : "حفظ جميع الإعدادات"}
               </Button>
             </div>
           </div>
