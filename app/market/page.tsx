@@ -5,7 +5,7 @@ import { Input } from "@/app/components/ui/input"
 import { RetroWindow } from "@/app/components/retro-window"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { Badge } from "@/app/components/ui/badge"
-import { ShoppingCart, Search, Filter, Star, ArrowRight, BookOpen, Users, Eye, Plus } from "lucide-react"
+import { ShoppingCart, Search, Filter, Star, ArrowRight, BookOpen, Users, Eye, Plus, MessageCircle } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
@@ -54,16 +54,16 @@ export default function MarketPage() {
   useEffect(() => {
     const channel = supabase
       .channel('books-changes')
-      .on('postgres_changes', 
+      .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'books' },
-        (payload) => {
+        (payload: any) => {
           console.log('New book added:', payload)
           loadBooks() // Reload books when new ones are added
         }
       )
       .on('postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'books' },
-        (payload) => {
+        (payload: any) => {
           console.log('Book updated:', payload)
           loadBooks() // Reload books when updated
         }
@@ -89,9 +89,9 @@ export default function MarketPage() {
     try {
       setAdding(book.id)
       const { error } = await marketplaceApi.addToCart(user.id, book.id, 1)
-      
+
       if (error) throw error
-      
+
       toast.success("تم إضافة الكتاب للسلة بنجاح")
     } catch (error: any) {
       console.error("Error adding to cart:", error)
@@ -120,7 +120,7 @@ export default function MarketPage() {
   const getMajorLabel = (major: string) => {
     const labels: Record<string, string> = {
       law: "القانون",
-      it: "تقنية المعلومات", 
+      it: "تقنية المعلومات",
       medical: "الطب",
       business: "إدارة الأعمال"
     }
@@ -183,14 +183,14 @@ export default function MarketPage() {
               <div className="grid md:grid-cols-4 gap-4">
                 <div className="relative">
                   <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input 
-                    placeholder="ابحث عن كتاب..." 
+                  <Input
+                    placeholder="ابحث عن كتاب..."
                     className="retro-button pr-10"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                
+
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger className="retro-button">
                     <SelectValue placeholder="التصنيف" />
@@ -256,7 +256,7 @@ export default function MarketPage() {
                   عرض {books.length} كتاب
                 </p>
               </div>
-              
+
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {books.map((book) => (
                   <div key={book.id} className="retro-window bg-white">
@@ -267,7 +267,7 @@ export default function MarketPage() {
                           alt={book.title}
                           className="w-full h-48 object-cover bg-gray-200"
                         />
-                        <Badge 
+                        <Badge
                           className="absolute top-2 right-2 text-xs"
                           variant={book.condition === 'new' ? 'default' : 'secondary'}
                         >
@@ -304,17 +304,36 @@ export default function MarketPage() {
                       </div>
 
                       <div className="flex gap-2 mt-4">
-                        <Button
-                          className="retro-button flex-1"
-                          style={{ background: "var(--accent)", color: "white" }}
-                          disabled={!isLoggedIn || adding === book.id || book.seller_id === user?.id}
-                          onClick={() => handleAddToCart(book)}
-                        >
-                          <ShoppingCart className="w-4 h-4 ml-1" />
-                          {adding === book.id ? "جاري الإضافة..." : 
-                           book.seller_id === user?.id ? "كتابك" :
-                           !isLoggedIn ? "سجل دخولك" : "أضف للسلة"}
-                        </Button>
+                        {book.seller?.role !== "admin" && book.seller?.phone ? (
+                          <Button
+                            asChild
+                            className="retro-button flex-1"
+                            style={{ background: "var(--primary)", color: "white" }}
+                          >
+                            <a
+                              href={`https://wa.me/${book.seller.phone}?text=مرحبًا%20أنا%20مهتم%20بالكتاب%20${encodeURIComponent(book.title)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <MessageCircle className="w-4 h-4 mr-1" />
+                              تواصل مع البائع
+                            </a>
+                          </Button>
+                        ) : (
+                          <Button
+                            className="retro-button flex-1"
+                            style={{ background: "var(--accent)", color: "white" }}
+                            disabled={!isLoggedIn || adding === book.id || book.seller_id === user?.id}
+                            onClick={() => handleAddToCart(book)}
+                          >
+                            <ShoppingCart className="w-4 h-4 ml-1" />
+                            {adding === book.id ? "جاري الإضافة..." :
+                              book.seller_id === user?.id ? "كتابك" :
+                                !isLoggedIn ? "سجل دخولك" : "أضف للسلة"}
+                          </Button>
+                        )}
+
+
                         <Button asChild variant="outline" className="retro-button bg-transparent">
                           <Link href={`/market/${book.id}`}>
                             <Eye className="w-4 h-4" />
