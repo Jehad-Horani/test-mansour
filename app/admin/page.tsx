@@ -82,7 +82,7 @@ export default function AdminDashboardPage() {
 
 
 
-  if (!profile) {
+  if (!isAdmin()) {
     return (
       <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
         <RetroWindow title="لوحة تحكم الإدارة">
