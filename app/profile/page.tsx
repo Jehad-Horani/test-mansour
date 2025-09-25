@@ -49,32 +49,15 @@ export default function ProfilePage() {
             <div className="flex flex-col md:flex-row gap-6 items-start">
               {/* Avatar and Basic Info */}
               <div className="flex flex-col items-center text-center">
-                <img
-                  src={avatarUrl || profile?.avatar_url || "/diverse-user-avatars.png"}
-                  alt="صورة المستخدم"
-                  className="w-32 h-32 border-2 border-gray-300 mb-4 object-cover rounded"
-                  style={{ background: "var(--panel)" }}
-                />
-
-                {/* Input مخفي */}
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-
-                <Button
-                  size="sm"
-                  className="retro-button mb-2"
-                  style={{ background: "var(--accent)", color: "white" }}
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  <Upload className="w-4 h-4 ml-1" />
-                  {isUploading ? "جاري الرفع..." : "تغيير الصورة"}
-                </Button>
+                {user && (
+                  <AvatarUpload
+                    currentAvatarUrl={currentAvatarUrl}
+                    userId={user.id}
+                    userName={profile?.name || 'مستخدم'}
+                    onAvatarUpdate={setCurrentAvatarUrl}
+                    size="lg"
+                  />
+                )}
               </div>
 
               {/* User Details */}
