@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => clearTimeout(checkAuth)
   }, [user, loading, router])
 
-  if (loading || isChecking || !user || user.role !== "admin") {
+  if ( !user || user.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
         <div className="text-center">
