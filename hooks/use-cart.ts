@@ -1,9 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useAuth } from "./use-auth"
+import { marketplaceApi, type CartItem as SupabaseCartItem } from "@/lib/supabase/marketplace"
+import { createClient } from "@/lib/supabase/client"
 
 interface CartItem {
-  id: number
+  id: string
   title: string
   author: string
   price: number
@@ -12,79 +15,116 @@ interface CartItem {
 }
 
 export function useCart() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const { user } = useAuth()
+  const supabase = createClient()
+  const [cartItems, setCartItems] = useState<SupabaseCartItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    setIsLoading(true)
+  // Load cart from Supabase
+  const loadCart = async () => {
+    if (!user) {
+      setCartItems([])
+      return
+    }
+
     try {
-      const savedCart = localStorage.getItem("cart")
-      if (savedCart) {
-        const parsedCart = JSON.parse(savedCart)
-        if (Array.isArray(parsedCart)) {
-          setCartItems(parsedCart)
-        }
-      }
+      setIsLoading(true)
+      const { data, error } = await marketplaceApi.getCart(user.id)
+      if (error) throw error
+      setCartItems(data || [])
     } catch (error) {
-      console.error("Failed to load cart from localStorage:", error)
-      try {
-        localStorage.removeItem("cart")
-      } catch (clearError) {
-        console.error("Failed to clear corrupted cart:", clearError)
-      }
+      console.error("Failed to load cart:", error)
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }
 
   useEffect(() => {
-    if (!isLoading) {
-      try {
-        localStorage.setItem("cart", JSON.stringify(cartItems))
-      } catch (error) {
-        console.error("Failed to save cart to localStorage:", error)
-        if (error.name === "QuotaExceededError") {
-          console.warn("localStorage quota exceeded for cart")
+    loadCart()
+  }, [user])
+
+  // Real-time cart updates
+  useEffect(() => {
+    if (!user) return
+
+    const channel = supabase
+      .channel('cart-changes-hook')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'cart_items',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadCart() // Reload cart when changes occur
         }
-      }
-    }
-  }, [cartItems, isLoading])
+      )
+      .subscribe()
 
-  const addToCart = (item: Omit<CartItem, "quantity">) => {
-    if (!item.id || !item.title || !item.price) {
-      console.error("Invalid cart item data:", item)
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user])
+
+  const addToCart = async (item: { id: string; title: string; author: string; price: number; image?: string }) => {
+    if (!user) {
+      console.error("User must be logged in to add to cart")
       return
     }
 
-    setCartItems((current) => {
-      const existingItem = current.find((cartItem) => cartItem.id === item.id)
-      if (existingItem) {
-        return current.map((cartItem) =>
-          cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem,
-        )
-      }
-      return [...current, { ...item, quantity: 1 }]
-    })
-  }
-
-  const removeFromCart = (id: number) => {
-    setCartItems((current) => current.filter((item) => item.id !== id))
-  }
-
-  const updateQuantity = (id: number, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(id)
-      return
+    try {
+      const { error } = await marketplaceApi.addToCart(user.id, item.id, 1)
+      if (error) throw error
+      await loadCart() // Reload cart to get updated data
+    } catch (error) {
+      console.error("Failed to add to cart:", error)
+      throw error
     }
-    setCartItems((current) => current.map((item) => (item.id === id ? { ...item, quantity } : item)))
   }
 
-  const clearCart = () => {
-    setCartItems([])
+  const removeFromCart = async (cartItemId: string) => {
+    try {
+      const { error } = await marketplaceApi.removeFromCart(cartItemId)
+      if (error) throw error
+      await loadCart() // Reload cart to get updated data
+    } catch (error) {
+      console.error("Failed to remove from cart:", error)
+      throw error
+    }
+  }
+
+  const updateQuantity = async (cartItemId: string, quantity: number) => {
+    try {
+      const { error } = await marketplaceApi.updateCartQuantity(cartItemId, quantity)
+      if (error) throw error
+      await loadCart() // Reload cart to get updated data
+    } catch (error) {
+      console.error("Failed to update quantity:", error)
+      throw error
+    }
+  }
+
+  const clearCart = async () => {
+    if (!user) return
+    
+    try {
+      const { error } = await marketplaceApi.clearCart(user.id)
+      if (error) throw error
+      setCartItems([])
+    } catch (error) {
+      console.error("Failed to clear cart:", error)
+      throw error
+    }
   }
 
   const getCartTotal = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+    return cartItems.reduce((total, item) => {
+      if (item.book) {
+        return total + (item.book.selling_price * item.quantity)
+      }
+      return total
+    }, 0)
   }
 
   const getCartCount = () => {
@@ -100,5 +140,6 @@ export function useCart() {
     getCartTotal,
     getCartCount,
     isLoading,
+    refreshCart: loadCart,
   }
 }
