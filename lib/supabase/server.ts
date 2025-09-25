@@ -1,7 +1,20 @@
 // lib/supabase/server.ts
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
-import type { Profile } from "./auth"
+
+export interface Profile {
+  id: string
+  name: string
+  email: string
+  phone?: string
+  university?: string
+  major?: string
+  role: "student" | "admin"
+  subscription_tier: string
+  created_at: string
+  avatar_url?: string
+  preferences?: Record<string, any>
+}
 
 export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -37,7 +50,26 @@ export function createClient() {
   })
 }
 
-// بعض الدوال المفيدة server-side
+// Create admin client with service role key
+export function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("[v0] Admin - Missing Supabase environment variables")
+    throw new Error("Missing Supabase environment variables")
+  }
+
+  return createServerClient(supabaseUrl, supabaseServiceKey, {
+    cookies: {
+      get() { return undefined },
+      set() {},
+      remove() {},
+    },
+  })
+}
+
+// Server-side auth utilities
 export const authServer = {
   async getUser() {
     const supabase = createClient()
@@ -69,4 +101,20 @@ export const authServer = {
 
     return profile
   },
+
+  async requireAuth() {
+    const user = await this.getUser()
+    if (!user) {
+      throw new Error("Authentication required")
+    }
+    return user
+  },
+
+  async requireAdmin() {
+    const profile = await this.getProfile()
+    if (!profile || profile.role !== "admin") {
+      throw new Error("Admin access required")
+    }
+    return profile
+  }
 }
