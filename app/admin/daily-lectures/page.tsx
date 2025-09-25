@@ -61,16 +61,7 @@ export default function AdminDailyLecturesPage() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push('/auth')
-      return
-    }
-
-    if (!isAdmin()) {
-      toast.error("غير مصرح لك بالوصول لهذه الصفحة")
-      router.push('/dashboard')
-      return
-    }
+  
 
     loadPendingLectures()
 
@@ -96,7 +87,7 @@ export default function AdminDailyLecturesPage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [isLoggedIn, user])
+  }, [ user])
 
   const loadPendingLectures = async () => {
     try {

@@ -32,10 +32,7 @@ export default function AdminAuditPage() {
 const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
-    if (!isLoggedIn || !isAdmin()) {
-      router.push("/auth/login")
-      return
-    }
+   
     fetchAuditLogs()
   }, [isLoggedIn, isAdmin, router, filter, severityFilter, dateRange])
 

@@ -31,16 +31,7 @@ export default function AdminBooksPage() {
   const [processingBookId, setProcessingBookId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push('/auth')
-      return
-    }
-
-    if (!isAdmin()) {
-      toast.error("غير مصرح لك بالوصول لهذه الصفحة")
-      router.push('/dashboard')
-      return
-    }
+   
 
     loadPendingBooks()
 
@@ -66,7 +57,7 @@ export default function AdminBooksPage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [isLoggedIn, user])
+  }, [ user])
 
   const loadPendingBooks = async () => {
     try {
@@ -149,20 +140,7 @@ export default function AdminBooksPage() {
     return labels[major] || major
   }
 
-  if (!isLoggedIn || !isAdmin()) {
-    return (
-      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
-        <RetroWindow title="غير مصرح">
-          <div className="p-6 text-center">
-            <p className="text-gray-600 mb-4">غير مصرح لك بالوصول لهذه الصفحة</p>
-            <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
-              <Link href="/auth">تسجيل الدخول</Link>
-            </Button>
-          </div>
-        </RetroWindow>
-      </div>
-    )
-  }
+ 
 
   if (loading) {
     return (
