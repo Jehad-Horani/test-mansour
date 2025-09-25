@@ -90,7 +90,7 @@ export default function NotebooksPage() {
     try {
       const res = await fetch('/api/notebooks?approved=true')
       const data = await res.json()
-      
+       
       if (res.ok) {
         setApprovedLectures(data.lectures || [])
       }
