@@ -4,12 +4,12 @@ import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
 import { Edit, Settings, BookOpen, Users, Award, Calendar } from "lucide-react"
-import { useUserContext } from "@/contexts/user-context"
+import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 export default function ProfilePage() {
-  const { user, isLoggedIn, getMajorLabel, getTierLabel } = useUserContext()
+  const { user, isLoggedIn,getTierLabel, getMajorLabel, profile } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
 
@@ -34,13 +34,13 @@ export default function ProfilePage() {
     )
   }
 
-  const stats = user.stats
+  const stats = profile?.stats
 
   const recentActivity = [
-    { type: "book", title: `اشترى كتاب: أساسيات ${getMajorLabel(user.major)}`, date: "منذ يومين" },
+    { type: "book", title: `اشترى كتاب: أساسيات ${getMajorLabel(profile?.major)}`, date: "منذ يومين" },
     { type: "consultation", title: "حجز استشارة مع مختص", date: "منذ 3 أيام" },
     { type: "community", title: "أجاب على سؤال في المجتمع", date: "منذ أسبوع" },
-    { type: "course", title: `انضم لمقرر: ${getMajorLabel(user.major)} المتقدم`, date: "منذ أسبوعين" },
+    { type: "course", title: `انضم لمقرر: ${getMajorLabel(profile?.major)} المتقدم`, date: "منذ أسبوعين" },
   ]
 
   return (
@@ -53,7 +53,7 @@ export default function ProfilePage() {
               {/* Avatar and Basic Info */}
               <div className="flex flex-col items-center text-center">
                 <img
-                  src={user.avatar || "/diverse-user-avatars.png"}
+                  src={profile?.avatar_url || "/diverse-user-avatars.png"}
                   alt="صورة المستخدم"
                   className="w-32 h-32 border-2 border-gray-300 mb-4"
                   style={{ background: "var(--panel)" }}
@@ -69,25 +69,22 @@ export default function ProfilePage() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--ink)" }}>
-                      {user.name}
+                      {profile?.name}
                     </h2>
                     <p className="text-gray-600 mb-1">{user.email}</p>
-                    <p className="text-gray-600 mb-1">{user.university}</p>
-                    <p className="text-gray-600 mb-4">تخصص: {getMajorLabel(user.major)}</p>
+                    <p className="text-gray-600 mb-1">{profile?.university}</p>
+                    <p className="text-gray-600 mb-4">تخصص: {getMajorLabel(profile?.major)}</p>
                   </div>
 
                   <div>
-                    <div className="mb-2">
-                      <span className="text-sm text-gray-600">تاريخ الانضمام: </span>
-                      <span className="font-medium">{new Date(user.joinDate).toLocaleDateString("ar-SA")}</span>
-                    </div>
+                   
                     <div className="mb-4">
                       <span className="text-sm text-gray-600">نوع الاشتراك: </span>
                       <span
                         className="font-bold px-2 py-1 text-xs rounded"
                         style={{ background: "var(--accent)", color: "white" }}
                       >
-                        {getTierLabel(user.subscription.tier)}
+                        {getTierLabel(profile?.subscription_tier)}
                       </span>
                     </div>
                   </div>
@@ -121,7 +118,7 @@ export default function ProfilePage() {
                   <div className="retro-window bg-white p-4">
                     <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {stats.coursesEnrolled}
+                      {profile?.stats?.coursesEnrolled}
                     </div>
                     <div className="text-sm text-gray-600">المقررات المسجلة</div>
                   </div>
@@ -131,7 +128,7 @@ export default function ProfilePage() {
                   <div className="retro-window bg-white p-4">
                     <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {stats.booksOwned}
+                      {profile?.stats?.booksOwned}
                     </div>
                     <div className="text-sm text-gray-600">الكتب المملوكة</div>
                   </div>
@@ -141,7 +138,7 @@ export default function ProfilePage() {
                   <div className="retro-window bg-white p-4">
                     <Users className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {stats.consultations}
+                      {profile?.stats?.consultations}
                     </div>
                     <div className="text-sm text-gray-600">الاستشارات</div>
                   </div>
@@ -151,7 +148,7 @@ export default function ProfilePage() {
                   <div className="retro-window bg-white p-4">
                     <Award className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {stats.communityPoints}
+                      {profile?.stats?.communityPoints}
                     </div>
                     <div className="text-sm text-gray-600">نقاط المجتمع</div>
                   </div>
