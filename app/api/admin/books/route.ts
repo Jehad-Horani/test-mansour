@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       .select(`
         *,
         book_images(*),
-        seller:profiles!books_seller_id_fkey(name, email, university, phone)
+        seller:profiles!books_seller_id_fkey(name, university, phone)
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
     
