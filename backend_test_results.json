@@ -7,16 +7,18 @@
       "response_type": "list",
       "count": 3
     },
-    "timestamp": "2025-09-25 20:50:40"
+    "timestamp": "2025-09-25 20:51:52"
   },
   {
     "test": "Individual Book Details API - Profiles Schema",
-    "success": false,
-    "message": "Connection error: argument of type 'NoneType' is not iterable",
+    "success": true,
+    "message": "Book details API works without database schema errors (seller data may be missing but no schema error)",
     "details": {
-      "exception": "argument of type 'NoneType' is not iterable"
+      "seller_status": "null",
+      "book_id": "a8522377-42d9-41ca-b43a-132f40482ae7",
+      "api_working": true
     },
-    "timestamp": "2025-09-25 20:50:41"
+    "timestamp": "2025-09-25 20:51:52"
   },
   {
     "test": "Admin Books API - Authentication",
@@ -25,7 +27,7 @@
     "details": {
       "status_code": 403
     },
-    "timestamp": "2025-09-25 20:50:41"
+    "timestamp": "2025-09-25 20:51:52"
   },
   {
     "test": "Admin Users API - Authentication",
@@ -34,7 +36,7 @@
     "details": {
       "status_code": 403
     },
-    "timestamp": "2025-09-25 20:50:41"
+    "timestamp": "2025-09-25 20:51:52"
   },
   {
     "test": "Admin Analytics API - Authentication",
@@ -43,7 +45,16 @@
     "details": {
       "status_code": 403
     },
-    "timestamp": "2025-09-25 20:50:41"
+    "timestamp": "2025-09-25 20:51:52"
+  },
+  {
+    "test": "Admin Lectures API - Authentication",
+    "success": true,
+    "message": "Admin lectures API properly requires authentication (403 Unauthorized)",
+    "details": {
+      "status_code": 403
+    },
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Summaries Upload API - Authentication",
@@ -52,7 +63,7 @@
     "details": {
       "status_code": 401
     },
-    "timestamp": "2025-09-25 20:50:42"
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Notebooks Upload API - Authentication",
@@ -61,7 +72,7 @@
     "details": {
       "status_code": 401
     },
-    "timestamp": "2025-09-25 20:50:42"
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Profile Avatar Upload API - Authentication",
@@ -70,7 +81,7 @@
     "details": {
       "status_code": 401
     },
-    "timestamp": "2025-09-25 20:50:42"
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Authentication Protection - /api/summaries POST",
@@ -80,7 +91,7 @@
       "endpoint": "/api/summaries",
       "method": "POST"
     },
-    "timestamp": "2025-09-25 20:50:42"
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Authentication Protection - /api/books POST",
@@ -90,7 +101,7 @@
       "endpoint": "/api/books",
       "method": "POST"
     },
-    "timestamp": "2025-09-25 20:50:42"
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Authentication Protection - /api/cart GET",
@@ -100,7 +111,7 @@
       "endpoint": "/api/cart",
       "method": "GET"
     },
-    "timestamp": "2025-09-25 20:50:42"
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Authentication Protection - /api/cart POST",
@@ -110,7 +121,7 @@
       "endpoint": "/api/cart",
       "method": "POST"
     },
-    "timestamp": "2025-09-25 20:50:42"
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Admin Role Protection - /api/admin/books",
@@ -119,7 +130,7 @@
     "details": {
       "endpoint": "/api/admin/books"
     },
-    "timestamp": "2025-09-25 20:50:42"
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Admin Role Protection - /api/admin/users",
@@ -128,7 +139,7 @@
     "details": {
       "endpoint": "/api/admin/users"
     },
-    "timestamp": "2025-09-25 20:50:42"
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Admin Role Protection - /api/admin/analytics",
@@ -137,7 +148,7 @@
     "details": {
       "endpoint": "/api/admin/analytics"
     },
-    "timestamp": "2025-09-25 20:50:42"
+    "timestamp": "2025-09-25 20:51:53"
   },
   {
     "test": "Admin Role Protection - /api/admin/lectures",
@@ -146,6 +157,6 @@
     "details": {
       "endpoint": "/api/admin/lectures"
     },
-    "timestamp": "2025-09-25 20:50:43"
+    "timestamp": "2025-09-25 20:51:53"
   }
 ]
