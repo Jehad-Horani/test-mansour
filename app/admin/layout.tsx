@@ -29,16 +29,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => clearTimeout(checkAuth)
   }, [user, loading, router])
 
-  if ( !user || user.role !== "admin") {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p style={{ color: "var(--ink)" }}>جاري التحقق من الصلاحيات...</p>
-        </div>
-      </div>
-    )
-  }
+ 
+  
 
   const handleLogout = async () => {
     await signOut()
