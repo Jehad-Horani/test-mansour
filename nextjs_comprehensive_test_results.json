@@ -1,127 +1,127 @@
 {
-  "timestamp": "2025-09-25T17:04:44.879879",
+  "timestamp": "2025-09-25T17:05:27.026973",
   "total_tests": 17,
-  "passed_tests": 16,
-  "success_rate": 94.11764705882352,
+  "passed_tests": 17,
+  "success_rate": 100.0,
   "test_details": [
     {
       "test_name": "Server Health",
       "success": true,
       "message": "Next.js server is running",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.088839"
+      "timestamp": "2025-09-25T17:05:26.116825"
     },
     {
       "test_name": "Core Summaries API",
       "success": true,
       "message": "API returns proper array/object format",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.295974"
+      "timestamp": "2025-09-25T17:05:26.456908"
     },
     {
       "test_name": "Individual Book API",
-      "success": false,
-      "message": "Server error: HTTP 500",
-      "error_details": "{\"error\":\"Cannot coerce the result to a single JSON object\"}",
-      "timestamp": "2025-09-25T17:04:44.430063"
+      "success": true,
+      "message": "API correctly handles non-existent book (empty result)",
+      "error_details": "",
+      "timestamp": "2025-09-25T17:05:26.580814"
     },
     {
       "test_name": "Profile Upload Avatar API",
       "success": true,
       "message": "API correctly requires authentication",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.446049"
+      "timestamp": "2025-09-25T17:05:26.612641"
     },
     {
       "test_name": "Notebooks API",
       "success": true,
       "message": "API correctly requires authentication",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.487750"
+      "timestamp": "2025-09-25T17:05:26.626711"
     },
     {
       "test_name": "Notebooks Upload API",
       "success": true,
       "message": "API correctly requires authentication",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.524175"
+      "timestamp": "2025-09-25T17:05:26.691953"
     },
     {
       "test_name": "Cart API (GET)",
       "success": true,
       "message": "API correctly requires authentication",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.579662"
+      "timestamp": "2025-09-25T17:05:26.724155"
     },
     {
       "test_name": "Cart API (POST)",
       "success": true,
       "message": "API correctly requires authentication",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.618079"
+      "timestamp": "2025-09-25T17:05:26.783001"
     },
     {
       "test_name": "Admin API /admin/users",
       "success": true,
       "message": "API correctly requires admin access",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.631148"
+      "timestamp": "2025-09-25T17:05:26.817242"
     },
     {
       "test_name": "Admin API /admin/books",
       "success": true,
       "message": "API correctly requires admin access",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.685370"
+      "timestamp": "2025-09-25T17:05:26.830379"
     },
     {
       "test_name": "Admin API /admin/analytics",
       "success": true,
       "message": "API correctly requires admin access",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.722303"
+      "timestamp": "2025-09-25T17:05:26.888943"
     },
     {
       "test_name": "Admin API /admin/settings",
       "success": true,
       "message": "API correctly requires admin access",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.734996"
+      "timestamp": "2025-09-25T17:05:26.921893"
     },
     {
       "test_name": "Admin API /admin/lectures",
       "success": true,
       "message": "API correctly requires admin access",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.785679"
+      "timestamp": "2025-09-25T17:05:26.935170"
     },
     {
       "test_name": "Upload API /profile/upload-avatar",
       "success": true,
       "message": "API correctly requires authentication",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.814420"
+      "timestamp": "2025-09-25T17:05:26.981479"
     },
     {
       "test_name": "Upload API /summaries/upload",
       "success": true,
       "message": "API correctly requires authentication",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.827170"
+      "timestamp": "2025-09-25T17:05:26.993432"
     },
     {
       "test_name": "Upload API /books/upload-image",
       "success": true,
       "message": "API correctly requires authentication",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.839870"
+      "timestamp": "2025-09-25T17:05:27.012661"
     },
     {
       "test_name": "Upload API /notebooks/upload",
       "success": true,
       "message": "API correctly requires authentication",
       "error_details": "",
-      "timestamp": "2025-09-25T17:04:44.879829"
+      "timestamp": "2025-09-25T17:05:27.026928"
     }
   ]
 }
