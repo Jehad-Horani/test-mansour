@@ -5,6 +5,7 @@ import type { Session, User as SupabaseUser } from "@supabase/supabase-js"
 import { createClient } from "@/lib/supabase/client"
 
 export interface User {
+  [x: string]: any
   id: string
   name: string
   email: string

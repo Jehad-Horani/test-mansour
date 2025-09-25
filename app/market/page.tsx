@@ -56,14 +56,14 @@ export default function MarketPage() {
       .channel('books-changes')
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'books' },
-        (payload) => {
+        (payload: any) => {
           console.log('New book added:', payload)
           loadBooks() // Reload books when new ones are added
         }
       )
       .on('postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'books' },
-        (payload) => {
+        (payload: any) => {
           console.log('Book updated:', payload)
           loadBooks() // Reload books when updated
         }
