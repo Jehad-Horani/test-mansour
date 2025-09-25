@@ -1,377 +1,471 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
 import { RetroWindow } from "@/app/components/retro-window"
-import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
+import { Badge } from "@/app/components/ui/badge"
+import Link from "next/link"
+import { 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  Eye, 
+  ArrowRight,
+  Search,
+  Filter,
+  Star,
+  StarOff
+} from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { adminService } from "@/lib/supabase/admin"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 
 interface DailyLecture {
   id: string
   title: string
-  course_name: string
-  course_code: string
-  professor_name: string
-  lecture_date: string
-  lecture_time: string
-  description: string
-  image_urls: string[]
-  image_names: string[]
-  image_sizes: number[]
-  status: "pending" | "approved" | "rejected"
-  rejection_reason?: string
-  uploaded_by: string
-  upload_date: string
+  description?: string
+  subject: string
+  instructor_id: string
+  scheduled_date: string
+  start_time: string
+  end_time: string
+  location?: string
+  meeting_url?: string
+  status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled'
+  max_attendees: number
+  current_attendees: number
+  approval_status: 'pending' | 'approved' | 'rejected'
   approved_by?: string
   approved_at?: string
-  views_count: number
-  likes_count: number
-  comments_count: number
-  is_featured: boolean
-  tags: string[]
-  uploader_name?: string
+  rejection_reason?: string
+  created_at: string
+  updated_at: string
+  instructor?: {
+    name: string
+    university?: string
+    phone?: string
+  }
 }
 
 export default function AdminDailyLecturesPage() {
-  const { user, loading } = useAuth()
+  const { user, isLoggedIn, isAdmin } = useAuth()
   const router = useRouter()
-  const [lectures, setLectures] = useState<DailyLecture[]>([])
-  const [loadingData, setLoadingData] = useState(true)
-  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending")
-  const [selectedLecture, setSelectedLecture] = useState<DailyLecture | null>(null)
-  const [rejectionReason, setRejectionReason] = useState("")
-  const [showRejectionModal, setShowRejectionModal] = useState(false)
-  const [showImageModal, setShowImageModal] = useState<string | null>(null)
-
-  const { data, loading1, error1 } = useSupabaseClient()
-
+  const supabase = createClient()
+  const [loading, setLoading] = useState(true)
+  const [pendingLectures, setPendingLectures] = useState<DailyLecture[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [processingLectureId, setProcessingLectureId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== "admin")) {
-      router.push("/auth/login")
+    if (!isLoggedIn) {
+      router.push('/auth')
       return
     }
-    if (user?.role === "admin") {
-      fetchLectures()
-    }
-  }, [user, loading, router, filter])
 
- const fetchLectures = async () => {
-  try {
-    setLoadingData(true)
-    const res = await fetch("/api/lectures")
-    const data = await res.json()
-
-    let filtered = data
-    if (filter !== "all") {
-      filtered = data.filter((lecture: any) => lecture.status === filter)
+    if (!isAdmin()) {
+      toast.error("غير مصرح لك بالوصول لهذه الصفحة")
+      router.push('/dashboard')
+      return
     }
 
-    const formattedLectures = filtered.map((lecture: any) => ({
-      ...lecture,
-      uploader_name: lecture.profiles?.name || "مستخدم غير معروف",
-    }))
+    loadPendingLectures()
 
-    setLectures(formattedLectures)
-  } catch (error) {
-    console.error("Error fetching lectures:", error)
-  } finally {
-    setLoadingData(false)
+    // Real-time updates for new lecture submissions
+    const channel = supabase
+      .channel('admin-lectures-changes')
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'daily_lectures' },
+        (payload) => {
+          console.log('New lecture submitted:', payload)
+          loadPendingLectures()
+        }
+      )
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'daily_lectures' },
+        (payload) => {
+          console.log('Lecture updated:', payload)
+          loadPendingLectures()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [isLoggedIn, user])
+
+  const loadPendingLectures = async () => {
+    try {
+      setLoading(true)
+      
+      let query = supabase
+        .from('daily_lectures')
+        .select(`
+          *,
+          instructor:profiles!daily_lectures_instructor_id_fkey(name, university, phone)
+        `)
+        .order('created_at', { ascending: false })
+
+      // Apply filters
+      if (filter !== 'all') {
+        query = query.eq('approval_status', filter)
+      }
+
+      const { data, error } = await query
+      
+      if (error) throw error
+      setPendingLectures(data || [])
+    } catch (error: any) {
+      console.error("Error loading lectures:", error)
+      toast.error("حدث خطأ أثناء تحميل المحاضرات")
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
+  const approveLecture = async (lectureId: string) => {
+    if (!confirm("هل أنت متأكد من قبول هذه المحاضرة؟")) return
 
-const handleApprove = async (lectureId: string) => {
-  try {
-    await fetch("/api/lectures/approve", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lectureId, userId: user?.id }),
-    })
+    try {
+      setProcessingLectureId(lectureId)
+      
+      const { data, error } = await supabase
+        .from('daily_lectures')
+        .update({
+          approval_status: 'approved',
+          approved_by: user!.id,
+          approved_at: new Date().toISOString()
+        })
+        .eq('id', lectureId)
+        .select()
 
-    fetchLectures()
-  } catch (error) {
-    console.error("Error approving lecture:", error)
+      if (error) throw error
+      
+      toast.success("تم قبول المحاضرة بنجاح")
+      loadPendingLectures()
+    } catch (error: any) {
+      console.error("Error approving lecture:", error)
+      toast.error("حدث خطأ أثناء قبول المحاضرة")
+    } finally {
+      setProcessingLectureId(null)
+    }
   }
-}
 
+  const rejectLecture = async (lectureId: string) => {
+    const reason = prompt("يرجى إدخال سبب رفض المحاضرة:")
+    if (!reason) return
 
-  const handleReject = async () => {
-  if (!selectedLecture || !rejectionReason.trim()) return
+    try {
+      setProcessingLectureId(lectureId)
+      
+      const { data, error } = await supabase
+        .from('daily_lectures')
+        .update({
+          approval_status: 'rejected',
+          approved_by: user!.id,
+          approved_at: new Date().toISOString(),
+          rejection_reason: reason
+        })
+        .eq('id', lectureId)
+        .select()
 
-  try {
-    await fetch("/api/lectures/reject", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        lectureId: selectedLecture.id,
-        rejectionReason,
-        userId: user?.id,
-      }),
-    })
-
-    setShowRejectionModal(false)
-    setSelectedLecture(null)
-    setRejectionReason("")
-    fetchLectures()
-  } catch (error) {
-    console.error("Error rejecting lecture:", error)
+      if (error) throw error
+      
+      toast.success("تم رفض المحاضرة")
+      loadPendingLectures()
+    } catch (error: any) {
+      console.error("Error rejecting lecture:", error)
+      toast.error("حدث خطأ أثناء رفض المحاضرة")
+    } finally {
+      setProcessingLectureId(null)
+    }
   }
-}
 
-
-  const handleToggleFeatured = async (lectureId: string, currentFeatured: boolean) => {
-  try {
-    await fetch("/api/lectures/toggle-featured", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lectureId, isFeatured: !currentFeatured }),
-    })
-
-    fetchLectures()
-  } catch (error) {
-    console.error("Error toggling featured:", error)
-  }
-}
-
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes"
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  }
+  const filteredLectures = pendingLectures.filter(lecture =>
+    lecture.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lecture.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lecture.instructor?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "approved":
-        return "bg-green-100 text-green-800"
-      case "rejected":
-        return "bg-red-100 text-red-800"
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'approved':
+        return 'bg-green-100 text-green-800'
+      case 'rejected':
+        return 'bg-red-100 text-red-800'
       default:
-        return "bg-gray-100 text-gray-800"
+        return 'bg-gray-100 text-gray-800'
     }
   }
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "pending":
-        return "في الانتظار"
-      case "approved":
-        return "مقبول"
-      case "rejected":
-        return "مرفوض"
+      case 'pending':
+        return 'في الانتظار'
+      case 'approved':
+        return 'مقبول'
+      case 'rejected':
+        return 'مرفوض'
       default:
         return status
     }
   }
 
-  if (loading || !user || user.role !== "admin") {
-    return null
+  if (!isLoggedIn || !isAdmin()) {
+    return (
+      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
+        <RetroWindow title="غير مصرح">
+          <div className="p-6 text-center">
+            <p className="text-gray-600 mb-4">غير مصرح لك بالوصول لهذه الصفحة</p>
+            <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
+              <Link href="/auth">تسجيل الدخول</Link>
+            </Button>
+          </div>
+        </RetroWindow>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
+        <RetroWindow title="مراجعة المحاضرات">
+          <div className="p-6 text-center">
+            <p className="text-gray-600">جاري تحميل المحاضرات المعلقة...</p>
+          </div>
+        </RetroWindow>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-retro-bg p-4">
+    <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <RetroWindow title="إدارة المحاضرات اليومية">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h1 className="text-xl font-bold text-black">إدارة المحاضرات اليومية</h1>
-                <div className="flex gap-2">
-                  {(["all", "pending", "approved", "rejected"] as const).map((status) => (
-                    <button
-                      key={status}
-                      onClick={() => setFilter(status)}
-                      className={`px-3 py-1 text-sm border border-gray-400 ${filter === status ? "bg-retro-accent text-white" : "bg-white text-black hover:bg-gray-50"
-                        }`}
-                    >
-                      {status === "all"
-                        ? "الكل"
-                        : status === "pending"
-                          ? "في الانتظار"
-                          : status === "approved"
-                            ? "مقبول"
-                            : "مرفوض"}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          <Button asChild variant="outline" className="retro-button bg-transparent mb-4">
+            <Link href="/admin">
+              <ArrowRight className="w-4 h-4 ml-1" />
+              العودة للوحة التحكم
+            </Link>
+          </Button>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--ink)" }}>
+            مراجعة المحاضرات اليومية
+          </h1>
+          <p className="text-gray-600">مراجعة وقبول أو رفض المحاضرات المرسلة من الأساتذة</p>
+        </div>
 
-              {/* Statistics */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div className="bg-yellow-50 border border-yellow-200 p-3 text-center">
-                  <div className="text-lg font-bold text-yellow-800">
-                    {lectures.filter((l) => l.status === "pending").length}
-                  </div>
-                  <div className="text-sm text-yellow-600">في الانتظار</div>
-                </div>
-                <div className="bg-green-50 border border-green-200 p-3 text-center">
-                  <div className="text-lg font-bold text-green-800">
-                    {lectures.filter((l) => l.status === "approved").length}
-                  </div>
-                  <div className="text-sm text-green-600">مقبول</div>
-                </div>
-                <div className="bg-red-50 border border-red-200 p-3 text-center">
-                  <div className="text-lg font-bold text-red-800">
-                    {lectures.filter((l) => l.status === "rejected").length}
-                  </div>
-                  <div className="text-sm text-red-600">مرفوض</div>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 p-3 text-center">
-                  <div className="text-lg font-bold text-blue-800">{lectures.length}</div>
-                  <div className="text-sm text-blue-600">إجمالي</div>
-                </div>
+        {/* Filters */}
+        <RetroWindow title="الفلاتر والبحث">
+          <div className="p-4">
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+              <div className="relative flex-1">
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input 
+                  placeholder="البحث في المحاضرات..." 
+                  className="retro-button pr-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
+              <div className="flex gap-2">
+                {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
+                  <Button
+                    key={status}
+                    variant={filter === status ? "default" : "outline"}
+                    size="sm"
+                    className="retro-button"
+                    style={filter === status ? { background: "var(--primary)", color: "white" } : {}}
+                    onClick={() => setFilter(status)}
+                  >
+                    {status === 'all' ? 'الكل' :
+                     status === 'pending' ? 'في الانتظار' :
+                     status === 'approved' ? 'مقبول' : 'مرفوض'}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </RetroWindow>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 mt-6">
+          <RetroWindow title="في الانتظار">
+            <div className="p-4 text-center">
+              <div className="text-3xl font-bold text-yellow-600">
+                {pendingLectures.filter(l => l.approval_status === 'pending').length}
+              </div>
+              <p className="text-sm text-gray-600">محاضرة معلقة</p>
+            </div>
+          </RetroWindow>
+          
+          <RetroWindow title="مقبولة">
+            <div className="p-4 text-center">
+              <div className="text-3xl font-bold text-green-600">
+                {pendingLectures.filter(l => l.approval_status === 'approved').length}
+              </div>
+              <p className="text-sm text-gray-600">محاضرة مقبولة</p>
+            </div>
+          </RetroWindow>
+
+          <RetroWindow title="مرفوضة">
+            <div className="p-4 text-center">
+              <div className="text-3xl font-bold text-red-600">
+                {pendingLectures.filter(l => l.approval_status === 'rejected').length}
+              </div>
+              <p className="text-sm text-gray-600">محاضرة مرفوضة</p>
+            </div>
+          </RetroWindow>
+
+          <RetroWindow title="المجموع">
+            <div className="p-4 text-center">
+              <div className="text-3xl font-bold" style={{ color: "var(--primary)" }}>
+                {filteredLectures.length}
+              </div>
+              <p className="text-sm text-gray-600">نتيجة البحث</p>
             </div>
           </RetroWindow>
         </div>
 
         {/* Lectures List */}
-        <RetroWindow title="قائمة المحاضرات">
-          <div className="p-4">
-            {loadingData ? (
-              <div className="text-center py-8">
-                <div className="text-gray-600">جاري التحميل...</div>
-              </div>
-            ) : lectures.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-gray-600">لا توجد محاضرات</div>
+        <RetroWindow title={`المحاضرات (${filteredLectures.length})`}>
+          <div className="p-6">
+            {filteredLectures.length === 0 ? (
+              <div className="text-center py-12">
+                {pendingLectures.length === 0 ? (
+                  <>
+                    <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
+                    <p className="text-gray-600 text-lg">ممتاز! لا توجد محاضرات في الانتظار</p>
+                    <p className="text-gray-500 text-sm mt-2">جميع المحاضرات تمت مراجعتها</p>
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600">لا توجد نتائج للبحث "{searchTerm}"</p>
+                    <Button 
+                      variant="outline" 
+                      className="retro-button bg-transparent mt-4"
+                      onClick={() => setSearchTerm("")}
+                    >
+                      مسح البحث
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
-              <div className="space-y-4">
-                {lectures.map((lecture) => (
-                  <div key={lecture.id} className="bg-white border border-gray-400 p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-black">{lecture.title}</h3>
-                          <span className={`px-2 py-1 text-xs rounded ${getStatusColor(lecture.status)}`}>
-                            {getStatusText(lecture.status)}
-                          </span>
-                          {lecture.is_featured && (
-                            <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">مميز</span>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-600 mb-3">
-                          <div>
-                            <strong>المادة:</strong> {lecture.course_name}
+              <div className="space-y-6">
+                {filteredLectures.map((lecture) => (
+                  <div key={lecture.id} className="retro-window bg-white">
+                    <div className="p-6">
+                      <div className="grid lg:grid-cols-4 gap-6">
+                        {/* Lecture Info */}
+                        <div className="lg:col-span-3">
+                          <div className="flex items-center gap-3 mb-4">
+                            <h3 className="text-xl font-bold">{lecture.title}</h3>
+                            <Badge className={getStatusColor(lecture.approval_status)}>
+                              {getStatusText(lecture.approval_status)}
+                            </Badge>
                           </div>
-                          <div>
-                            <strong>رمز المادة:</strong> {lecture.course_code}
-                          </div>
-                          <div>
-                            <strong>الأستاذ:</strong> {lecture.professor_name}
-                          </div>
-                          <div>
-                            <strong>تاريخ المحاضرة:</strong>{" "}
-                            {new Date(lecture.lecture_date).toLocaleDateString("ar-SA")}
-                          </div>
-                          <div>
-                            <strong>وقت المحاضرة:</strong> {lecture.lecture_time}
-                          </div>
-                          <div>
-                            <strong>المرفوع بواسطة:</strong> {lecture.uploader_name}
-                          </div>
-                        </div>
-
-                        <div className="text-sm text-gray-600 mb-3">
-                          <strong>الوصف:</strong> {lecture.description}
-                        </div>
-
-                        {lecture.tags && lecture.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {lecture.tags.map((tag, index) => (
-                              <span key={index} className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                          <span>🖼️ {lecture.image_urls?.length || 0} صورة</span>
-                          <span>👁️ {lecture.views_count} مشاهدة</span>
-                          <span>❤️ {lecture.likes_count} إعجاب</span>
-                          <span>💬 {lecture.comments_count} تعليق</span>
-                          <span>📅 {new Date(lecture.upload_date).toLocaleDateString("ar-SA")}</span>
-                        </div>
-
-                        {lecture.rejection_reason && (
-                          <div className="bg-red-50 border border-red-200 p-2 text-sm text-red-800 mb-3">
-                            <strong>سبب الرفض:</strong> {lecture.rejection_reason}
-                          </div>
-                        )}
-
-                        {/* Images Preview */}
-                        {lecture.image_urls && lecture.image_urls.length > 0 && (
-                          <div className="mb-3">
-                            <div className="text-sm font-medium text-black mb-2">صور المحاضرة:</div>
-                            <div className="flex gap-2 flex-wrap">
-                              {lecture.image_urls.slice(0, 3).map((url, index) => (
-                                <button
-                                  key={index}
-                                  onClick={() => setShowImageModal(url)}
-                                  className="w-16 h-16 border border-gray-300 bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                                >
-                                  <img
-                                    src={url || "/placeholder.svg"}
-                                    alt={`صورة ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </button>
-                              ))}
-                              {lecture.image_urls.length > 3 && (
-                                <div className="w-16 h-16 border border-gray-300 bg-gray-100 flex items-center justify-center text-xs text-gray-600">
-                                  +{lecture.image_urls.length - 3}
-                                </div>
-                              )}
+                          
+                          <div className="grid md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                              <p className="text-gray-600 mb-1"><strong>المادة:</strong> {lecture.subject}</p>
+                              <p className="text-gray-600 mb-1"><strong>المدرس:</strong> {lecture.instructor?.name}</p>
+                              <p className="text-gray-600 mb-1"><strong>الجامعة:</strong> {lecture.instructor?.university}</p>
+                              <p className="text-gray-600 mb-1"><strong>التاريخ:</strong> {new Date(lecture.scheduled_date).toLocaleDateString('ar-SA')}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-600 mb-1"><strong>وقت البداية:</strong> {lecture.start_time}</p>
+                              <p className="text-gray-600 mb-1"><strong>وقت النهاية:</strong> {lecture.end_time}</p>
+                              <p className="text-gray-600 mb-1"><strong>المكان:</strong> {lecture.location || 'غير محدد'}</p>
+                              <p className="text-gray-600 mb-1"><strong>الحد الأقصى:</strong> {lecture.max_attendees} مشارك</p>
                             </div>
                           </div>
-                        )}
-                      </div>
 
-                      <div className="flex flex-col gap-2 mr-4">
-                        {lecture.status === "pending" && (
-                          <>
-                            <button
-                              onClick={() => handleApprove(lecture.id)}
-                              className="retro-button bg-green-500 text-white px-3 py-1 text-sm hover:bg-green-600"
-                            >
-                              قبول
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedLecture(lecture)
-                                setShowRejectionModal(true)
-                              }}
-                              className="retro-button bg-red-500 text-white px-3 py-1 text-sm hover:bg-red-600"
-                            >
-                              رفض
-                            </button>
-                          </>
-                        )}
+                          {lecture.description && (
+                            <div className="mb-4">
+                              <h4 className="font-semibold mb-2">الوصف:</h4>
+                              <p className="text-gray-600 text-sm">{lecture.description}</p>
+                            </div>
+                          )}
 
-                        {lecture.status === "approved" && (
-                          <button
-                            onClick={() => handleToggleFeatured(lecture.id, lecture.is_featured)}
-                            className={`retro-button px-3 py-1 text-sm ${lecture.is_featured
-                                ? "bg-purple-500 text-white hover:bg-purple-600"
-                                : "bg-gray-500 text-white hover:bg-gray-600"
-                              }`}
+                          {lecture.meeting_url && (
+                            <div className="mb-4">
+                              <h4 className="font-semibold mb-2">رابط الاجتماع:</h4>
+                              <a 
+                                href={lecture.meeting_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline text-sm"
+                              >
+                                {lecture.meeting_url}
+                              </a>
+                            </div>
+                          )}
+
+                          {lecture.rejection_reason && (
+                            <div className="bg-red-50 border border-red-200 p-3 mb-4">
+                              <h4 className="font-semibold text-red-800 mb-1">سبب الرفض:</h4>
+                              <p className="text-red-600 text-sm">{lecture.rejection_reason}</p>
+                            </div>
+                          )}
+
+                          <div className="text-xs text-gray-500">
+                            <p>تاريخ الإرسال: {new Date(lecture.created_at).toLocaleDateString('ar-SA')}</p>
+                            <p>الحالة الحالية: {lecture.status}</p>
+                            <p>المشاركون الحاليون: {lecture.current_attendees}</p>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-col gap-3">
+                          {lecture.approval_status === 'pending' && (
+                            <>
+                              <Button
+                                className="retro-button"
+                                style={{ background: "green", color: "white" }}
+                                onClick={() => approveLecture(lecture.id)}
+                                disabled={processingLectureId === lecture.id}
+                              >
+                                <CheckCircle className="w-4 h-4 ml-2" />
+                                {processingLectureId === lecture.id ? "جاري القبول..." : "قبول المحاضرة"}
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                className="retro-button text-red-600 border-red-600 bg-transparent"
+                                onClick={() => rejectLecture(lecture.id)}
+                                disabled={processingLectureId === lecture.id}
+                              >
+                                <XCircle className="w-4 h-4 ml-2" />
+                                {processingLectureId === lecture.id ? "جاري الرفض..." : "رفض المحاضرة"}
+                              </Button>
+                            </>
+                          )}
+
+                          <Button
+                            variant="outline"
+                            className="retro-button bg-transparent"
                           >
-                            {lecture.is_featured ? "إلغاء التمييز" : "تمييز"}
-                          </button>
-                        )}
+                            <Eye className="w-4 h-4 ml-2" />
+                            عرض التفاصيل
+                          </Button>
 
-                        <button className="retro-button bg-blue-500 text-white px-3 py-1 text-sm hover:bg-blue-600">
-                          عرض التفاصيل
-                        </button>
+                          <div className="mt-4 p-3 bg-gray-50 rounded">
+                            <h5 className="font-semibold text-xs mb-1">معلومات المدرس:</h5>
+                            <p className="text-xs text-gray-600">{lecture.instructor?.name}</p>
+                            <p className="text-xs text-gray-600">{lecture.instructor?.university}</p>
+                            {lecture.instructor?.phone && (
+                              <p className="text-xs text-gray-600">{lecture.instructor?.phone}</p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -380,68 +474,6 @@ const handleApprove = async (lectureId: string) => {
             )}
           </div>
         </RetroWindow>
-
-        {/* Rejection Modal */}
-        {showRejectionModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white border-4 border-black p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-bold text-black mb-4">رفض المحاضرة</h3>
-              <p className="text-gray-600 mb-4">يرجى إدخال سبب رفض هذه المحاضرة:</p>
-
-              <textarea
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="اكتب سبب الرفض هنا..."
-                className="w-full p-3 border border-gray-400 mb-4 h-24 resize-none"
-                dir="rtl"
-              />
-
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => {
-                    setShowRejectionModal(false)
-                    setSelectedLecture(null)
-                    setRejectionReason("")
-                  }}
-                  className="retro-button bg-gray-500 text-white px-4 py-2 hover:bg-gray-600"
-                >
-                  إلغاء
-                </button>
-                <button
-                  onClick={handleReject}
-                  disabled={!rejectionReason.trim()}
-                  className="retro-button bg-red-500 text-white px-4 py-2 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  رفض المحاضرة
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Image Modal */}
-        {showImageModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-            <div className="max-w-4xl max-h-4xl p-4">
-              <div className="bg-white border-4 border-black p-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-bold text-black">معاينة الصورة</h3>
-                  <button
-                    onClick={() => setShowImageModal(null)}
-                    className="retro-button bg-red-500 text-white px-3 py-1 hover:bg-red-600"
-                  >
-                    إغلاق
-                  </button>
-                </div>
-                <img
-                  src={showImageModal || "/placeholder.svg"}
-                  alt="معاينة الصورة"
-                  className="max-w-full max-h-96 object-contain mx-auto"
-                />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
