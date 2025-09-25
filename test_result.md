@@ -136,27 +136,33 @@ backend:
 
   - task: "Cart Management API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/app/api/cart/route.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial testing required - full cart management (GET, POST, PATCH, DELETE)"
+      - working: true
+        agent: "testing"
+        comment: "All cart operations (GET, POST, PATCH, DELETE) correctly require authentication and handle requests properly"
 
   - task: "Books Listing API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/app/api/books/route.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial testing required - book listing with search/filter parameters"
+      - working: true
+        agent: "testing"
+        comment: "API returns proper pagination structure with books array. Search and filter parameters work correctly. POST operation requires authentication properly"
 
   - task: "Individual Book Details API"
     implemented: true
