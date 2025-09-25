@@ -61,10 +61,7 @@ export default function NotebooksPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push('/auth')
-      return
-    }
+   
     fetchLectures()
     fetchApprovedLectures()
   }, [isLoggedIn, router])
