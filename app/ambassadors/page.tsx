@@ -77,7 +77,7 @@ export default function AmbassadorsPage() {
         <RetroWindow title="السفراء الأكاديميون">
           <div className="space-y-6">
             {/* Filters */}
-            <div className="retro-window bg-gray-50">
+            {/* <div className="retro-window bg-gray-50">
               <div className="p-4">
                 <div className="grid md:grid-cols-4 gap-4">
                   <Input placeholder="ابحث عن سفير..." className="retro-button" />
@@ -117,7 +117,7 @@ export default function AmbassadorsPage() {
                   </Select>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {ambassadors.map((ambassador) => (
@@ -139,31 +139,31 @@ export default function AmbassadorsPage() {
 
                     {/* Ambassador Stats */}
                     <div className="space-y-3 mb-6">
-                      <div className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded">
+                      {/* <div className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded">
                         <div className="flex items-center gap-1">
                           <Star className="w-4 h-4 text-yellow-400 fill-current" />
                           <span className="font-semibold">{ambassador.rating}</span>
                         </div>
                         <span className="text-gray-600">{ambassador.sessions} جلسة مكتملة</span>
-                      </div>
+                      </div> */}
 
-                      <div className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded">
+                      {/* <div className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded">
                         <span className="text-gray-600">سنوات الخبرة:</span>
                         <span className="font-semibold">{ambassador.experience}</span>
-                      </div>
+                      </div> */}
 
-                      <div className="text-center">
+                      {/* <div className="text-center">
                         <Badge
                           variant={ambassador.available ? "default" : "secondary"}
                           className={`text-sm px-3 py-1 ${ambassador.available ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
                         >
                           {ambassador.available ? "متاح للمحادثة" : "مشغول حالياً"}
                         </Badge>
-                      </div>
+                      </div> */}
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="space-y-3">
+                    {/* <div className="space-y-3">
                       <Button
                         asChild
                         className="retro-button w-full bg-blue-600 hover:bg-blue-700 text-white"
@@ -175,8 +175,17 @@ export default function AmbassadorsPage() {
                         </Link>
                       </Button>
 
-                  
-                    </div>
+                      <Button
+                        asChild
+                        className="retro-button w-full bg-green-600 hover:bg-green-700 text-white"
+                        disabled={!ambassador.available}
+                      >
+                        <Link href={`/ambassadors/${ambassador.id}/chat`}>
+                          <MessageCircle className="w-4 h-4 ml-2" />
+                          بدء محادثة
+                        </Link>
+                      </Button>
+                    </div> */}
                   </div>
                 </div>
               ))}
