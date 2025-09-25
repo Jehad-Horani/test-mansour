@@ -31,27 +31,33 @@ backend:
 
   - task: "Summaries Approve API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/app/api/summaries/approve/route.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial testing required - summary approval workflow"
+      - working: true
+        agent: "testing"
+        comment: "API correctly requires admin access and handles approval workflow properly"
 
   - task: "Summaries Reject API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/app/api/summaries/reject/route.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial testing required - summary rejection workflow"
+      - working: true
+        agent: "testing"
+        comment: "API correctly requires admin access and handles rejection workflow properly"
 
   - task: "Admin Users API"
     implemented: true
