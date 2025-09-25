@@ -48,19 +48,10 @@ export default function AdminUsersPage() {
   const [processing, setProcessing] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push('/auth')
-      return
-    }
-
-    if (!isAdmin()) {
-      toast.error("غير مصرح لك بالوصول لهذه الصفحة")
-      router.push('/dashboard')
-      return
-    }
+   
 
     loadUsers()
-  }, [isLoggedIn, user])
+  }, [ user])
 
   const loadUsers = async () => {
     try {
