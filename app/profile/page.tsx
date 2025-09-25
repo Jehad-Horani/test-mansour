@@ -7,13 +7,13 @@ import { Edit, Settings, BookOpen, Users, Award, Calendar } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createClient } from "@/lib/supabase/client"
 
 
 export default function ProfilePage() {
   const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [isUploading, setIsUploading] = useState(false)
 
