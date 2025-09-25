@@ -2,139 +2,15 @@
 
 import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
+import { AvatarUpload } from "@/components/avatar-upload"
 import Link from "next/link"
-import { Edit, Settings, BookOpen, Users, Award, Calendar, Upload } from "lucide-react"
+import { Edit, Settings, BookOpen, Users, Award, Calendar } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
-import { toast } from "sonner"
+import { useState } from "react"
 
 export default function ProfilePage() {
   const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
-  const router = useRouter()
-  const supabase = createClient()
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [avatarUrl, setAvatarUrl] = useState<string>("")
-
-  useEffect(() => {
-    if (profile?.avatar_url) {
-      setAvatarUrl(profile.avatar_url)
-    }
-  }, [profile])
-
-  // دالة رفع الصورة - Fixed the implementation with proper bucket creation
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !user) {
-      toast.error("يجب اختيار ملف وتسجيل الدخول")
-      return
-    }
-
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("حجم الملف يجب أن يكون أقل من 5 ميجابايت")
-      return
-    }
-
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      toast.error("يجب أن يكون الملف صورة")
-      return
-    }
-
-    try {
-      setIsUploading(true)
-      
-      const fileExt = file.name.split(".").pop()
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`
-      const filePath = fileName
-
-      // First, ensure the avatars bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets()
-      const avatarsBucket = buckets?.find(bucket => bucket.name === 'avatars')
-      
-      if (!avatarsBucket) {
-        console.log('Creating avatars bucket...')
-        const { error: bucketError } = await supabase.storage.createBucket('avatars', {
-          public: true,
-          fileSizeLimit: 5242880, // 5MB
-          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp']
-        })
-        
-        if (bucketError) {
-          console.log('Bucket creation error (might already exist):', bucketError)
-          // Continue anyway - bucket might already exist but not visible due to permissions
-        }
-      }
-
-      // Upload the file
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, { 
-          cacheControl: '3600',
-          upsert: true
-        })
-
-      if (uploadError) {
-        console.error("Upload error:", uploadError)
-        
-        // If bucket doesn't exist, try to create it and retry
-        if (uploadError.message.includes('Bucket not found')) {
-          console.log('Attempting to create avatars bucket...')
-          await supabase.storage.createBucket('avatars', { public: true })
-          
-          // Retry upload
-          const { data: retryData, error: retryError } = await supabase.storage
-            .from("avatars")
-            .upload(filePath, file, { 
-              cacheControl: '3600',
-              upsert: true
-            })
-          
-          if (retryError) throw retryError
-        } else {
-          throw uploadError
-        }
-      }
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath)
-      
-      const publicUrl = urlData.publicUrl
-
-      // Update profile in database
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ 
-          avatar_url: publicUrl,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", user.id)
-
-      if (updateError) {
-        console.error("Profile update error:", updateError)
-        throw updateError
-      }
-
-      setAvatarUrl(publicUrl)
-      toast.success("تم تحديث صورة الملف الشخصي بنجاح")
-      
-      // Refresh the page to show updated profile
-      setTimeout(() => {
-        router.refresh()
-      }, 1000)
-
-    } catch (error: any) {
-      console.error("Error uploading avatar:", error)
-      toast.error(`حدث خطأ أثناء رفع الصورة: ${error.message}`)
-    } finally {
-      setIsUploading(false)
-    }
-  }
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState(profile?.avatar_url || "")
 
   if (!isLoggedIn) {
     return (
