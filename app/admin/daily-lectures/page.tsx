@@ -70,14 +70,14 @@ export default function AdminDailyLecturesPage() {
       .channel('admin-lectures-changes')
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'daily_lectures' },
-        (payload) => {
+        (payload: any) => {
           console.log('New lecture submitted:', payload)
           loadPendingLectures()
         }
       )
       .on('postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'daily_lectures' },
-        (payload) => {
+        (payload: any) => {
           console.log('Lecture updated:', payload)
           loadPendingLectures()
         }
@@ -208,7 +208,7 @@ export default function AdminDailyLecturesPage() {
     }
   }
 
-  if (!isLoggedIn || !isAdmin()) {
+  if (!isAdmin()) {
     return (
       <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
         <RetroWindow title="غير مصرح">
