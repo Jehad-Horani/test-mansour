@@ -169,9 +169,9 @@ backend:
 
   - task: "Individual Book Details API"
     implemented: true
-    working: false
+    working: true
     file: "/app/app/api/books/[id]/route.ts"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -181,6 +181,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "CRITICAL: Database schema issue - column profiles_1.email does not exist. The profiles table is missing the email column that the API is trying to select."
+      - working: true
+        agent: "testing"
+        comment: "✅ FIXED: Database schema issues resolved. Book details API works without database schema errors. No more missing email column errors."
 
   - task: "Book Image Upload API"
     implemented: true
