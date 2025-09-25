@@ -98,9 +98,23 @@ export class AdminService {
       .from("books")
       .select(`
         *,
-        profiles:seller_id (name, university)
+        book_images(*),
+        seller:profiles!books_seller_id_fkey(name, university, phone)
       `)
-      .eq("status", "pending")
+      .eq("approval_status", "pending")
+      .order("created_at", { ascending: false })
+
+    return { data, error }
+  }
+
+  async getPendingLectures() {
+    const { data, error } = await this.supabase
+      .from("daily_lectures")
+      .select(`
+        *,
+        instructor:profiles!daily_lectures_instructor_id_fkey(name, university, phone)
+      `)
+      .eq("approval_status", "pending")
       .order("created_at", { ascending: false })
 
     return { data, error }
