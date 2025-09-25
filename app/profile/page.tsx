@@ -11,8 +11,6 @@ import { useState } from "react"
 export default function ProfilePage() {
   const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState(profile?.avatar_url || "")
-      const [file, setFile] = useState(null);
-
 
   if (!isLoggedIn) {
     return (
@@ -28,6 +26,12 @@ export default function ProfilePage() {
       </div>
     )
   }
+const handleAvatarUpload = (newAvatarUrl: string) => {
+  setCurrentAvatarUrl(newAvatarUrl);
+  alert("✅ تم تحديث الصورة الشخصية بنجاح");
+};
+
+
 
   const stats = profile?.stats || {
     coursesEnrolled: 0,
@@ -54,8 +58,8 @@ export default function ProfilePage() {
                   <AvatarUpload
                     currentAvatarUrl={currentAvatarUrl}
                     userId={user.id}
-                    userName={profile?.name || 'مستخدم'}
-                    onAvatarUpdate={setCurrentAvatarUrl}
+                    userName={profile?.name || "مستخدم"}
+                    onAvatarUpdate={handleAvatarUpload} // ← هون ضفت فنكشن الرفع
                     size="lg"
                   />
                 )}
