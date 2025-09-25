@@ -45,8 +45,6 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: "account", label: "الحساب", icon: User },
-    { id: "notifications", label: "الإشعارات", icon: Bell },
-    { id: "privacy", label: "الخصوصية", icon: Shield },
     { id: "subscription", label: "الاشتراك", icon: CreditCard },
     { id: "academic", label: "الأكاديمي", icon: GraduationCap },
   ]
@@ -216,136 +214,7 @@ export default function SettingsPage() {
               </RetroWindow>
             )}
 
-            {/* Notification Settings */}
-            {activeTab === "notifications" && (
-              <RetroWindow title="إعدادات الإشعارات">
-                <div className="p-6 space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>
-                          إشعارات البريد الإلكتروني
-                        </h4>
-                        <p className="text-sm text-gray-600">تلقي الإشعارات عبر البريد الإلكتروني</p>
-                      </div>
-                      <Switch
-                        checked={settings.emailNotifications}
-                        onCheckedChange={(checked) => setSettings({ ...settings, emailNotifications: checked })}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>
-                          الإشعارات الفورية
-                        </h4>
-                        <p className="text-sm text-gray-600">تلقي الإشعارات الفورية في المتصفح</p>
-                      </div>
-                      <Switch
-                        checked={settings.pushNotifications}
-                        onCheckedChange={(checked) => setSettings({ ...settings, pushNotifications: checked })}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>
-                          رسائل تسويقية
-                        </h4>
-                        <p className="text-sm text-gray-600">تلقي العروض والأخبار التسويقية</p>
-                      </div>
-                      <Switch
-                        checked={settings.marketingEmails}
-                        onCheckedChange={(checked) => setSettings({ ...settings, marketingEmails: checked })}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>
-                          الملخص الأسبوعي
-                        </h4>
-                        <p className="text-sm text-gray-600">تلقي ملخص أسبوعي بأنشطتك</p>
-                      </div>
-                      <Switch
-                        checked={settings.weeklyDigest}
-                        onCheckedChange={(checked) => setSettings({ ...settings, weeklyDigest: checked })}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>
-                          تذكير الامتحانات
-                        </h4>
-                        <p className="text-sm text-gray-600">تذكير بالامتحانات القادمة</p>
-                      </div>
-                      <Switch
-                        checked={settings.examReminders}
-                        onCheckedChange={(checked) => setSettings({ ...settings, examReminders: checked })}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </RetroWindow>
-            )}
-
-            {/* Privacy Settings */}
-            {activeTab === "privacy" && (
-              <RetroWindow title="إعدادات الخصوصية">
-                <div className="p-6 space-y-6">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--ink)" }}>
-                      رؤية الملف الشخصي
-                    </h3>
-                    <p className="text-blue-700">
-                      ملفك الشخصي مرئي للجميع تلقائياً لتسهيل التواصل والتعلم المشترك بين الطلاب.
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>
-                          إظهار البريد الإلكتروني
-                        </h4>
-                        <p className="text-sm text-gray-600">السماح للآخرين برؤية بريدك الإلكتروني</p>
-                      </div>
-                      <Switch
-                        checked={settings.showEmail}
-                        onCheckedChange={(checked) => setSettings({ ...settings, showEmail: checked })}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>
-                          إظهار رقم الهاتف
-                        </h4>
-                        <p className="text-sm text-gray-600">السماح للآخرين برؤية رقم هاتفك</p>
-                      </div>
-                      <Switch
-                        checked={settings.showPhone}
-                        onCheckedChange={(checked) => setSettings({ ...settings, showPhone: checked })}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium" style={{ color: "var(--ink)" }}>
-                          السماح بالرسائل
-                        </h4>
-                        <p className="text-sm text-gray-600">السماح للآخرين بإرسال رسائل لك</p>
-                      </div>
-                      <Switch
-                        checked={settings.allowMessages}
-                        onCheckedChange={(checked) => setSettings({ ...settings, allowMessages: checked })}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </RetroWindow>
-            )}
+     
 
             {/* Subscription Settings */}
             {activeTab === "subscription" && (
