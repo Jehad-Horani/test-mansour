@@ -36,13 +36,13 @@ export default function EditProfilePage() {
       setForm({
         name: profile.name || "",
         email: user?.email || "",
-        phone: profile.phone || "",
+        phone: profile?.phone || "",
         birth_date: profile?.birth_date || "",
-        university: profile.university || "",
-        major: profile.major || "",
-        study_level: profile.study_level || "",
+        university: profile?.university || "",
+        major: profile?.major || "",
+        study_level: profile?.study_level || "",
         student_id: profile?.student_id || "",
-        bio: profile.bio || "",
+        bio: profile?.bio || "",
       })
     }
   }, [profile, user])
