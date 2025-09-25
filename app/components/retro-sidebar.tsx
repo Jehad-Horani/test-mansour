@@ -48,7 +48,7 @@ export function RetroSidebar() {
         title: "لوحة التحكم",
         items: [
           { title: "الجدول الدراسي", href: "/dashboard/schedule" },
-          { title: "المحاضرات اليومية", href: "/dashboard/daily-lectures" },
+          { title: "المحاضرات اليومية", href: "/dashboard/notebooks" },
           { title: "الامتحانات", href: "/dashboard/exams" },
           { title: "الجلسات الدراسية", href: "/dashboard/sessions" },
           { title: "السفراء", href: "/dashboard/ambassadors" },
