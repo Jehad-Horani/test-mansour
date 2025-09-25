@@ -15,7 +15,7 @@ export async function GET(
       .select(`
         *,
         book_images(*),
-        seller:profiles!books_seller_id_fkey(name, avatar_url, university, phone, email)
+        seller:profiles!books_seller_id_fkey(name, avatar_url, university, phone)
       `)
       .eq('id', id)
       .single()
