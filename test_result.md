@@ -1,15 +1,18 @@
 backend:
   - task: "Core Summaries API"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/app/api/summaries/route.ts"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial testing required - API should return array format, not crash"
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL: Database schema issue - Could not find a relationship between 'summaries' and 'user_id' in the schema cache. The summaries table foreign key relationship is broken."
 
   - task: "Summaries Upload API"
     implemented: true
