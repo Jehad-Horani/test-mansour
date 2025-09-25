@@ -34,6 +34,9 @@ export default function SellBookPage() {
     selling_price: "",
     currency: "JOD"
   })
+  
+  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [uploading, setUploading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
