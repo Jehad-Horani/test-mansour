@@ -19,9 +19,14 @@ import { useAuth } from "@/hooks/use-auth"
 import { marketplaceApi } from "@/lib/supabase/marketplace"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useUserContext } from "@/contexts/user-context"
+
 
 export default function AdminDashboardPage() {
-  const { user, isLoggedIn, isAdmin, profile } = useAuth()
+  const { user, isLoggedIn, isAdmin } = useUserContext()
+  const { profile } = useAuth()
+
+  
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [bookStats, setBookStats] = useState({
@@ -41,9 +46,9 @@ export default function AdminDashboardPage() {
     
 
     // Check if user is admin or prompt for admin password
-    if (profile?.role === "admin") {
-      loadDashboardData()
-    } else if (profile) {
+    if (!isAdmin) {
+      router.push("/")
+    } else {
     
         loadDashboardData()
       

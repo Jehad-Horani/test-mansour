@@ -50,12 +50,17 @@ export function RetroNavbar() {
           <Link href="/ambassadors" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
             السفراء
           </Link>
-         
+           <Link href="/dashboard/daily-lectures" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
+            المحاضرات العامة 
+          </Link>
+           <Link href="/dashboard/notebooks" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
+            محاضراتك الشخصية
+          </Link>
           <Link href="/summaries" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
-            الملخصات
+            الملخصات العامة
           </Link>
           <Link href="/pricing" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
-            الأسعار
+            الالاشتراك
           </Link>
           {isLoggedIn && (
             <Link href="/dashboard" className="text-sm hover:text-gray-900" style={{ color: "var(--primary)" }}>
