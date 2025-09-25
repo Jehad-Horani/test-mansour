@@ -46,7 +46,7 @@ export default function AdminDashboardPage() {
       return
     }
 
-  }, [profile, user])
+  }, [isAdmin, user])
 
 
 
