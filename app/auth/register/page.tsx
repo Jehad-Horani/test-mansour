@@ -159,7 +159,7 @@ export default function RegisterPage() {
       await refreshUser()
       
       setIsSuccess(true)
-      setTimeout(() => router.push("/dashboard"), 2000)
+      setTimeout(() => router.push("/dashboard"), 8000)
       
     } catch (err: any) {
       console.error('[REGISTER] Registration error:', err)
