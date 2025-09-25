@@ -54,7 +54,7 @@ export interface CartItem {
 }
 
 export const marketplaceApi = {
-  // Get all books with filters
+  // Get all books with filters (only approved books for non-admins)
   async getBooks(filters: {
     search?: string
     category?: string
@@ -66,6 +66,7 @@ export const marketplaceApi = {
     sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'oldest' | 'popular'
     limit?: number
     offset?: number
+    includeUnapproved?: boolean // Admin-only
   } = {}) {
     const supabase = createClient()
     
@@ -77,6 +78,11 @@ export const marketplaceApi = {
         seller:profiles!books_seller_id_fkey(name, avatar_url, university)
       `)
       .eq('is_available', true)
+
+    // Only show approved books unless specifically requesting unapproved (admin feature)
+    if (!filters.includeUnapproved) {
+      query = query.eq('approval_status', 'approved')
+    }
 
     if (filters.search) {
       query = query.or(`title.ilike.%${filters.search}%,author.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
