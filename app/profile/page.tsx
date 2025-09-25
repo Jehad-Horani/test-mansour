@@ -11,6 +11,8 @@ import { useState } from "react"
 export default function ProfilePage() {
   const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState(profile?.avatar_url || "")
+      const [file, setFile] = useState(null);
+
 
   if (!isLoggedIn) {
     return (
