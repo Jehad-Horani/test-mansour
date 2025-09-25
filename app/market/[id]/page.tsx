@@ -5,10 +5,10 @@ import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
 import { Badge } from "@/app/components/ui/badge"
-import { 
-  ArrowRight, 
-  Heart, 
-  Share2, 
+import {
+  ArrowRight,
+  Heart,
+  Share2,
   ShoppingCart,
   MessageCircle,
   User,
@@ -70,11 +70,11 @@ export default function BookDetailsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [addingToCart, setAddingToCart] = useState(false)
 
-useEffect(() => {
-  if (params?.id) {
-    fetchBook(params.id as string)
-  }
-}, [params])
+  useEffect(() => {
+    if (params?.id) {
+      fetchBook(params.id as string)
+    }
+  }, [params])
 
 
   const fetchBook = async (bookId: string) => {
@@ -82,7 +82,7 @@ useEffect(() => {
       setLoading(true)
       const res = await fetch(`/api/books/${bookId}`)
       const data = await res.json()
-      
+
       if (res.ok) {
         setBook(data)
       } else {
@@ -170,7 +170,7 @@ useEffect(() => {
 
   const prevImage = () => {
     if (book?.book_images && book.book_images.length > 1) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === 0 ? book.book_images.length - 1 : prev - 1
       )
     }
@@ -234,7 +234,7 @@ useEffect(() => {
                     alt={book.title}
                     className="w-full h-96 object-cover bg-gray-200 rounded"
                   />
-                  
+
                   {images.length > 1 && (
                     <>
                       <button
@@ -252,7 +252,7 @@ useEffect(() => {
                     </>
                   )}
                 </div>
-                
+
                 {images.length > 1 && (
                   <div className="flex gap-2 mt-4 overflow-x-auto">
                     {images.map((image, index) => (
@@ -261,9 +261,8 @@ useEffect(() => {
                         src={image.image_url}
                         alt={`${book.title} - ${index + 1}`}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`w-20 h-20 object-cover bg-gray-200 rounded cursor-pointer border-2 ${
-                          index === currentImageIndex ? 'border-blue-500' : 'border-gray-300'
-                        }`}
+                        className={`w-20 h-20 object-cover bg-gray-200 rounded cursor-pointer border-2 ${index === currentImageIndex ? 'border-blue-500' : 'border-gray-300'
+                          }`}
                       />
                     ))}
                   </div>
@@ -288,7 +287,7 @@ useEffect(() => {
               <div className="p-4 space-y-4">
                 <h1 className="text-2xl font-bold text-black">{book.title}</h1>
                 <p className="text-lg text-gray-700">بقلم: {book.author}</p>
-                
+
                 <div className="flex items-center gap-2">
                   <Badge className={getConditionColor(book.condition)}>
                     {getConditionText(book.condition)}
@@ -347,11 +346,11 @@ useEffect(() => {
                       {addingToCart ? "جاري الإضافة..." : "أضف للسلة"}
                     </Button>
                   )}
-                  
+
                   <Button variant="outline" className="retro-button bg-transparent">
                     <Heart className="w-4 h-4" />
                   </Button>
-                  
+
                   <Button variant="outline" className="retro-button bg-transparent">
                     <Share2 className="w-4 h-4" />
                   </Button>
@@ -365,8 +364,8 @@ useEffect(() => {
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
                     {book?.seller?.avatar_url ? (
-                      <img 
-                        src={book?.seller?.avatar_url} 
+                      <img
+                        src={book?.seller?.avatar_url}
                         alt={book.seller.name}
                         className="w-12 h-12 rounded-full object-cover"
                       />
@@ -391,11 +390,16 @@ useEffect(() => {
                     className="retro-button flex-1"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
-                    <Link href={`/messages/new?user=${book.seller_id}&book=${book.id}`}>
+                    <a
+                      href={`https://wa.me/${book.seller.phone}?text=مرحبًا%20أنا%20مهتم%20بالكتاب%20${encodeURIComponent(book.title)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <MessageCircle className="w-4 h-4 mr-1" />
                       تواصل مع البائع
-                    </Link>
+                    </a>
                   </Button>
+
                 </div>
 
                 <div className="text-xs text-gray-500 text-center p-2 bg-gray-50 rounded">

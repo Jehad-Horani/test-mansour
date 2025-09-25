@@ -30,8 +30,10 @@ export interface Book {
   buyer_id?: string
   images?: BookImage[]
   seller?: {
+    role: "student" | "admin"
     name: string
     avatar_url?: string
+    phone?: string
     university?: string
   }
 }
@@ -69,7 +71,7 @@ export const marketplaceApi = {
     includeUnapproved?: boolean // Admin-only
   } = {}) {
     const supabase = createClient()
-    
+
     let query = supabase
       .from('books')
       .select(`
@@ -141,7 +143,7 @@ export const marketplaceApi = {
   // Get single book
   async getBook(id: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .select(`
@@ -156,12 +158,12 @@ export const marketplaceApi = {
   // Create new book listing (defaults to pending approval)
   async createBook(book: Omit<Book, 'id' | 'created_at' | 'updated_at' | 'images' | 'seller' | 'approval_status' | 'approved_by' | 'approved_at'>) {
     const supabase = createClient()
-    
+
     const bookWithApproval = {
       ...book,
       approval_status: 'pending' as const
     }
-    
+
     return await supabase
       .from('books')
       .insert([bookWithApproval])
@@ -172,7 +174,7 @@ export const marketplaceApi = {
   // Update book
   async updateBook(id: string, updates: Partial<Book>) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .update(updates)
@@ -184,7 +186,7 @@ export const marketplaceApi = {
   // Delete book
   async deleteBook(id: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .delete()
@@ -194,7 +196,7 @@ export const marketplaceApi = {
   // Mark book as sold
   async markBookAsSold(id: string, buyerId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .update({
@@ -208,7 +210,7 @@ export const marketplaceApi = {
   // Upload book image
   async uploadBookImage(bookId: string, file: File, isPrimary: boolean = false) {
     const supabase = createClient()
-    
+
     const fileExt = file.name.split('.').pop()
     const fileName = `${bookId}_${Date.now()}.${fileExt}`
     const filePath = `book-images/${fileName}`
@@ -244,7 +246,7 @@ export const marketplaceApi = {
   // Cart operations
   async getCart(userId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('cart_items')
       .select(`
@@ -261,7 +263,7 @@ export const marketplaceApi = {
 
   async addToCart(userId: string, bookId: string, quantity: number = 1) {
     const supabase = createClient()
-    
+
     // Check if item already exists in cart
     const { data: existing } = await supabase
       .from('cart_items')
@@ -294,14 +296,14 @@ export const marketplaceApi = {
 
   async updateCartQuantity(cartItemId: string, quantity: number) {
     const supabase = createClient()
-    
+
     if (quantity <= 0) {
       return await supabase
         .from('cart_items')
         .delete()
         .eq('id', cartItemId)
     }
-    
+
     return await supabase
       .from('cart_items')
       .update({ quantity })
@@ -312,7 +314,7 @@ export const marketplaceApi = {
 
   async removeFromCart(cartItemId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('cart_items')
       .delete()
@@ -321,7 +323,7 @@ export const marketplaceApi = {
 
   async clearCart(userId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('cart_items')
       .delete()
@@ -331,7 +333,7 @@ export const marketplaceApi = {
   // Get popular categories
   async getPopularCategories() {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .select('major')
@@ -341,7 +343,7 @@ export const marketplaceApi = {
   // Get universities list
   async getUniversities() {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .select('university_name')
@@ -351,7 +353,7 @@ export const marketplaceApi = {
   // Admin functions
   async getPendingBooks() {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .select(`
@@ -365,7 +367,7 @@ export const marketplaceApi = {
 
   async approveBook(bookId: string, adminId: string) {
     const supabase = createClient()
-    
+
     const { data, error } = await supabase
       .from('books')
       .update({
@@ -398,7 +400,7 @@ export const marketplaceApi = {
 
   async rejectBook(bookId: string, adminId: string, reason: string) {
     const supabase = createClient()
-    
+
     const { data, error } = await supabase
       .from('books')
       .update({
@@ -433,7 +435,7 @@ export const marketplaceApi = {
 
   async getAdminActivities(limit: number = 50) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('admin_activities')
       .select(`
@@ -446,7 +448,7 @@ export const marketplaceApi = {
 
   async getBookStats() {
     const supabase = createClient()
-    
+
     const [
       { count: totalBooks },
       { count: pendingBooks },
@@ -469,7 +471,7 @@ export const marketplaceApi = {
 
   async getUserStats() {
     const supabase = createClient()
-    
+
     const [
       { count: totalUsers },
       { count: adminUsers },
@@ -490,7 +492,7 @@ export const marketplaceApi = {
   // Notifications
   async getUserNotifications(userId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('notifications')
       .select('*')
@@ -500,7 +502,7 @@ export const marketplaceApi = {
 
   async markNotificationAsRead(notificationId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('notifications')
       .update({ read: true })
@@ -509,7 +511,7 @@ export const marketplaceApi = {
 
   async markAllNotificationsAsRead(userId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('notifications')
       .update({ read: true })
