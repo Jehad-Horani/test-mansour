@@ -9,12 +9,12 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 export default function ProfilePage() {
-  const { user, isLoggedIn,getTierLabel, getMajorLabel, profile } = useAuth()
+  const { user, isLoggedIn ,getTierLabel, getMajorLabel, profile } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!profile) {
       router.push("/auth/login")
     } else {
       setIsLoading(false)
