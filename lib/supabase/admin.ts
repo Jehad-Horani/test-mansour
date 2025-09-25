@@ -233,13 +233,19 @@ export class AdminService {
 
   // Admin Actions
   async logAction(actionType: string, targetType?: string, targetId?: string, description = "", metadata = {}) {
-    const { data, error } = await this.supabase.rpc("log_admin_action", {
-      p_action_type: actionType,
-      p_target_type: targetType,
-      p_target_id: targetId,
-      p_description: description,
-      p_metadata: metadata,
-    })
+    const { data, error } = await this.supabase
+      .from('admin_activities')
+      .insert([{
+        admin_id: 'system', // Will be replaced with actual admin ID in components
+        action: actionType,
+        target_type: targetType,
+        target_id: targetId,
+        details: {
+          description,
+          ...metadata
+        }
+      }])
+      .select()
 
     return { data, error }
   }
