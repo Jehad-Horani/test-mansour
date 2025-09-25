@@ -88,22 +88,25 @@ export default function SettingsPage() {
 
     setLoading(true)
     try {
-      // Update profile information
+      // Update profile information - ensure data types are correct
       const profileUpdates = {
-        name: settings.name,
-        phone: settings.phone,
-        university: settings.university,
-        major: settings.major,
-        graduation_year: settings.graduationYear,
-        study_level: settings.studyLevel,
+        name: settings.name?.trim() || '',
+        phone: settings.phone?.trim() || null,
+        university: settings.university?.trim() || null, // TEXT not array
+        major: settings.major || null,
+        graduation_year: settings.graduationYear?.trim() || null,
+        study_level: settings.studyLevel || 'بكالوريوس',
         preferences: {
           theme: "retro",
-          language: settings.language,
+          language: settings.language || "ar",
           emailNotifications: settings.emailNotifications,
           pushNotifications: settings.pushNotifications,
           profileVisibility: "public"
-        }
+        },
+        updated_at: new Date().toISOString()
       }
+
+      console.log('Saving settings with data:', profileUpdates)
 
       const { error: profileError } = await supabase
         .from("profiles")
