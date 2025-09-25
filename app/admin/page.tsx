@@ -44,15 +44,11 @@ export default function AdminDashboardPage() {
     if (profile?.role === "admin") {
       loadDashboardData()
     } else if (profile) {
-      const password = prompt("كلمة مرور المدير:")
-      if (password === "takhassusJH123") {
+    
         loadDashboardData()
-      } else {
-        toast.error("كلمة مرور خاطئة")
-        router.push('/dashboard')
-        return
+      
       }
-    }
+    
   }, [ profile])
 
   const loadDashboardData = async () => {
@@ -264,7 +260,7 @@ export default function AdminDashboardPage() {
             className="retro-button h-24 flex flex-col items-center justify-center gap-2"
             style={{ background: "var(--accent)", color: "white" }}
           >
-            <Link href="/admin/reports">
+            <Link href="/admin/analytics">
               <BarChart3 className="w-8 h-8" />
               <span className="font-semibold">التقارير</span>
               <span className="text-sm opacity-80">إحصائيات مفصلة</span>
