@@ -2,7 +2,7 @@
 
 import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
-import { AvatarUpload } from "@/components/avatar-upload"
+import { AvatarUpload } from "@/app/components/avatar-upload"
 import Link from "next/link"
 import { Edit, Settings, BookOpen, Users, Award, Calendar } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
