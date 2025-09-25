@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/app/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/app/components/ui/avatar"
-import { Upload, Camera, X } from "lucide-react"
+import { Camera, X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 
