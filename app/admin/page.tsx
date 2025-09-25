@@ -38,10 +38,7 @@ export default function AdminDashboardPage() {
   const [recentActivities, setRecentActivities] = useState([])
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push('/auth')
-      return
-    }
+    
 
     // Check if user is admin or prompt for admin password
     if (profile?.role === "admin") {
@@ -56,7 +53,7 @@ export default function AdminDashboardPage() {
         return
       }
     }
-  }, [isLoggedIn, profile])
+  }, [ profile])
 
   const loadDashboardData = async () => {
     try {
