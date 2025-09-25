@@ -6,12 +6,57 @@ import Link from "next/link"
 import { Edit, Settings, BookOpen, Users, Award, Calendar } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+
 
 export default function ProfilePage() {
-  const { user, isLoggedIn ,getTierLabel, getMajorLabel, profile } = useAuth()
+  const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
+  const supabase = createClientComponentClient()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+
+
+
+  // دالة رفع الصورة
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+
+    try {
+      setIsUploading(true)
+      const fileExt = file.name.split(".").pop()
+      const fileName = `${user.id}.${fileExt}`
+      const filePath = `avatars/${fileName}`
+
+      // upload
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      // public url
+      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath)
+      const publicUrl = data.publicUrl
+
+      // update profile
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id)
+
+      if (updateError) throw updateError
+
+      router.refresh()
+    } catch (error: any) {
+      console.error("Error uploading avatar:", error.message)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
 
 
 
@@ -40,10 +85,27 @@ export default function ProfilePage() {
                   className="w-32 h-32 border-2 border-gray-300 mb-4"
                   style={{ background: "var(--panel)" }}
                 />
-                <Button size="sm" className="retro-button mb-2" style={{ background: "var(--accent)", color: "white" }}>
+
+                {/* input مخفي */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+
+                <Button
+                  size="sm"
+                  className="retro-button mb-2"
+                  style={{ background: "var(--accent)", color: "white" }}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                >
                   <Edit className="w-4 h-4 ml-1" />
-                  تغيير الصورة
+                  {isUploading ? "جاري الرفع..." : "تغيير الصورة"}
                 </Button>
+
               </div>
 
               {/* User Details */}
@@ -59,7 +121,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                   
+
                     <div className="mb-4">
                       <span className="text-sm text-gray-600">نوع الاشتراك: </span>
                       <span
