@@ -24,7 +24,7 @@ export default function ProfilePage() {
     }
   }, [profile])
 
-  // دالة رفع الصورة - Fixed the implementation
+  // دالة رفع الصورة - Fixed the implementation with proper bucket creation
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !user) {
@@ -49,18 +49,24 @@ export default function ProfilePage() {
       
       const fileExt = file.name.split(".").pop()
       const fileName = `${user.id}_${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
+      const filePath = fileName
 
-      // Create avatars bucket if it doesn't exist
+      // First, ensure the avatars bucket exists
       const { data: buckets } = await supabase.storage.listBuckets()
       const avatarsBucket = buckets?.find(bucket => bucket.name === 'avatars')
       
       if (!avatarsBucket) {
-        await supabase.storage.createBucket('avatars', {
+        console.log('Creating avatars bucket...')
+        const { error: bucketError } = await supabase.storage.createBucket('avatars', {
           public: true,
           fileSizeLimit: 5242880, // 5MB
-          allowedMimeTypes: ['image/*']
+          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp']
         })
+        
+        if (bucketError) {
+          console.log('Bucket creation error (might already exist):', bucketError)
+          // Continue anyway - bucket might already exist but not visible due to permissions
+        }
       }
 
       // Upload the file
@@ -73,7 +79,24 @@ export default function ProfilePage() {
 
       if (uploadError) {
         console.error("Upload error:", uploadError)
-        throw uploadError
+        
+        // If bucket doesn't exist, try to create it and retry
+        if (uploadError.message.includes('Bucket not found')) {
+          console.log('Attempting to create avatars bucket...')
+          await supabase.storage.createBucket('avatars', { public: true })
+          
+          // Retry upload
+          const { data: retryData, error: retryError } = await supabase.storage
+            .from("avatars")
+            .upload(filePath, file, { 
+              cacheControl: '3600',
+              upsert: true
+            })
+          
+          if (retryError) throw retryError
+        } else {
+          throw uploadError
+        }
       }
 
       // Get public URL
@@ -83,10 +106,13 @@ export default function ProfilePage() {
       
       const publicUrl = urlData.publicUrl
 
-      // Update profile in database - Fixed the API call
+      // Update profile in database
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ avatar_url: publicUrl })
+        .update({ 
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString()
+        })
         .eq("id", user.id)
 
       if (updateError) {
