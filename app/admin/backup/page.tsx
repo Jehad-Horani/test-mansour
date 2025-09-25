@@ -24,10 +24,7 @@ export default function AdminBackupPage() {
   const [backupInProgress, setBackupInProgress] = useState(false)
 
   useEffect(() => {
-    if (!isLoggedIn || !isAdmin()) {
-      router.push("/auth/login")
-      return
-    }
+   
     fetchBackups()
   }, [isLoggedIn, isAdmin, router])
 

@@ -36,10 +36,7 @@ export default function AdminSummariesPage() {
 const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
-    if (!isLoggedIn || !isAdmin()) {
-      router.push("/auth/login")
-      return
-    }
+   
     fetchSummaries()
   }, [isLoggedIn, isAdmin, router, filter])
 
