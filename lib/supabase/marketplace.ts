@@ -20,6 +20,10 @@ export interface Book {
   currency: string
   is_available: boolean
   seller_id: string
+  approval_status: 'pending' | 'approved' | 'rejected'
+  approved_by?: string
+  approved_at?: string
+  rejection_reason?: string
   created_at: string
   updated_at: string
   sold_at?: string
