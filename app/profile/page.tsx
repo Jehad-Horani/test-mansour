@@ -3,12 +3,12 @@
 import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
-import { Edit, Settings, BookOpen, Users, Award, Calendar } from "lucide-react"
+import { Edit, Settings, BookOpen, Users, Award, Calendar, Upload } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-
+import { toast } from "sonner"
 
 export default function ProfilePage() {
   const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
@@ -16,52 +16,121 @@ export default function ProfilePage() {
   const supabase = createClient()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string>("")
 
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      setAvatarUrl(profile.avatar_url)
+    }
+  }, [profile])
 
-
-  // دالة رفع الصورة
+  // دالة رفع الصورة - Fixed the implementation
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !user) return
+    if (!file || !user) {
+      toast.error("يجب اختيار ملف وتسجيل الدخول")
+      return
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("حجم الملف يجب أن يكون أقل من 5 ميجابايت")
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("يجب أن يكون الملف صورة")
+      return
+    }
 
     try {
       setIsUploading(true)
+      
       const fileExt = file.name.split(".").pop()
-      const fileName = `${user.id}.${fileExt}`
+      const fileName = `${user.id}_${Date.now()}.${fileExt}`
       const filePath = `avatars/${fileName}`
 
-      // upload
-      const { error: uploadError } = await supabase.storage
+      // Create avatars bucket if it doesn't exist
+      const { data: buckets } = await supabase.storage.listBuckets()
+      const avatarsBucket = buckets?.find(bucket => bucket.name === 'avatars')
+      
+      if (!avatarsBucket) {
+        await supabase.storage.createBucket('avatars', {
+          public: true,
+          fileSizeLimit: 5242880, // 5MB
+          allowedMimeTypes: ['image/*']
+        })
+      }
+
+      // Upload the file
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, { upsert: true })
+        .upload(filePath, file, { 
+          cacheControl: '3600',
+          upsert: true
+        })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error("Upload error:", uploadError)
+        throw uploadError
+      }
 
-      // public url
-      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath)
-      const publicUrl = data.publicUrl
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath)
+      
+      const publicUrl = urlData.publicUrl
 
-      // update profile
-      const { error: updateError } = await supabase.auth
+      // Update profile in database - Fixed the API call
+      const { error: updateError } = await supabase
         .from("profiles")
         .update({ avatar_url: publicUrl })
         .eq("id", user.id)
 
-      if (updateError) throw updateError
+      if (updateError) {
+        console.error("Profile update error:", updateError)
+        throw updateError
+      }
 
-      router.refresh()
+      setAvatarUrl(publicUrl)
+      toast.success("تم تحديث صورة الملف الشخصي بنجاح")
+      
+      // Refresh the page to show updated profile
+      setTimeout(() => {
+        router.refresh()
+      }, 1000)
+
     } catch (error: any) {
-      console.error("Error uploading avatar:", error.message)
+      console.error("Error uploading avatar:", error)
+      toast.error(`حدث خطأ أثناء رفع الصورة: ${error.message}`)
     } finally {
       setIsUploading(false)
     }
   }
 
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
+        <RetroWindow title="الملف الشخصي">
+          <div className="p-6 text-center">
+            <p className="text-gray-600 mb-4">يجب تسجيل الدخول لعرض الملف الشخصي</p>
+            <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
+              <Link href="/auth">تسجيل الدخول</Link>
+            </Button>
+          </div>
+        </RetroWindow>
+      </div>
+    )
+  }
 
-
-
-
-  const stats = profile?.stats
+  const stats = profile?.stats || {
+    coursesEnrolled: 0,
+    booksOwned: 0,
+    consultations: 0,
+    communityPoints: 0
+  }
 
   const recentActivity = [
     { type: "book", title: `اشترى كتاب: أساسيات ${getMajorLabel(profile?.major)}`, date: "منذ يومين" },
@@ -80,13 +149,13 @@ export default function ProfilePage() {
               {/* Avatar and Basic Info */}
               <div className="flex flex-col items-center text-center">
                 <img
-                  src={profile?.avatar_url || "/diverse-user-avatars.png"}
+                  src={avatarUrl || profile?.avatar_url || "/diverse-user-avatars.png"}
                   alt="صورة المستخدم"
-                  className="w-32 h-32 border-2 border-gray-300 mb-4"
+                  className="w-32 h-32 border-2 border-gray-300 mb-4 object-cover rounded"
                   style={{ background: "var(--panel)" }}
                 />
 
-                {/* input مخفي */}
+                {/* Input مخفي */}
                 <input
                   type="file"
                   accept="image/*"
@@ -102,10 +171,9 @@ export default function ProfilePage() {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
                 >
-                  <Edit className="w-4 h-4 ml-1" />
+                  <Upload className="w-4 h-4 ml-1" />
                   {isUploading ? "جاري الرفع..." : "تغيير الصورة"}
                 </Button>
-
               </div>
 
               {/* User Details */}
@@ -113,15 +181,14 @@ export default function ProfilePage() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--ink)" }}>
-                      {profile?.name}
+                      {profile?.name || "مستخدم"}
                     </h2>
                     <p className="text-gray-600 mb-1">{user?.email}</p>
-                    <p className="text-gray-600 mb-1">{profile?.university}</p>
+                    <p className="text-gray-600 mb-1">{profile?.university || "غير محدد"}</p>
                     <p className="text-gray-600 mb-4">تخصص: {getMajorLabel(profile?.major)}</p>
                   </div>
 
                   <div>
-
                     <div className="mb-4">
                       <span className="text-sm text-gray-600">نوع الاشتراك: </span>
                       <span
@@ -162,7 +229,7 @@ export default function ProfilePage() {
                   <div className="retro-window bg-white p-4">
                     <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {profile?.stats?.coursesEnrolled}
+                      {stats.coursesEnrolled || 0}
                     </div>
                     <div className="text-sm text-gray-600">المقررات المسجلة</div>
                   </div>
@@ -172,7 +239,7 @@ export default function ProfilePage() {
                   <div className="retro-window bg-white p-4">
                     <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {profile?.stats?.booksOwned}
+                      {stats.booksOwned || 0}
                     </div>
                     <div className="text-sm text-gray-600">الكتب المملوكة</div>
                   </div>
@@ -182,7 +249,7 @@ export default function ProfilePage() {
                   <div className="retro-window bg-white p-4">
                     <Users className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {profile?.stats?.consultations}
+                      {stats.consultations || 0}
                     </div>
                     <div className="text-sm text-gray-600">الاستشارات</div>
                   </div>
@@ -192,7 +259,7 @@ export default function ProfilePage() {
                   <div className="retro-window bg-white p-4">
                     <Award className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
                     <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {profile?.stats?.communityPoints}
+                      {stats.communityPoints || 0}
                     </div>
                     <div className="text-sm text-gray-600">نقاط المجتمع</div>
                   </div>
@@ -263,7 +330,7 @@ export default function ProfilePage() {
                   className="retro-button h-auto p-4 flex flex-col items-center gap-2"
                   style={{ background: "var(--accent)", color: "white" }}
                 >
-                  <Link href="/store">
+                  <Link href="/market">
                     <BookOpen className="w-6 h-6" />
                     <span>تصفح الكتب</span>
                   </Link>

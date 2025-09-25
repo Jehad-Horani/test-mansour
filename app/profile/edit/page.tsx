@@ -9,14 +9,14 @@ import { Save, ArrowRight } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export default function EditProfilePage() {
   const { user, profile } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-    const supabase = createClient()
+  const supabase = createClient()
   
-
   // form state
   const [form, setForm] = useState({
     name: "",
@@ -55,11 +55,16 @@ export default function EditProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user) {
+      toast.error("يجب تسجيل الدخول أولاً")
+      return
+    }
+    
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth
+      // Update profile in database - Fixed the API call
+      const { error } = await supabase
         .from("profiles")
         .update({
           name: form.name,
@@ -75,9 +80,16 @@ export default function EditProfilePage() {
 
       if (error) throw error
 
-      router.push("/profile")
-    } catch (err) {
+      toast.success("تم تحديث الملف الشخصي بنجاح")
+      
+      // Wait a bit then redirect
+      setTimeout(() => {
+        router.push("/profile")
+      }, 1000)
+      
+    } catch (err: any) {
       console.error("Error updating profile:", err)
+      toast.error("حدث خطأ أثناء تحديث الملف الشخصي")
     } finally {
       setLoading(false)
     }
@@ -113,6 +125,7 @@ export default function EditProfilePage() {
                       onChange={handleChange}
                       className="retro-window"
                       style={{ background: "white", border: "2px inset #c0c0c0" }}
+                      required
                     />
                   </div>
                   <div>
@@ -166,10 +179,12 @@ export default function EditProfilePage() {
                       style={{ background: "white", border: "2px inset #c0c0c0" }}
                     >
                       <option value="">اختر الجامعة</option>
-                      <option>جامعة الملك سعود</option>
-                      <option>جامعة الملك عبدالعزيز</option>
-                      <option>جامعة الإمام محمد بن سعود</option>
-                      <option>جامعة الملك فهد للبترول والمعادن</option>
+                      <option value="جامعة الملك سعود">جامعة الملك سعود</option>
+                      <option value="جامعة الملك عبدالعزيز">جامعة الملك عبدالعزيز</option>
+                      <option value="جامعة الإمام محمد بن سعود">جامعة الإمام محمد بن سعود</option>
+                      <option value="جامعة الملك فهد للبترول والمعادن">جامعة الملك فهد للبترول والمعادن</option>
+                      <option value="الجامعة الأردنية">الجامعة الأردنية</option>
+                      <option value="جامعة العلوم والتكنولوجيا الأردنية">جامعة العلوم والتكنولوجيا الأردنية</option>
                     </select>
                   </div>
                   <div>
@@ -182,11 +197,10 @@ export default function EditProfilePage() {
                       style={{ background: "white", border: "2px inset #c0c0c0" }}
                     >
                       <option value="">اختر التخصص</option>
-                      <option>علوم الحاسب</option>
-                      <option>هندسة البرمجيات</option>
-                      <option>القانون</option>
-                      <option>الطب</option>
-                      <option>إدارة الأعمال</option>
+                      <option value="law">القانون</option>
+                      <option value="it">علوم الحاسب</option>
+                      <option value="medical">الطب</option>
+                      <option value="business">إدارة الأعمال</option>
                     </select>
                   </div>
                   <div>
@@ -199,11 +213,9 @@ export default function EditProfilePage() {
                       style={{ background: "white", border: "2px inset #c0c0c0" }}
                     >
                       <option value="">اختر المستوى</option>
-                      <option>السنة الأولى</option>
-                      <option>السنة الثانية</option>
-                      <option>السنة الثالثة</option>
-                      <option>السنة الرابعة</option>
-                      <option>دراسات عليا</option>
+                      <option value="بكالوريوس">بكالوريوس</option>
+                      <option value="ماجستير">ماجستير</option>
+                      <option value="دكتوراه">دكتوراه</option>
                     </select>
                   </div>
                   <div>
