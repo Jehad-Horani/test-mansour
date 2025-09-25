@@ -91,13 +91,7 @@ export function RetroNavbar() {
           {isLoggedIn ? (
             <>
               {/* Notifications */}
-              <Link href="/notifications" className="relative">
-                <Bell className="w-5 h-5" style={{ color: "var(--ink)" }} />
-                <span
-                  className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
-                  style={{ background: "var(--accent)" }}
-                />
-              </Link>
+            
 
               {/* User Menu */}
               <div className="relative">
