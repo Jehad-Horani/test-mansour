@@ -1,0 +1,127 @@
+{
+  "timestamp": "2025-09-25T16:59:42.550652",
+  "total_tests": 17,
+  "passed_tests": 15,
+  "success_rate": 88.23529411764706,
+  "test_details": [
+    {
+      "test_name": "Server Health",
+      "success": true,
+      "message": "Next.js server is running",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:37.829383"
+    },
+    {
+      "test_name": "Core Summaries API",
+      "success": false,
+      "message": "HTTP 500",
+      "error_details": "{\"error\":\"Could not find a relationship between 'summaries' and 'user_id' in the schema cache\"}",
+      "timestamp": "2025-09-25T16:59:39.285465"
+    },
+    {
+      "test_name": "Individual Book API",
+      "success": false,
+      "message": "CRITICAL: Database schema issue still exists - missing email column",
+      "error_details": "{\"error\":\"column profiles_1.email does not exist\"}",
+      "timestamp": "2025-09-25T16:59:40.168639"
+    },
+    {
+      "test_name": "Profile Upload Avatar API",
+      "success": true,
+      "message": "API correctly requires authentication",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:40.536036"
+    },
+    {
+      "test_name": "Notebooks API",
+      "success": true,
+      "message": "API correctly requires authentication",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:40.821157"
+    },
+    {
+      "test_name": "Notebooks Upload API",
+      "success": true,
+      "message": "API correctly requires authentication",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:41.024545"
+    },
+    {
+      "test_name": "Cart API (GET)",
+      "success": true,
+      "message": "API correctly requires authentication",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:41.201542"
+    },
+    {
+      "test_name": "Cart API (POST)",
+      "success": true,
+      "message": "API correctly requires authentication",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:41.217332"
+    },
+    {
+      "test_name": "Admin API /admin/users",
+      "success": true,
+      "message": "API correctly requires admin access",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:41.421881"
+    },
+    {
+      "test_name": "Admin API /admin/books",
+      "success": true,
+      "message": "API correctly requires admin access",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:41.632967"
+    },
+    {
+      "test_name": "Admin API /admin/analytics",
+      "success": true,
+      "message": "API correctly requires admin access",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:41.830963"
+    },
+    {
+      "test_name": "Admin API /admin/settings",
+      "success": true,
+      "message": "API correctly requires admin access",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:42.014534"
+    },
+    {
+      "test_name": "Admin API /admin/lectures",
+      "success": true,
+      "message": "API correctly requires admin access",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:42.189544"
+    },
+    {
+      "test_name": "Upload API /profile/upload-avatar",
+      "success": true,
+      "message": "API correctly requires authentication",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:42.206643"
+    },
+    {
+      "test_name": "Upload API /summaries/upload",
+      "success": true,
+      "message": "API correctly requires authentication",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:42.392719"
+    },
+    {
+      "test_name": "Upload API /books/upload-image",
+      "success": true,
+      "message": "API correctly requires authentication",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:42.534647"
+    },
+    {
+      "test_name": "Upload API /notebooks/upload",
+      "success": true,
+      "message": "API correctly requires authentication",
+      "error_details": "",
+      "timestamp": "2025-09-25T16:59:42.550595"
+    }
+  ]
+}
