@@ -429,7 +429,7 @@ export default function RegisterPage() {
                 </label>
                 <div className="relative">
                   <Input
-                    type={showPassword ? "text" : "password"}
+                    type="password"
                     value={formData.password}
                     onChange={(e) => handleInputChange("password", e.target.value)}
                     placeholder="••••••••"
@@ -459,7 +459,7 @@ export default function RegisterPage() {
                 </label>
                 <div className="relative">
                   <Input
-                    type={showConfirmPassword ? "text" : "password"}
+                    type="password"
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                     placeholder="••••••••"
