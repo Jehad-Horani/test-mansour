@@ -50,9 +50,7 @@ export function RetroNavbar() {
           <Link href="/ambassadors" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
             السفراء
           </Link>
-          <Link href="/community" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
-            المجتمع
-          </Link>
+         
           <Link href="/summaries" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
             الملخصات
           </Link>
@@ -134,23 +132,7 @@ export function RetroNavbar() {
                         <User className="w-4 h-4" />
                         الملف الشخصي
                       </Link>
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
-                        style={{ color: "var(--ink)" }}
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        <Settings className="w-4 h-4" />
-                        لوحة التحكم
-                      </Link>
-                      <Link
-                        href="/market/messages"
-                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
-                        style={{ color: "var(--ink)" }}
-                        onClick={() => setShowUserMenu(false)}
-                      >
                     
-                      </Link>
                       <Link
                         href="/settings"
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
@@ -245,14 +227,7 @@ export function RetroNavbar() {
             >
               السفراء
             </Link>
-            <Link
-              href="/community"
-              className="block py-2 text-sm hover:bg-gray-100 px-2"
-              style={{ color: "var(--ink)" }}
-              onClick={() => setShowMobileMenu(false)}
-            >
-              المجتمع
-            </Link>
+          
             <Link
               href="/summaries"
               className="block py-2 text-sm hover:bg-gray-100 px-2"

@@ -98,16 +98,7 @@ export function RetroSidebar() {
 
   return (
     <div className="overflow-hidden">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="fixed top-2 left-4 z-50 md:hidden retro-button bg-white shadow-md"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className="text-xs">القائمة</span>
-      </Button>
-
-      {isOpen && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setIsOpen(false)} />}
+     
 
       <div
         className={cn(

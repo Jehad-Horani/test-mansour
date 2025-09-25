@@ -175,16 +175,7 @@ export default function AmbassadorsPage() {
                         </Link>
                       </Button>
 
-                      <Button
-                        asChild
-                        className="retro-button w-full bg-green-600 hover:bg-green-700 text-white"
-                        disabled={!ambassador.available}
-                      >
-                        <Link href={`/ambassadors/${ambassador.id}/chat`}>
-                          <MessageCircle className="w-4 h-4 ml-2" />
-                          بدء محادثة
-                        </Link>
-                      </Button>
+                  
                     </div>
                   </div>
                 </div>
