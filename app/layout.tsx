@@ -46,6 +46,7 @@ export default function RootLayout({
                 <RetroSidebar />
               </div>
               <AuthDebug />
+              <Toaster />
             </ThemeProvider>
           </MessagesProvider>
         </UserProvider>
