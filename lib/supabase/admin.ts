@@ -252,10 +252,10 @@ export class AdminService {
 
   async getAdminActions(page = 1, limit = 20) {
     const { data, error } = await this.supabase
-      .from("admin_actions")
+      .from("admin_activities")
       .select(`
         *,
-        profiles:admin_id (name)
+        admin:profiles!admin_activities_admin_id_fkey(name)
       `)
       .range((page - 1) * limit, page * limit - 1)
       .order("created_at", { ascending: false })
