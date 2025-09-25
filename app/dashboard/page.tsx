@@ -246,7 +246,7 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Daily Lectures - New Card */}
-            <Link href="/dashboard/daily-lectures" className="block">
+            <Link href="/dashboard/notebooks" className="block">
               <RetroWindow
                 title="المحاضرات اليومية"
                 className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
@@ -262,19 +262,7 @@ export default function DashboardPage() {
               </RetroWindow>
             </Link>
 
-            {/* Notebooks */}
-            <Link href="/dashboard/notebooks" className="block">
-              <RetroWindow title="المحاضرات" className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
-                <div className="text-center py-8">
-                  <FileText className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
-                  <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
-                    إدارة المحاضرات
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">ارفع وإدارة محاضراتك</p>
-                  <div className="text-xs text-gray-500">{profile?.stats?.uploadsCount || 0} محاضرة مرفوعة</div>
-                </div>
-              </RetroWindow>
-            </Link>
+            
 
             {/* Schedule */}
             <Link href="/dashboard/schedule" className="block">
@@ -307,25 +295,8 @@ export default function DashboardPage() {
               </RetroWindow>
             </Link>
 
-            {/* Study Plans */}
-            <Link href="/dashboard/study" className="block">
-              <RetroWindow
-                title="الخطط الدراسية"
-                className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
-              >
-                <div className="text-center py-8">
-                  <BookOpen className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--accent)" }} />
-                  <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
-                    الخطط الدراسية
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">خطط دراسية ومتابعة</p>
-                  <div className="text-xs text-gray-500">0 خطة نشطة</div>
-                </div>
-              </RetroWindow>
-            </Link>
-
             {/* Ambassadors */}
-            <Link href="/dashboard/ambassadors" className="block">
+            <Link href="/ambassadors" className="block">
               <RetroWindow title="السفراء" className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
                 <div className="text-center py-8">
                   <Users className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
@@ -334,27 +305,6 @@ export default function DashboardPage() {
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">تواصل مع السفراء الأكاديميين</p>
                   <div className="text-xs text-gray-500">0 سفير متاح</div>
-                </div>
-              </RetroWindow>
-            </Link>
-
-            {/* Sessions */}
-            <Link href="/dashboard/sessions" className="block">
-              <RetroWindow
-                title="الجلسات الدراسية"
-                className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
-              >
-                <div className="text-center py-8">
-                  <Users className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--accent)" }} />
-                  <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
-                    الجلسات الدراسية
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">جلسات دراسية جماعية</p>
-                  {user.subscription_tier === "free" && (
-                    <Badge className="text-xs" style={{ background: "var(--accent)", color: "white" }}>
-                      مميز
-                    </Badge>
-                  )}
                 </div>
               </RetroWindow>
             </Link>
@@ -376,27 +326,7 @@ export default function DashboardPage() {
               </RetroWindow>
             </Link>
 
-            {/* Recent Activity */}
-            <div className="md:col-span-2 lg:col-span-1">
-              <RetroWindow title="النشاط الأخير">
-                <div className="p-4 space-y-3">
-                  {recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start gap-3 p-2 bg-white retro-window">
-                      <Bell className="w-4 h-4 mt-1" style={{ color: "var(--accent)" }} />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium" style={{ color: "var(--ink)" }}>
-                          {activity.title}
-                        </p>
-                        <p className="text-xs text-gray-500">{activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                  <Button asChild variant="outline" size="sm" className="w-full retro-button bg-transparent">
-                    <Link href="/profile/activity">عرض جميع الأنشطة</Link>
-                  </Button>
-                </div>
-              </RetroWindow>
-            </div>
+           
           </div>
         </div>
       </section>
