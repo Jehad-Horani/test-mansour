@@ -42,7 +42,7 @@ export default function ProfilePage() {
       const publicUrl = data.publicUrl
 
       // update profile
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabase.auth
         .from("profiles")
         .update({ avatar_url: publicUrl })
         .eq("id", user.id)

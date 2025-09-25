@@ -26,6 +26,8 @@ export interface Profile {
   year?: string
   graduation_year?: string
   study_level?: string
+  birth_date?:string
+  student_id?: string
   avatar_url?: string
   bio?: string
   role: "student" | "admin"
