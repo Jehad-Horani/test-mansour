@@ -90,7 +90,7 @@ export default function DailyLecturesPage() {
         .channel('lectures-changes')
         .on('postgres_changes', 
           { event: '*', schema: 'public', table: 'daily_lectures' },
-          (payload) => {
+          (payload: any) => {
             console.log('Lecture updated:', payload)
             loadLectures()
           }
