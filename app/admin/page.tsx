@@ -253,12 +253,12 @@ export default function AdminDashboardPage() {
           <Button
             asChild
             className="retro-button h-24 flex flex-col items-center justify-center gap-2"
-            style={{ background: "var(--primary)", color: "white" }}
+            style={{ background: "var(--accent)", color: "white" }}
           >
-            <Link href="/admin/activities">
-              <Activity className="w-8 h-8" />
-              <span className="font-semibold">سجل النشاطات</span>
-              <span className="text-sm opacity-80">مراقبة أنشطة النظام</span>
+            <Link href="/admin/daily-lectures">
+              <Clock className="w-8 h-8" />
+              <span className="font-semibold">إدارة المحاضرات</span>
+              <span className="text-sm opacity-80">مراجعة المحاضرات اليومية</span>
             </Link>
           </Button>
 
