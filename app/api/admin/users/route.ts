@@ -19,7 +19,7 @@ export async function GET(request: Request) {
       .order('created_at', { ascending: false })
     
     if (search) {
-      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
+      query = query.or(`name.ilike.%${search}%,university.ilike.%${search}%,major.ilike.%${search}%`)
     }
     
     const { data, error, count } = await query
