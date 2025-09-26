@@ -21,12 +21,25 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useUserContext } from "@/contexts/user-context"
 
+interface User {
+  id: string
+  name: string
+  email: string
+  phone?: string
+  university?: string
+  major?: string
+  role: "student" | "admin"
+  subscription_tier: string
+  created_at: string
+  avatar_url?: string
+}
+
 
 export default function AdminDashboardPage() {
   const { user, isLoggedIn, isAdmin } = useUserContext()
   const { profile } = useAuth()
 
-  
+
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [bookStats, setBookStats] = useState({
@@ -40,58 +53,61 @@ export default function AdminDashboardPage() {
     admins: 0,
     students: 0
   })
+    const [users, setUsers] = useState<User[]>([])
+
   const [recentActivities, setRecentActivities] = useState([])
 
   useEffect(() => {
-    
+
 
     // Check if user is admin or prompt for admin password
     if (!isAdmin) {
       router.push("/")
     } else {
-    
-        loadDashboardData()
-      
-      }
-    
-  }, [ profile])
+
+      loadDashboardData()
+
+    }
+
+  }, [profile])
 
 
   const loadDashboardData = async () => {
-     try {
+    try {
       setLoading(true)
       const params = new URLSearchParams({
         limit: '20'
       })
-      
-     
-      
+
+
+
       const res = await fetch(`/api/admin/users?${params}`)
       const data = await res.json()
-      
-    
+
+
       setLoading(true)
-      
+
       // Load book stats
       const bookStatsData = await marketplaceApi.getBookStats()
       setBookStats(bookStatsData)
-      
+
       // Load user stats
       const userStatsData = await marketplaceApi.getUserStats()
+      setUsers(data.users || [])
       setUserStats(data.pagination)
-      
+
       // Load recent admin activities
       const activitiesData = await marketplaceApi.getAdminActivities(10)
       setRecentActivities(activitiesData.data || [])
-      
+
     } catch (error: any) {
       console.error("Error loading dashboard data:", error)
       toast.error("حدث خطأ أثناء تحميل البيانات")
     }
-     finally {
+    finally {
       setLoading(false)
     }
-     
+
   }
 
 
@@ -167,11 +183,11 @@ export default function AdminDashboardPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-blue-600">المديرون</span>
-                <span className="font-bold text-lg text-blue-600">{userStats.admins}</span>
+                <span className="font-bold text-lg text-blue-600">{users.filter(u => u.role === 'admin').length}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-green-600">الطلاب</span>
-                <span className="font-bold text-lg text-green-600">{userStats.students}</span>
+                <span className="font-bold text-lg text-green-600">{users.filter(u => u.role === 'student').length}</span>
               </div>
             </div>
           </RetroWindow>
