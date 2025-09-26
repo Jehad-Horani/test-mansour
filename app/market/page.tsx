@@ -13,6 +13,43 @@ import { marketplaceApi, type Book } from "@/lib/supabase/marketplace"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 
+interface Books {
+  id: string
+  title: string
+  author: string
+  isbn?: string
+  edition?: string
+  publisher?: string
+  publication_year?: number
+  subject_name: string
+  course_code?: string
+  university_name: string
+  college: string
+  major: string
+  description?: string
+  condition: 'new' | 'excellent' | 'good' | 'fair' | 'poor'
+  original_price?: number
+  selling_price: number
+  currency: string
+  is_available: boolean
+  seller_id: string
+  approval_status: 'pending' | 'approved' | 'rejected'
+  created_at: string
+  book_images: Array<{
+    id: string
+    image_url: string
+    is_primary: boolean
+  }>
+  seller: {
+    name: string
+    avatar_url?: string
+    university?: string
+    phone?: string
+    email?: string
+    role? : string
+  }
+}
+
 export default function MarketPage() {
   const { user, isLoggedIn } = useAuth()
   const supabase = createClient()
@@ -21,8 +58,27 @@ export default function MarketPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [books, setBooks] = useState<Book[]>([])
+  const [bookss, setBookss] = useState<Books | null>(null)
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState<string | null>(null)
+
+
+  const fetchBook = async (bookId: string) => {
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/books/${bookId}`)
+      const data = await res.json()
+
+      if (res.ok) {
+        setBookss(data)
+      } 
+    } catch (error) {
+      console.error("Error fetching book:", error)
+      toast.error("خطأ في تحميل تفاصيل الكتاب")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Load books from Supabase
   const loadBooks = async () => {
@@ -263,7 +319,7 @@ export default function MarketPage() {
                     <div className="p-4">
                       <div className="relative mb-4">
                         <img
-                          src={book.images?.[1]?.image_url}
+                          src={bookss?.book_images?.[0]?.image_url || "/placeholder.svg"}
                           alt={book.title}
                           className="w-full h-48 object-cover bg-gray-200"
                         />
