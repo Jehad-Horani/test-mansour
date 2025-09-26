@@ -263,7 +263,7 @@ export default function MarketPage() {
                     <div className="p-4">
                       <div className="relative mb-4">
                         <img
-                          src={book.images?.[0]?.image_url || "/placeholder.svg"}
+                          src={book.images?.[1]?.image_url}
                           alt={book.title}
                           className="w-full h-48 object-cover bg-gray-200"
                         />
