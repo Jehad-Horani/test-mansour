@@ -120,7 +120,7 @@ export default function NotebooksPage() {
       uploadData.append('lecture_date', formData.lecture_date)
       uploadData.append('duration_minutes', formData.duration_minutes.toString())
 
-      const res = await fetch('/api/notebooks/upload', {
+      const res = await fetch('/api/notebooks', {
         method: 'POST',
         body: uploadData
       })
