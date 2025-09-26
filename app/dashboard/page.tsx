@@ -41,7 +41,7 @@ const getTierLabelSafe = (tier: string | null | undefined) => {
   }
 }
 export default function DashboardPage() {
-  const {  profile } = useAuth()
+  const { profile } = useAuth()
   const { user, loading, isLoggedIn } = useUserContext()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
@@ -49,7 +49,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     console.log("[v0] Dashboard - Auth state:", { loading, isLoggedIn, user: !!user, profile: !!user })
-    
+
     if (!loading) {
       if (!isLoggedIn) {
         console.log("[v0] Dashboard - Not logged in, redirecting to login")
@@ -76,16 +76,16 @@ export default function DashboardPage() {
           router.push("/auth/login")
         }
       }, 1000) // 10 second timeout
-      
+
       setRedirectTimeout(timeout)
-      
+
       return () => {
         clearTimeout(timeout)
         setRedirectTimeout(null)
       }
     }
   }, [loading, router])
-  
+
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
@@ -103,19 +103,19 @@ export default function DashboardPage() {
 
 
   if (!user) {
-  return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
-      <RetroWindow title="خطأ">
-        <div className="p-6 text-center">
-          <p style={{ color: "var(--ink)" }}>تعذر تحميل بيانات المستخدم</p>
-          <Button asChild>
-            <Link href="/auth/login">العودة لتسجيل الدخول</Link>
-          </Button>
-        </div>
-      </RetroWindow>
-    </div>
-  )
-}
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--panel)" }}>
+        <RetroWindow title="خطأ">
+          <div className="p-6 text-center">
+            <p style={{ color: "var(--ink)" }}>تعذر تحميل بيانات المستخدم</p>
+            <Button asChild>
+              <Link href="/auth/login">العودة لتسجيل الدخول</Link>
+            </Button>
+          </div>
+        </RetroWindow>
+      </div>
+    )
+  }
 
 
   const getTierColor = (tier: string) => {
@@ -131,11 +131,11 @@ export default function DashboardPage() {
     }
   }
 
- const recentActivity = [
-  { type: "upload", title: `رفع محاضرة جديدة: ${getMajorLabelSafe(profile?.major)}`, time: "منذ ساعتين" },
-  { type: "exam", title: `امتحان ${getMajorLabelSafe(profile?.major)} غداً`, time: "منذ 4 ساعات" },
-  { type: "community", title: "إجابة جديدة على سؤالك", time: "منذ يوم" },
-]
+  const recentActivity = [
+    { type: "upload", title: `رفع محاضرة جديدة: ${getMajorLabelSafe(profile?.major)}`, time: "منذ ساعتين" },
+    { type: "exam", title: `امتحان ${getMajorLabelSafe(profile?.major)} غداً`, time: "منذ 4 ساعات" },
+    { type: "community", title: "إجابة جديدة على سؤالك", time: "منذ يوم" },
+  ]
 
 
 
@@ -245,24 +245,57 @@ export default function DashboardPage() {
       <section className="py-4 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+
+            {/* Market */}
+            <Link href="/market" className="block">
+              <RetroWindow
+                title="السوق الأكاديمي"
+                className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
+              >
+                <div className="text-center py-8">
+                  <ShoppingBag className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
+                  <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
+                    السوق الأكاديمي
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">بيع وشراء المستلزمات</p>
+                </div>
+              </RetroWindow>
+
+
+            </Link>
+
             {/* Daily Lectures - New Card */}
             <Link href="/dashboard/notebooks" className="block">
               <RetroWindow
-                title="المحاضرات اليومية"
+                title="المحاضرات"
                 className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
               >
                 <div className="text-center py-8">
                   <Calendar className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
                   <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
-                    المحاضرات اليومية
+                    المحاضرات
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">شارك صور محاضراتك اليومية</p>
-                  <div className="text-xs text-gray-500">0 محاضرة جديدة</div>
                 </div>
               </RetroWindow>
             </Link>
 
-            
+            {/* summaries - New Card */}
+            <Link href="/summaries" className="block">
+              <RetroWindow
+                title="الملخصات"
+                className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
+              >
+                <div className="text-center py-8">
+                  <BookOpen className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
+                  <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
+                    الملخصات
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">شارك ملخصات موادك الجامعية هنا</p>
+                </div>
+              </RetroWindow>
+            </Link>
 
             {/* Schedule */}
             <Link href="/dashboard/schedule" className="block">
@@ -290,7 +323,6 @@ export default function DashboardPage() {
                     الامتحانات
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">جدولة ومتابعة الامتحانات</p>
-                  <div className="text-xs text-gray-500">0 امتحانات قادمة</div>
                 </div>
               </RetroWindow>
             </Link>
@@ -304,29 +336,12 @@ export default function DashboardPage() {
                     السفراء
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">تواصل مع السفراء الأكاديميين</p>
-                  <div className="text-xs text-gray-500">0 سفير متاح</div>
                 </div>
               </RetroWindow>
             </Link>
 
-            {/* Market */}
-            <Link href="/market" className="block">
-              <RetroWindow
-                title="السوق الأكاديمي"
-                className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
-              >
-                <div className="text-center py-8">
-                  <ShoppingBag className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
-                  <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
-                    السوق الأكاديمي
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">بيع وشراء المستلزمات</p>
-                  <div className="text-xs text-gray-500">0 إعلان جديد</div>
-                </div>
-              </RetroWindow>
-            </Link>
 
-           
+
           </div>
         </div>
       </section>
@@ -348,7 +363,7 @@ export default function DashboardPage() {
                   </Link>
                 </Button>
 
-              
+
 
                 <Button
                   asChild
