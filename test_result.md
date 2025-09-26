@@ -290,9 +290,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "All critical fixes verified"
-  stuck_tasks: []
-  test_all: true
+    - "Summaries Upload API - Database Schema Fix"
+    - "Database Schema Verification - Apply Migration Script"
+  stuck_tasks:
+    - "Summaries Upload API"
+    - "Database Schema Verification"
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
@@ -302,3 +305,5 @@ agent_communication:
     message: "TESTING COMPLETE: Comprehensive backend API testing completed. 19/21 tests passed. 2 CRITICAL database schema issues found: 1) Summaries API - missing foreign key relationship between summaries and user_id, 2) Individual Book API - missing email column in profiles table. All other APIs working correctly including authentication, admin endpoints, cart management, and file uploads."
   - agent: "testing"
     message: "🎉 CRITICAL FIXES VERIFICATION COMPLETE: All 17 backend tests now PASS (100% success rate). Main agent's fixes successfully resolved: ✅ Database schema issues (summaries foreign key, profiles email column) ✅ Upload functionality (summaries, notebooks, avatar uploads with proper validation) ✅ Admin APIs (books, users, analytics, lectures - all properly protected) ✅ Authentication & Security (all endpoints properly require auth/admin access). All critical areas mentioned in review request are now working correctly."
+  - agent: "testing"
+    message: "📋 REVIEW REQUEST TESTING COMPLETE: Tested all 5 focus areas from review request. Results: ✅ Lecture Upload API (/api/notebooks/upload) - Working perfectly, uploads to 'lectures' bucket, saves to daily_lectures table with correct columns ✅ Admin Lectures API (/api/admin/lectures) - Working perfectly, no profile email errors, supports pagination/filtering and PATCH approval ✅ Authentication System - All endpoints properly protected ✅ Storage Buckets - All 4 buckets (summaries, lectures, avatars, book-images) verified accessible ❌ Summary Upload API - CRITICAL database schema issue: API uses 'status' column but table has 'is_approved' column. Fix script exists but not applied. ❌ Database Schema - Missing 'status' column in summaries table causes upload failures."
