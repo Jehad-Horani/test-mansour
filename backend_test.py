@@ -13,8 +13,8 @@ from typing import Dict, Any, Optional
 
 class BackendTester:
     def __init__(self):
-        # Use localhost since we're testing internally
-        self.base_url = "http://localhost:3000"
+        # Use localhost:3001 as specified in review request
+        self.base_url = "http://localhost:3001"
         self.api_base = f"{self.base_url}/api"
         self.session = requests.Session()
         self.test_results = []
