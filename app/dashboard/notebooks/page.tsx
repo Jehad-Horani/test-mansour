@@ -56,7 +56,8 @@ export default function NotebooksPage() {
     university_name: '',
     major: '',
     lecture_date: '',
-    duration_minutes: 60
+    duration_minutes: 60,
+    file_url : ''
   })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
@@ -111,7 +112,7 @@ export default function NotebooksPage() {
       setUploading(true)
       
       const uploadData = new FormData()
-      uploadData.append('file', selectedFile)
+      uploadData.append('file', formData.file_url)
       uploadData.append('title', formData.title)
       uploadData.append('description', formData.description)
       uploadData.append('subject_name', formData.subject_name)
@@ -152,7 +153,8 @@ export default function NotebooksPage() {
       university_name: '',
       major: '',
       lecture_date: '',
-      duration_minutes: 60
+      duration_minutes: 60,
+      file_url : ''
     })
     setSelectedFile(null)
   }
@@ -303,6 +305,7 @@ export default function NotebooksPage() {
                   <Input
                     id="file"
                     type="file"
+                    value={formData.file_url}
                     onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                     accept=".pdf,.doc,.docx,.ppt,.pptx"
                     required
