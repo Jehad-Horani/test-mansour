@@ -20,14 +20,20 @@ export interface Book {
   currency: string
   is_available: boolean
   seller_id: string
+  approval_status: 'pending' | 'approved' | 'rejected'
+  approved_by?: string
+  approved_at?: string
+  rejection_reason?: string
   created_at: string
   updated_at: string
   sold_at?: string
   buyer_id?: string
   images?: BookImage[]
   seller?: {
+    role: "student" | "admin"
     name: string
     avatar_url?: string
+    phone?: string
     university?: string
   }
 }
@@ -50,7 +56,7 @@ export interface CartItem {
 }
 
 export const marketplaceApi = {
-  // Get all books with filters
+  // Get all books with filters (only approved books for non-admins)
   async getBooks(filters: {
     search?: string
     category?: string
@@ -62,9 +68,10 @@ export const marketplaceApi = {
     sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'oldest' | 'popular'
     limit?: number
     offset?: number
+    includeUnapproved?: boolean // Admin-only
   } = {}) {
     const supabase = createClient()
-    
+
     let query = supabase
       .from('books')
       .select(`
@@ -73,6 +80,11 @@ export const marketplaceApi = {
         seller:profiles!books_seller_id_fkey(name, avatar_url, university)
       `)
       .eq('is_available', true)
+
+    // Only show approved books unless specifically requesting unapproved (admin feature)
+    if (!filters.includeUnapproved) {
+      query = query.eq('approval_status', 'approved')
+    }
 
     if (filters.search) {
       query = query.or(`title.ilike.%${filters.search}%,author.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
@@ -131,7 +143,7 @@ export const marketplaceApi = {
   // Get single book
   async getBook(id: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .select(`
@@ -143,13 +155,18 @@ export const marketplaceApi = {
       .single()
   },
 
-  // Create new book listing
-  async createBook(book: Omit<Book, 'id' | 'created_at' | 'updated_at' | 'images' | 'seller'>) {
+  // Create new book listing (defaults to pending approval)
+  async createBook(book: Omit<Book, 'id' | 'created_at' | 'updated_at' | 'images' | 'seller' | 'approval_status' | 'approved_by' | 'approved_at'>) {
     const supabase = createClient()
-    
+
+    const bookWithApproval = {
+      ...book,
+      approval_status: 'pending' as const
+    }
+
     return await supabase
       .from('books')
-      .insert([book])
+      .insert([bookWithApproval])
       .select()
       .single()
   },
@@ -157,7 +174,7 @@ export const marketplaceApi = {
   // Update book
   async updateBook(id: string, updates: Partial<Book>) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .update(updates)
@@ -169,7 +186,7 @@ export const marketplaceApi = {
   // Delete book
   async deleteBook(id: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .delete()
@@ -179,7 +196,7 @@ export const marketplaceApi = {
   // Mark book as sold
   async markBookAsSold(id: string, buyerId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .update({
@@ -193,7 +210,7 @@ export const marketplaceApi = {
   // Upload book image
   async uploadBookImage(bookId: string, file: File, isPrimary: boolean = false) {
     const supabase = createClient()
-    
+
     const fileExt = file.name.split('.').pop()
     const fileName = `${bookId}_${Date.now()}.${fileExt}`
     const filePath = `book-images/${fileName}`
@@ -229,7 +246,7 @@ export const marketplaceApi = {
   // Cart operations
   async getCart(userId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('cart_items')
       .select(`
@@ -246,7 +263,7 @@ export const marketplaceApi = {
 
   async addToCart(userId: string, bookId: string, quantity: number = 1) {
     const supabase = createClient()
-    
+
     // Check if item already exists in cart
     const { data: existing } = await supabase
       .from('cart_items')
@@ -279,14 +296,14 @@ export const marketplaceApi = {
 
   async updateCartQuantity(cartItemId: string, quantity: number) {
     const supabase = createClient()
-    
+
     if (quantity <= 0) {
       return await supabase
         .from('cart_items')
         .delete()
         .eq('id', cartItemId)
     }
-    
+
     return await supabase
       .from('cart_items')
       .update({ quantity })
@@ -297,7 +314,7 @@ export const marketplaceApi = {
 
   async removeFromCart(cartItemId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('cart_items')
       .delete()
@@ -306,7 +323,7 @@ export const marketplaceApi = {
 
   async clearCart(userId: string) {
     const supabase = createClient()
-    
+
     return await supabase
       .from('cart_items')
       .delete()
@@ -316,7 +333,7 @@ export const marketplaceApi = {
   // Get popular categories
   async getPopularCategories() {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .select('major')
@@ -326,10 +343,179 @@ export const marketplaceApi = {
   // Get universities list
   async getUniversities() {
     const supabase = createClient()
-    
+
     return await supabase
       .from('books')
       .select('university_name')
       .eq('is_available', true)
+  },
+
+  // Admin functions
+  async getPendingBooks() {
+    const supabase = createClient()
+
+    return await supabase
+      .from('books')
+      .select(`
+        *,
+        book_images(*),
+        seller:profiles!books_seller_id_fkey(name, avatar_url, university, phone)
+      `)
+      .eq('approval_status', 'pending')
+      .order('created_at', { ascending: false })
+  },
+
+  async approveBook(bookId: string, adminId: string) {
+    const supabase = createClient()
+
+    const { data, error } = await supabase
+      .from('books')
+      .update({
+        approval_status: 'approved',
+        approved_by: adminId,
+        approved_at: new Date().toISOString()
+      })
+      .eq('id', bookId)
+      .select()
+      .single()
+
+    if (!error) {
+      // Log admin activity
+      await supabase
+        .from('admin_activities')
+        .insert([{
+          admin_id: adminId,
+          action: 'approve_book',
+          target_id: bookId,
+          target_type: 'book',
+          details: {
+            book_title: data.title,
+            book_author: data.author
+          }
+        }])
+    }
+
+    return { data, error }
+  },
+
+  async rejectBook(bookId: string, adminId: string, reason: string) {
+    const supabase = createClient()
+
+    const { data, error } = await supabase
+      .from('books')
+      .update({
+        approval_status: 'rejected',
+        approved_by: adminId,
+        approved_at: new Date().toISOString(),
+        rejection_reason: reason
+      })
+      .eq('id', bookId)
+      .select()
+      .single()
+
+    if (!error) {
+      // Log admin activity
+      await supabase
+        .from('admin_activities')
+        .insert([{
+          admin_id: adminId,
+          action: 'reject_book',
+          target_id: bookId,
+          target_type: 'book',
+          details: {
+            book_title: data.title,
+            book_author: data.author,
+            rejection_reason: reason
+          }
+        }])
+    }
+
+    return { data, error }
+  },
+
+  async getAdminActivities(limit: number = 50) {
+    const supabase = createClient()
+
+    return await supabase
+      .from('admin_activities')
+      .select(`
+        *,
+        admin:profiles!admin_activities_admin_id_fkey(name, avatar_url)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+  },
+
+  async getBookStats() {
+    const supabase = createClient()
+
+    const [
+      { count: totalBooks },
+      { count: pendingBooks },
+      { count: approvedBooks },
+      { count: rejectedBooks }
+    ] = await Promise.all([
+      supabase.from('books').select('*', { count: 'exact', head: true }),
+      supabase.from('books').select('*', { count: 'exact', head: true }).eq('approval_status', 'pending'),
+      supabase.from('books').select('*', { count: 'exact', head: true }).eq('approval_status', 'approved'),
+      supabase.from('books').select('*', { count: 'exact', head: true }).eq('approval_status', 'rejected')
+    ])
+
+    return {
+      total: totalBooks || 0,
+      pending: pendingBooks || 0,
+      approved: approvedBooks || 0,
+      rejected: rejectedBooks || 0
+    }
+  },
+
+  async getUserStats() {
+    const supabase = createClient()
+
+    const [
+      { count: totalUsers },
+      { count: adminUsers },
+      { count: studentUsers }
+    ] = await Promise.all([
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'admin'),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student')
+    ])
+
+    return {
+      total: totalUsers || 0,
+      admins: adminUsers || 0,
+      students: studentUsers || 0
+    }
+  },
+
+  // Notifications
+  async getUserNotifications(userId: string) {
+    const supabase = createClient()
+
+    return await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+  },
+
+  async markNotificationAsRead(notificationId: string) {
+    const supabase = createClient()
+
+    return await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', notificationId)
+  },
+
+  async markAllNotificationsAsRead(userId: string) {
+    const supabase = createClient()
+
+    return await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', userId)
+      .eq('read', false)
   }
 }

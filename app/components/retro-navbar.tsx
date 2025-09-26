@@ -50,12 +50,14 @@ export function RetroNavbar() {
           <Link href="/ambassadors" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
             السفراء
           </Link>
-         
+           <Link href="/dashboard/notebooks" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
+            المحاضرات
+          </Link>
           <Link href="/summaries" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
-            الملخصات
+            الملخصات 
           </Link>
           <Link href="/pricing" className="text-sm hover:text-gray-900" style={{ color: "var(--ink)" }}>
-            الأسعار
+            الاشتراك
           </Link>
           {isLoggedIn && (
             <Link href="/dashboard" className="text-sm hover:text-gray-900" style={{ color: "var(--primary)" }}>
@@ -91,13 +93,7 @@ export function RetroNavbar() {
           {isLoggedIn ? (
             <>
               {/* Notifications */}
-              <Link href="/notifications" className="relative">
-                <Bell className="w-5 h-5" style={{ color: "var(--ink)" }} />
-                <span
-                  className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
-                  style={{ background: "var(--accent)" }}
-                />
-              </Link>
+            
 
               {/* User Menu */}
               <div className="relative">
@@ -281,23 +277,7 @@ export function RetroNavbar() {
                     لوحة الإدارة
                   </Link>
                 )}
-                <Link
-                  href="/market/messages"
-                  className="block py-2 text-sm hover:bg-gray-100 px-2 items-center gap-2"
-                  style={{ color: "var(--ink)" }}
-                  onClick={() => setShowMobileMenu(false)}
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  الرسائل
-                  {unreadMessagesCount > 0 && (
-                    <span
-                      className="text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
-                      style={{ background: "var(--accent)" }}
-                    >
-                      {unreadMessagesCount > 9 ? "9+" : unreadMessagesCount}
-                    </span>
-                  )}
-                </Link>
+           
                 <button
                   onClick={() => {
                     handleLogout()

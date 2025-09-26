@@ -42,13 +42,17 @@ export class AdminService {
 
   constructor() {
     const cookieStore = cookies()
-    this.supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
+    this.supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!, 
+      process.env.SUPABASE_SERVICE_ROLE_KEY!, 
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
         },
-      },
-    })
+      }
+    )
   }
 
   // User Management
@@ -94,16 +98,37 @@ export class AdminService {
       .from("books")
       .select(`
         *,
-        profiles:seller_id (name, university)
+        book_images(*),
+        seller:profiles!books_seller_id_fkey(name, university, phone)
       `)
-      .eq("status", "pending")
+      .eq("approval_status", "pending")
+      .order("created_at", { ascending: false })
+
+    return { data, error }
+  }
+
+  async getPendingLectures() {
+    const { data, error } = await this.supabase
+      .from("daily_lectures")
+      .select(`
+        *,
+        instructor:profiles!daily_lectures_instructor_id_fkey(name, university, phone)
+      `)
+      .eq("approval_status", "pending")
       .order("created_at", { ascending: false })
 
     return { data, error }
   }
 
   async approveBook(bookId: string) {
-    const { data, error } = await this.supabase.from("books").update({ status: "approved" }).eq("id", bookId).select()
+    const { data, error } = await this.supabase
+      .from("books")
+      .update({ 
+        approval_status: "approved",
+        approved_at: new Date().toISOString()
+      })
+      .eq("id", bookId)
+      .select()
 
     if (!error) {
       await this.logAction("content_moderation", "book", bookId, "تم الموافقة على الكتاب")
@@ -116,14 +141,50 @@ export class AdminService {
     const { data, error } = await this.supabase
       .from("books")
       .update({
-        status: "rejected",
+        approval_status: "rejected",
         rejection_reason: reason,
+        approved_at: new Date().toISOString()
       })
       .eq("id", bookId)
       .select()
 
     if (!error) {
       await this.logAction("content_moderation", "book", bookId, `تم رفض الكتاب: ${reason}`)
+    }
+
+    return { data, error }
+  }
+
+  async approveLecture(lectureId: string) {
+    const { data, error } = await this.supabase
+      .from("daily_lectures")
+      .update({ 
+        approval_status: "approved",
+        approved_at: new Date().toISOString()
+      })
+      .eq("id", lectureId)
+      .select()
+
+    if (!error) {
+      await this.logAction("content_moderation", "lecture", lectureId, "تم الموافقة على المحاضرة")
+    }
+
+    return { data, error }
+  }
+
+  async rejectLecture(lectureId: string, reason: string) {
+    const { data, error } = await this.supabase
+      .from("daily_lectures")
+      .update({
+        approval_status: "rejected",
+        rejection_reason: reason,
+        approved_at: new Date().toISOString()
+      })
+      .eq("id", lectureId)
+      .select()
+
+    if (!error) {
+      await this.logAction("content_moderation", "lecture", lectureId, `تم رفض المحاضرة: ${reason}`)
     }
 
     return { data, error }
@@ -172,23 +233,29 @@ export class AdminService {
 
   // Admin Actions
   async logAction(actionType: string, targetType?: string, targetId?: string, description = "", metadata = {}) {
-    const { data, error } = await this.supabase.rpc("log_admin_action", {
-      p_action_type: actionType,
-      p_target_type: targetType,
-      p_target_id: targetId,
-      p_description: description,
-      p_metadata: metadata,
-    })
+    const { data, error } = await this.supabase
+      .from('admin_activities')
+      .insert([{
+        admin_id: 'system', // Will be replaced with actual admin ID in components
+        action: actionType,
+        target_type: targetType,
+        target_id: targetId,
+        details: {
+          description,
+          ...metadata
+        }
+      }])
+      .select()
 
     return { data, error }
   }
 
   async getAdminActions(page = 1, limit = 20) {
     const { data, error } = await this.supabase
-      .from("admin_actions")
+      .from("admin_activities")
       .select(`
         *,
-        profiles:admin_id (name)
+        admin:profiles!admin_activities_admin_id_fkey(name)
       `)
       .range((page - 1) * limit, page * limit - 1)
       .order("created_at", { ascending: false })

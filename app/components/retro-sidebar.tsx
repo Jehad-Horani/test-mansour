@@ -48,7 +48,7 @@ export function RetroSidebar() {
         title: "لوحة التحكم",
         items: [
           { title: "الجدول الدراسي", href: "/dashboard/schedule" },
-          { title: "المحاضرات اليومية", href: "/dashboard/daily-lectures" },
+          { title: "المحاضرات اليومية", href: "/dashboard/notebooks" },
           { title: "الامتحانات", href: "/dashboard/exams" },
           { title: "الجلسات الدراسية", href: "/dashboard/sessions" },
           { title: "السفراء", href: "/dashboard/ambassadors" },
@@ -65,7 +65,6 @@ export function RetroSidebar() {
           { title: "السوق", href: "/admin/market" },
           { title: "الملخصات", href: "/admin/summaries" },
           { title: "المحاضرات اليومية", href: "/admin/daily-lectures" },
-          { title: "الرسائل", href: "/admin/messages" },
           { title: "الإعدادات", href: "/admin/settings" },
         ],
       }
@@ -109,7 +108,7 @@ export function RetroSidebar() {
       >
         <div className="p-4 space-y-4 max-h-screen overflow-y-auto">
           <div className="retro-window-title mb-4">
-            <span>{isLoggedIn ? `مرحباً ${profile?.name?.split(" ")[0]}` : "القائمة الجانبية"}</span>
+            <span>{isLoggedIn ? `مرحباً ${profile?.name.split(" ")[0]}` : "القائمة الجانبية"}</span>
             <button className="md:hidden text-white hover:text-gray-300" onClick={() => setIsOpen(false)}>
               ×
             </button>

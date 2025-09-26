@@ -1,498 +1,352 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useUserContext } from "@/contexts/user-context"
 import { RetroWindow } from "@/app/components/retro-window"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
+import { Badge } from "@/app/components/ui/badge"
+import { 
+  Search, 
+  User, 
+  Mail, 
+  Phone, 
+  GraduationCap, 
+  Shield,
+  Users,
+  Crown,
+  Settings,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react"
+import { toast } from "sonner"
 
-interface UserData {
+interface User {
   id: string
   name: string
   email: string
-  major: "law" | "it" | "medical" | "business"
-  university: string
-  year: string
-  joinDate: string
-  lastActive: string
-  status: "active" | "suspended" | "inactive"
-  subscription: {
-    tier: "free" | "standard" | "premium"
-    expiryDate?: string
-  }
-  stats: {
-    uploadsCount: number
-    viewsCount: number
-    helpfulVotes: number
-    communityPoints: number
-  }
-  avatar?: string
   phone?: string
-  graduationYear?: string
+  university?: string
+  major?: string
+  role: "student" | "admin"
+  subscription_tier: string
+  created_at: string
+  avatar_url?: string
 }
 
-export default function UserManagementPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedMajor, setSelectedMajor] = useState<"all" | "law" | "it" | "medical" | "business">("all")
-  const [selectedTier, setSelectedTier] = useState<"all" | "free" | "standard" | "premium">("all")
-  const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "suspended" | "inactive">("all")
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
-  const [showUserDetails, setShowUserDetails] = useState<string | null>(null)
-
-  // Mock user data
-  const mockUsers: UserData[] = [
-    {
-      id: "user-law-1",
-      name: "أحمد محمد السالم",
-      email: "ahmed.salem@example.com",
-      major: "law",
-      university: "جامعة الملك سعود",
-      year: "السنة الثالثة",
-      joinDate: "2023-09-15T10:00:00Z",
-      lastActive: "2024-01-15T14:30:00Z",
-      status: "active",
-      subscription: {
-        tier: "premium",
-        expiryDate: "2024-03-15",
-      },
-      stats: {
-        uploadsCount: 12,
-        viewsCount: 340,
-        helpfulVotes: 28,
-        communityPoints: 340,
-      },
-      avatar: "/diverse-user-avatars.png",
-      phone: "+966501234567",
-      graduationYear: "2025",
-    },
-    {
-      id: "user-it-1",
-      name: "فاطمة عبدالله النمر",
-      email: "fatima.alnamir@example.com",
-      major: "it",
-      university: "جامعة الملك فهد للبترول والمعادن",
-      year: "السنة الثانية",
-      joinDate: "2023-10-20T09:00:00Z",
-      lastActive: "2024-01-15T16:45:00Z",
-      status: "active",
-      subscription: {
-        tier: "standard",
-        expiryDate: "2024-02-20",
-      },
-      stats: {
-        uploadsCount: 8,
-        viewsCount: 156,
-        helpfulVotes: 15,
-        communityPoints: 180,
-      },
-      avatar: "/diverse-user-avatars.png",
-      phone: "+966502345678",
-      graduationYear: "2026",
-    },
-    {
-      id: "user-med-1",
-      name: "نورا الشهري",
-      email: "nora.alshahri@example.com",
-      major: "medical",
-      university: "جامعة الملك سعود",
-      year: "السنة الرابعة",
-      joinDate: "2023-08-10T11:00:00Z",
-      lastActive: "2024-01-14T12:20:00Z",
-      status: "active",
-      subscription: {
-        tier: "free",
-      },
-      stats: {
-        uploadsCount: 5,
-        viewsCount: 89,
-        helpfulVotes: 12,
-        communityPoints: 120,
-      },
-      avatar: "/diverse-user-avatars.png",
-      phone: "+966503456789",
-      graduationYear: "2025",
-    },
-    {
-      id: "user-bus-1",
-      name: "خالد الأحمد",
-      email: "khalid.alahmad@example.com",
-      major: "business",
-      university: "جامعة الملك عبدالعزيز",
-      year: "السنة الثالثة",
-      joinDate: "2023-11-05T13:00:00Z",
-      lastActive: "2024-01-10T10:15:00Z",
-      status: "inactive",
-      subscription: {
-        tier: "premium",
-        expiryDate: "2024-04-05",
-      },
-      stats: {
-        uploadsCount: 15,
-        viewsCount: 420,
-        helpfulVotes: 35,
-        communityPoints: 450,
-      },
-      avatar: "/diverse-user-avatars.png",
-      phone: "+966504567890",
-      graduationYear: "2025",
-    },
-    {
-      id: "user-law-2",
-      name: "سارة العتيبي",
-      email: "sara.alotaibi@example.com",
-      major: "law",
-      university: "جامعة الإمام محمد بن سعود الإسلامية",
-      year: "السنة الأولى",
-      joinDate: "2024-01-01T08:00:00Z",
-      lastActive: "2024-01-15T18:00:00Z",
-      status: "suspended",
-      subscription: {
-        tier: "free",
-      },
-      stats: {
-        uploadsCount: 2,
-        viewsCount: 25,
-        helpfulVotes: 3,
-        communityPoints: 30,
-      },
-      avatar: "/diverse-user-avatars.png",
-      phone: "+966505678901",
-      graduationYear: "2028",
-    },
-  ]
-
-  const filteredUsers = mockUsers.filter((user) => {
-    const searchMatch =
-      searchTerm === "" ||
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.university.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const majorMatch = selectedMajor === "all" || user.major === selectedMajor
-    const tierMatch = selectedTier === "all" || user.subscription.tier === selectedTier
-    const statusMatch = selectedStatus === "all" || user.status === selectedStatus
-
-    return searchMatch && majorMatch && tierMatch && statusMatch
+export default function AdminUsersPage() {
+  const { isLoggedIn, isAdmin } = useUserContext()
+  const router = useRouter()
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 1
   })
+  const [updating, setUpdating] = useState<string | null>(null)
 
-  const handleUserAction = (userId: string, action: "suspend" | "activate" | "delete" | "message") => {
-    console.log(`[v0] User action: ${action} for user: ${userId}`)
-    // Here you would implement the actual user management actions
-  }
-
-  const handleBulkAction = (action: "suspend" | "activate" | "delete" | "message") => {
-    console.log(`[v0] Bulk ${action} for users:`, selectedUsers)
-    setSelectedUsers([])
-  }
-
-  const toggleUserSelection = (userId: string) => {
-    setSelectedUsers((prev) => (prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]))
-  }
-
-  const getMajorLabel = (major: string) => {
-    const labels = {
-      law: "القانون",
-      it: "تقنية المعلومات",
-      medical: "الطب",
-      business: "إدارة الأعمال",
+  useEffect(() => {
+    if (!isLoggedIn || !isAdmin()) {
+      router.push('/')
+      return
     }
-    return labels[major as keyof typeof labels] || major
+    fetchUsers()
+  }, [isLoggedIn, isAdmin, router, page, search])
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '20'
+      })
+      
+      if (search) {
+        params.append('search', search)
+      }
+      
+      const res = await fetch(`/api/admin/users?${params}`)
+      const data = await res.json()
+      
+      if (res.ok) {
+        setUsers(data.users || [])
+        setPagination(data.pagination)
+      } else {
+        console.error("Error fetching users:", data.error)
+        toast.error("خطأ في جلب المستخدمين")
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const getTierLabel = (tier: string) => {
-    const labels = {
-      free: "مجاني",
-      standard: "قياسي",
-      premium: "مميز",
+  const updateUserRole = async (userId: string, newRole: "student" | "admin") => {
+    if (!confirm(`هل تريد تغيير دور هذا المستخدم إلى ${newRole === 'admin' ? 'مشرف' : 'طالب'}؟`)) {
+      return
     }
-    return labels[tier as keyof typeof labels] || tier
+
+    try {
+      setUpdating(userId)
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          updates: { role: newRole }
+        })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setUsers(prev => prev.map(user => 
+          user.id === userId ? { ...user, role: newRole } : user
+        ))
+        toast.success("تم تحديث دور المستخدم بنجاح")
+      } else {
+        console.error("Error updating user role:", data.error)
+        toast.error("خطأ في تحديث دور المستخدم")
+      }
+    } catch (error) {
+      console.error("Error updating user role:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setUpdating(null)
+    }
   }
 
-  const getStatusColor = (status: string) => {
-    const colors = {
-      active: "bg-green-100 text-green-800",
-      suspended: "bg-red-100 text-red-800",
-      inactive: "bg-yellow-100 text-yellow-800",
+  const updateSubscription = async (userId: string, tier: string) => {
+    try {
+      setUpdating(userId)
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          updates: { subscription_tier: tier }
+        })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setUsers(prev => prev.map(user => 
+          user.id === userId ? { ...user, subscription_tier: tier } : user
+        ))
+        toast.success("تم تحديث الاشتراك بنجاح")
+      } else {
+        console.error("Error updating subscription:", data.error)
+        toast.error("خطأ في تحديث الاشتراك")
+      }
+    } catch (error) {
+      console.error("Error updating subscription:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setUpdating(null)
     }
-    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800"
+  }
+
+  const getRoleColor = (role: string) => {
+    return role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
   }
 
   const getTierColor = (tier: string) => {
-    const colors = {
-      free: "bg-gray-100 text-gray-800",
-      standard: "bg-blue-100 text-blue-800",
-      premium: "bg-purple-100 text-purple-800",
-    }
-    return colors[tier as keyof typeof colors] || "bg-gray-100 text-gray-800"
+    return tier === 'premium' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+  }
+
+  if (!isLoggedIn || !isAdmin()) {
+    return null
   }
 
   return (
-    <div className="p-4">
+    <div className="min-h-screen bg-retro-bg p-4">
       <div className="max-w-7xl mx-auto">
-        <RetroWindow title="إدارة المستخدمين">
-          <div className="p-6">
-            {/* Search and Filters */}
-            <div className="mb-6 space-y-4">
-              <div className="flex flex-wrap gap-4 items-center">
-                <div className="flex-1 min-w-64">
-                  <input
-                    type="text"
-                    placeholder="البحث بالاسم، البريد الإلكتروني، أو الجامعة..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-400 bg-white text-black"
-                  />
-                </div>
-                <button className="retro-button bg-blue-500 text-white px-4 py-2 hover:bg-blue-600">بحث</button>
-              </div>
-
-              <div className="flex flex-wrap gap-4 items-center">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-black">التخصص:</label>
-                  <select
-                    value={selectedMajor}
-                    onChange={(e) => setSelectedMajor(e.target.value as any)}
-                    className="px-3 py-1 border border-gray-400 bg-white text-black text-sm"
-                  >
-                    <option value="all">جميع التخصصات</option>
-                    <option value="law">القانون</option>
-                    <option value="it">تقنية المعلومات</option>
-                    <option value="medical">الطب</option>
-                    <option value="business">إدارة الأعمال</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-black">الاشتراك:</label>
-                  <select
-                    value={selectedTier}
-                    onChange={(e) => setSelectedTier(e.target.value as any)}
-                    className="px-3 py-1 border border-gray-400 bg-white text-black text-sm"
-                  >
-                    <option value="all">جميع الاشتراكات</option>
-                    <option value="free">مجاني</option>
-                    <option value="standard">قياسي</option>
-                    <option value="premium">مميز</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-black">الحالة:</label>
-                  <select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value as any)}
-                    className="px-3 py-1 border border-gray-400 bg-white text-black text-sm"
-                  >
-                    <option value="all">جميع الحالات</option>
-                    <option value="active">نشط</option>
-                    <option value="inactive">غير نشط</option>
-                    <option value="suspended">موقوف</option>
-                  </select>
-                </div>
-              </div>
-
-              {selectedUsers.length > 0 && (
-                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200">
-                  <span className="text-sm text-black">تم تحديد {selectedUsers.length} مستخدم</span>
-                  <button
-                    onClick={() => handleBulkAction("message")}
-                    className="retro-button bg-blue-500 text-white px-3 py-1 text-sm hover:bg-blue-600"
-                  >
-                    إرسال رسالة
-                  </button>
-                  <button
-                    onClick={() => handleBulkAction("suspend")}
-                    className="retro-button bg-red-500 text-white px-3 py-1 text-sm hover:bg-red-600"
-                  >
-                    إيقاف
-                  </button>
-                  <button
-                    onClick={() => handleBulkAction("activate")}
-                    className="retro-button bg-green-500 text-white px-3 py-1 text-sm hover:bg-green-600"
-                  >
-                    تفعيل
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Users List */}
-            <div className="space-y-4">
-              {filteredUsers.map((user) => (
-                <div key={user.id} className="border border-gray-400 bg-white">
-                  <div className="p-4">
-                    <div className="flex items-start gap-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedUsers.includes(user.id)}
-                        onChange={() => toggleUserSelection(user.id)}
-                        className="mt-1"
-                      />
-
-                      <div className="w-12 h-12 bg-gray-200 border border-gray-400 flex items-center justify-center">
-                        {user.avatar ? (
-                          <img
-                            src={user.avatar || "/placeholder.svg"}
-                            alt={user.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-gray-500 text-xs">صورة</span>
-                        )}
-                      </div>
-
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="font-semibold text-black">{user.name}</h3>
-                            <p className="text-sm text-gray-600">{user.email}</p>
-                            <p className="text-sm text-gray-600">
-                              {getMajorLabel(user.major)} - {user.year}
-                            </p>
-                            <p className="text-sm text-gray-600">{user.university}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-1 text-xs rounded ${getStatusColor(user.status)}`}>
-                              {user.status === "active" ? "نشط" : user.status === "suspended" ? "موقوف" : "غير نشط"}
-                            </span>
-                            <span className={`px-2 py-1 text-xs rounded ${getTierColor(user.subscription.tier)}`}>
-                              {getTierLabel(user.subscription.tier)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
-                          <div>
-                            <strong>تاريخ الانضمام:</strong>
-                            <br />
-                            {new Date(user.joinDate).toLocaleDateString("ar-SA")}
-                          </div>
-                          <div>
-                            <strong>آخر نشاط:</strong>
-                            <br />
-                            {new Date(user.lastActive).toLocaleDateString("ar-SA")}
-                          </div>
-                          <div>
-                            <strong>الرفوعات:</strong>
-                            <br />
-                            {user.stats.uploadsCount}
-                          </div>
-                          <div>
-                            <strong>النقاط:</strong>
-                            <br />
-                            {user.stats.communityPoints}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setShowUserDetails(showUserDetails === user.id ? null : user.id)}
-                            className="retro-button bg-blue-500 text-white px-3 py-1 text-sm hover:bg-blue-600"
-                          >
-                            {showUserDetails === user.id ? "إخفاء التفاصيل" : "عرض التفاصيل"}
-                          </button>
-
-                          <Link
-                            href={`/admin/users/${user.id}`}
-                            className="retro-button bg-purple-500 text-white px-3 py-1 text-sm hover:bg-purple-600"
-                          >
-                            الملف الشخصي
-                          </Link>
-
-                          <button
-                            onClick={() => handleUserAction(user.id, "message")}
-                            className="retro-button bg-green-500 text-white px-3 py-1 text-sm hover:bg-green-600"
-                          >
-                            إرسال رسالة
-                          </button>
-
-                          {user.status === "active" ? (
-                            <button
-                              onClick={() => handleUserAction(user.id, "suspend")}
-                              className="retro-button bg-red-500 text-white px-3 py-1 text-sm hover:bg-red-600"
-                            >
-                              إيقاف
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleUserAction(user.id, "activate")}
-                              className="retro-button bg-green-500 text-white px-3 py-1 text-sm hover:bg-green-600"
-                            >
-                              تفعيل
-                            </button>
-                          )}
-
-                          <button
-                            onClick={() => handleUserAction(user.id, "delete")}
-                            className="retro-button bg-gray-500 text-white px-3 py-1 text-sm hover:bg-gray-600"
-                          >
-                            حذف
-                          </button>
-                        </div>
-
-                        {/* Detailed View */}
-                        {showUserDetails === user.id && (
-                          <div className="mt-4 p-4 bg-gray-50 border border-gray-300">
-                            <h4 className="font-semibold text-black mb-3">تفاصيل المستخدم</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <strong>معرف المستخدم:</strong> {user.id}
-                              </div>
-                              <div>
-                                <strong>رقم الهاتف:</strong> {user.phone || "غير محدد"}
-                              </div>
-                              <div>
-                                <strong>سنة التخرج:</strong> {user.graduationYear || "غير محدد"}
-                              </div>
-                              <div>
-                                <strong>عدد المشاهدات:</strong> {user.stats.viewsCount}
-                              </div>
-                              <div>
-                                <strong>الأصوات المفيدة:</strong> {user.stats.helpfulVotes}
-                              </div>
-                              {user.subscription.expiryDate && (
-                                <div>
-                                  <strong>انتهاء الاشتراك:</strong>{" "}
-                                  {new Date(user.subscription.expiryDate).toLocaleDateString("ar-SA")}
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="mt-4">
-                              <h5 className="font-medium text-black mb-2">إجراءات إضافية</h5>
-                              <div className="flex gap-2">
-                                <button className="retro-button bg-blue-500 text-white px-3 py-1 text-sm hover:bg-blue-600">
-                                  تعديل الاشتراك
-                                </button>
-                                <button className="retro-button bg-purple-500 text-white px-3 py-1 text-sm hover:bg-purple-600">
-                                  عرض النشاط
-                                </button>
-                                <button className="retro-button bg-orange-500 text-white px-3 py-1 text-sm hover:bg-orange-600">
-                                  إعادة تعيين كلمة المرور
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+        {/* Header */}
+        <div className="mb-6">
+          <RetroWindow title="إدارة المستخدمين">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-xl font-bold text-black">إدارة المستخدمين</h1>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    <span className="text-sm">المجموع: {pagination.total}</span>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            {filteredUsers.length === 0 && (
-              <div className="text-center py-8 text-gray-600">لا يوجد مستخدمون يطابقون المعايير المحددة</div>
-            )}
+              {/* Search */}
+              <div className="flex gap-2 mb-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="بحث بالاسم أو البريد الإلكتروني..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Button onClick={fetchUsers} disabled={loading}>
+                  بحث
+                </Button>
+              </div>
 
-            {/* Pagination would go here */}
-            <div className="mt-6 flex justify-center">
-              <div className="flex items-center gap-2">
-                <button className="retro-button bg-gray-500 text-white px-3 py-1 text-sm">السابق</button>
-                <span className="px-3 py-1 bg-retro-accent text-white text-sm">1</span>
-                <button className="retro-button bg-gray-500 text-white px-3 py-1 text-sm">2</button>
-                <button className="retro-button bg-gray-500 text-white px-3 py-1 text-sm">3</button>
-                <button className="retro-button bg-gray-500 text-white px-3 py-1 text-sm">التالي</button>
+              {/* Statistics */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div className="bg-blue-50 border border-blue-200 p-3 text-center">
+                  <div className="text-lg font-bold text-blue-800">
+                    {users.filter(u => u.role === 'student').length}
+                  </div>
+                  <div className="text-sm text-blue-600">طلاب</div>
+                </div>
+                <div className="bg-red-50 border border-red-200 p-3 text-center">
+                  <div className="text-lg font-bold text-red-800">
+                    {users.filter(u => u.role === 'admin').length}
+                  </div>
+                  <div className="text-sm text-red-600">مشرفين</div>
+                </div>
+                <div className="bg-yellow-50 border border-yellow-200 p-3 text-center">
+                  <div className="text-lg font-bold text-yellow-800">
+                    {users.filter(u => u.subscription_tier === 'premium').length}
+                  </div>
+                  <div className="text-sm text-yellow-600">مشتركين مميزين</div>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 p-3 text-center">
+                  <div className="text-lg font-bold text-gray-800">
+                    {users.filter(u => u.subscription_tier === 'basic').length}
+                  </div>
+                  <div className="text-sm text-gray-600">مشتركين عاديين</div>
+                </div>
               </div>
             </div>
+          </RetroWindow>
+        </div>
+
+        {/* Users List */}
+        <RetroWindow title="قائمة المستخدمين">
+          <div className="p-4">
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="text-gray-600">جاري التحميل...</div>
+              </div>
+            ) : users.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-gray-600">لا يوجد مستخدمين</div>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4 mb-6">
+                  {users.map((user) => (
+                    <div key={user.id} className="bg-white border border-gray-400 p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                            {user.avatar_url ? (
+                              <img src={user.avatar_url} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
+                            ) : (
+                              <User className="w-6 h-6 text-gray-500" />
+                            )}
+                          </div>
+                          
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-black">{user.name}</h3>
+                              <Badge className={getRoleColor(user.role)}>
+                                {user.role === 'admin' ? 'مشرف' : 'طالب'}
+                              </Badge>
+                              <Badge className={getTierColor(user.subscription_tier)}>
+                                {user.subscription_tier === 'premium' ? 'مميز' : 'عادي'}
+                              </Badge>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 text-sm text-gray-600">
+                              <div className="flex items-center gap-1">
+                                <Mail className="w-3 h-3" />
+                                <span>{user.email}</span>
+                              </div>
+                              {user.phone && (
+                                <div className="flex items-center gap-1">
+                                  <Phone className="w-3 h-3" />
+                                  <span>{user.phone}</span>
+                                </div>
+                              )}
+                              {user.university && (
+                                <div className="flex items-center gap-1">
+                                  <GraduationCap className="w-3 h-3" />
+                                  <span>{user.university}</span>
+                                </div>
+                              )}
+                              <div className="text-xs text-gray-500">
+                                انضم: {new Date(user.created_at).toLocaleDateString('ar-SA')}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <select
+                            value={user.role}
+                            onChange={(e) => updateUserRole(user.id, e.target.value as "student" | "admin")}
+                            disabled={updating === user.id}
+                            className="px-2 py-1 text-xs border border-gray-300 rounded"
+                          >
+                            <option value="student">طالب</option>
+                            <option value="admin">مشرف</option>
+                          </select>
+                          
+                          <select
+                            value={user.subscription_tier}
+                            onChange={(e) => updateSubscription(user.id, e.target.value)}
+                            disabled={updating === user.id}
+                            className="px-2 py-1 text-xs border border-gray-300 rounded"
+                          >
+                            <option value="basic">عادي</option>
+                            <option value="premium">مميز</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      صفحة {pagination.page} من {pagination.totalPages} ({pagination.total} مستخدم)
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setPage(page - 1)}
+                        disabled={page <= 1}
+                        className="retro-button bg-transparent"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                        السابق
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setPage(page + 1)}
+                        disabled={page >= pagination.totalPages}
+                        className="retro-button bg-transparent"
+                      >
+                        التالي
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </RetroWindow>
       </div>

@@ -2,113 +2,15 @@
 
 import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
+import { AvatarUpload } from "@/app/components/avatar-upload"
 import Link from "next/link"
-import { Edit, Settings, BookOpen, Users, Award, Calendar, Upload } from "lucide-react"
+import { Edit, Settings, BookOpen, Users, Award, Calendar } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
-import { toast } from "sonner"
+import { useState } from "react"
 
 export default function ProfilePage() {
   const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
-  const router = useRouter()
-  const supabase = createClient()
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [avatarUrl, setAvatarUrl] = useState<string>("")
-
-  useEffect(() => {
-    if (profile?.avatar_url) {
-      setAvatarUrl(profile.avatar_url)
-    }
-  }, [profile])
-
-  // دالة رفع الصورة - Fixed the implementation
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !user) {
-      toast.error("يجب اختيار ملف وتسجيل الدخول")
-      return
-    }
-
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("حجم الملف يجب أن يكون أقل من 5 ميجابايت")
-      return
-    }
-
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      toast.error("يجب أن يكون الملف صورة")
-      return
-    }
-
-    try {
-      setIsUploading(true)
-      
-      const fileExt = file.name.split(".").pop()
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
-
-      // Create avatars bucket if it doesn't exist
-      const { data: buckets } = await supabase.storage.listBuckets()
-      const avatarsBucket = buckets?.find(bucket => bucket.name === 'avatars')
-      
-      if (!avatarsBucket) {
-        await supabase.storage.createBucket('avatars', {
-          public: true,
-          fileSizeLimit: 5242880, // 5MB
-          allowedMimeTypes: ['image/*']
-        })
-      }
-
-      // Upload the file
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, { 
-          cacheControl: '3600',
-          upsert: true
-        })
-
-      if (uploadError) {
-        console.error("Upload error:", uploadError)
-        throw uploadError
-      }
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath)
-      
-      const publicUrl = urlData.publicUrl
-
-      // Update profile in database - Fixed the API call
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ avatar_url: publicUrl })
-        .eq("id", user.id)
-
-      if (updateError) {
-        console.error("Profile update error:", updateError)
-        throw updateError
-      }
-
-      setAvatarUrl(publicUrl)
-      toast.success("تم تحديث صورة الملف الشخصي بنجاح")
-      
-      // Refresh the page to show updated profile
-      setTimeout(() => {
-        router.refresh()
-      }, 1000)
-
-    } catch (error: any) {
-      console.error("Error uploading avatar:", error)
-      toast.error(`حدث خطأ أثناء رفع الصورة: ${error.message}`)
-    } finally {
-      setIsUploading(false)
-    }
-  }
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState(profile?.avatar_url || "")
 
   if (!isLoggedIn) {
     return (
@@ -124,6 +26,12 @@ export default function ProfilePage() {
       </div>
     )
   }
+const handleAvatarUpload = (newAvatarUrl: string) => {
+  setCurrentAvatarUrl(newAvatarUrl);
+  alert("✅ تم تحديث الصورة الشخصية بنجاح");
+};
+
+
 
   const stats = profile?.stats || {
     coursesEnrolled: 0,
@@ -134,8 +42,6 @@ export default function ProfilePage() {
 
   const recentActivity = [
     { type: "book", title: `اشترى كتاب: أساسيات ${getMajorLabel(profile?.major)}`, date: "منذ يومين" },
-    { type: "consultation", title: "حجز استشارة مع مختص", date: "منذ 3 أيام" },
-    { type: "community", title: "أجاب على سؤال في المجتمع", date: "منذ أسبوع" },
     { type: "course", title: `انضم لمقرر: ${getMajorLabel(profile?.major)} المتقدم`, date: "منذ أسبوعين" },
   ]
 
@@ -148,32 +54,15 @@ export default function ProfilePage() {
             <div className="flex flex-col md:flex-row gap-6 items-start">
               {/* Avatar and Basic Info */}
               <div className="flex flex-col items-center text-center">
-                <img
-                  src={avatarUrl || profile?.avatar_url || "/diverse-user-avatars.png"}
-                  alt="صورة المستخدم"
-                  className="w-32 h-32 border-2 border-gray-300 mb-4 object-cover rounded"
-                  style={{ background: "var(--panel)" }}
-                />
-
-                {/* Input مخفي */}
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-
-                <Button
-                  size="sm"
-                  className="retro-button mb-2"
-                  style={{ background: "var(--accent)", color: "white" }}
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  <Upload className="w-4 h-4 ml-1" />
-                  {isUploading ? "جاري الرفع..." : "تغيير الصورة"}
-                </Button>
+                {user && (
+                  <AvatarUpload
+                    currentAvatarUrl={currentAvatarUrl}
+                    userId={user.id}
+                    userName={profile?.name || "مستخدم"}
+                    onAvatarUpdate={handleAvatarUpload} // ← هون ضفت فنكشن الرفع
+                    size="lg"
+                  />
+                )}
               </div>
 
               {/* User Details */}
@@ -343,7 +232,7 @@ export default function ProfilePage() {
                 >
                   <Link href="/ambassadors">
                     <Users className="w-6 h-6" />
-                    <span>احجز استشارة</span>
+                    <span>السفراء</span>
                   </Link>
                 </Button>
               </div>

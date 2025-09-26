@@ -1,0 +1,162 @@
+[
+  {
+    "test": "Core Summaries API - Database Schema",
+    "success": true,
+    "message": "API returns proper array format with 3 summaries",
+    "details": {
+      "response_type": "list",
+      "count": 3
+    },
+    "timestamp": "2025-09-25 20:51:52"
+  },
+  {
+    "test": "Individual Book Details API - Profiles Schema",
+    "success": true,
+    "message": "Book details API works without database schema errors (seller data may be missing but no schema error)",
+    "details": {
+      "seller_status": "null",
+      "book_id": "a8522377-42d9-41ca-b43a-132f40482ae7",
+      "api_working": true
+    },
+    "timestamp": "2025-09-25 20:51:52"
+  },
+  {
+    "test": "Admin Books API - Authentication",
+    "success": true,
+    "message": "Admin books API properly requires authentication (403 Unauthorized)",
+    "details": {
+      "status_code": 403
+    },
+    "timestamp": "2025-09-25 20:51:52"
+  },
+  {
+    "test": "Admin Users API - Authentication",
+    "success": true,
+    "message": "Admin users API properly requires authentication (403 Unauthorized)",
+    "details": {
+      "status_code": 403
+    },
+    "timestamp": "2025-09-25 20:51:52"
+  },
+  {
+    "test": "Admin Analytics API - Authentication",
+    "success": true,
+    "message": "Admin analytics API properly requires authentication (403 Unauthorized)",
+    "details": {
+      "status_code": 403
+    },
+    "timestamp": "2025-09-25 20:51:52"
+  },
+  {
+    "test": "Admin Lectures API - Authentication",
+    "success": true,
+    "message": "Admin lectures API properly requires authentication (403 Unauthorized)",
+    "details": {
+      "status_code": 403
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Summaries Upload API - Authentication",
+    "success": true,
+    "message": "Summaries upload API properly requires authentication (401 Unauthorized)",
+    "details": {
+      "status_code": 401
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Notebooks Upload API - Authentication",
+    "success": true,
+    "message": "Notebooks upload API properly requires authentication (401 Unauthorized)",
+    "details": {
+      "status_code": 401
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Profile Avatar Upload API - Authentication",
+    "success": true,
+    "message": "Profile avatar upload API properly requires authentication (401 Unauthorized)",
+    "details": {
+      "status_code": 401
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Authentication Protection - /api/summaries POST",
+    "success": true,
+    "message": "Endpoint properly requires authentication (401 Unauthorized)",
+    "details": {
+      "endpoint": "/api/summaries",
+      "method": "POST"
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Authentication Protection - /api/books POST",
+    "success": true,
+    "message": "Endpoint properly requires authentication (401 Unauthorized)",
+    "details": {
+      "endpoint": "/api/books",
+      "method": "POST"
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Authentication Protection - /api/cart GET",
+    "success": true,
+    "message": "Endpoint properly requires authentication (401 Unauthorized)",
+    "details": {
+      "endpoint": "/api/cart",
+      "method": "GET"
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Authentication Protection - /api/cart POST",
+    "success": true,
+    "message": "Endpoint properly requires authentication (401 Unauthorized)",
+    "details": {
+      "endpoint": "/api/cart",
+      "method": "POST"
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Admin Role Protection - /api/admin/books",
+    "success": true,
+    "message": "Admin endpoint properly requires admin role (403 Forbidden)",
+    "details": {
+      "endpoint": "/api/admin/books"
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Admin Role Protection - /api/admin/users",
+    "success": true,
+    "message": "Admin endpoint properly requires admin role (403 Forbidden)",
+    "details": {
+      "endpoint": "/api/admin/users"
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Admin Role Protection - /api/admin/analytics",
+    "success": true,
+    "message": "Admin endpoint properly requires admin role (403 Forbidden)",
+    "details": {
+      "endpoint": "/api/admin/analytics"
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  },
+  {
+    "test": "Admin Role Protection - /api/admin/lectures",
+    "success": true,
+    "message": "Admin endpoint properly requires admin role (403 Forbidden)",
+    "details": {
+      "endpoint": "/api/admin/lectures"
+    },
+    "timestamp": "2025-09-25 20:51:53"
+  }
+]

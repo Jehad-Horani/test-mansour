@@ -1,0 +1,108 @@
+{
+  "test_summary": {
+    "total_tests": 12,
+    "passed_tests": 11,
+    "failed_tests": 1,
+    "success_rate": "91.7%",
+    "timestamp": "2025-09-25T09:51:47.900931"
+  },
+  "test_results": [
+    {
+      "test": "App Accessibility",
+      "success": true,
+      "details": "Status: 200, Next.js app detected",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:44.138295"
+    },
+    {
+      "test": "Static Assets",
+      "success": true,
+      "details": "3/3 assets accessible",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:44.150926"
+    },
+    {
+      "test": "Page Load: Home Page",
+      "success": true,
+      "details": "Status: 200",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:44.188961"
+    },
+    {
+      "test": "Page Load: Market Page",
+      "success": true,
+      "details": "Status: 200",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:45.786462"
+    },
+    {
+      "test": "Page Load: Cart Page",
+      "success": true,
+      "details": "Status: 200",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:46.117672"
+    },
+    {
+      "test": "Page Load: Auth Page",
+      "success": false,
+      "details": "Status: 404",
+      "error": "HTTP 404",
+      "timestamp": "2025-09-25T09:51:46.615657"
+    },
+    {
+      "test": "Page Load: Profile Edit Page",
+      "success": true,
+      "details": "Status: 200",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:46.855630"
+    },
+    {
+      "test": "Page Load: Settings Page",
+      "success": true,
+      "details": "Status: 200",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:47.691510"
+    },
+    {
+      "test": "Page Load: Admin Books Page",
+      "success": true,
+      "details": "Status: 200",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:47.734112"
+    },
+    {
+      "test": "Page Load: Admin Daily Lectures Page",
+      "success": true,
+      "details": "Status: 200",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:47.765811"
+    },
+    {
+      "test": "API Routes",
+      "success": true,
+      "details": "4/4 routes responding (500 errors would be concerning)",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:47.854163"
+    },
+    {
+      "test": "JavaScript Errors Check",
+      "success": true,
+      "details": "No JavaScript errors detected in HTML",
+      "error": "",
+      "timestamp": "2025-09-25T09:51:47.900909"
+    }
+  ],
+  "issue_categories": {
+    "critical_issues": [],
+    "database_issues": [],
+    "minor_issues": [
+      {
+        "test": "Page Load: Auth Page",
+        "success": false,
+        "details": "Status: 404",
+        "error": "HTTP 404",
+        "timestamp": "2025-09-25T09:51:46.615657"
+      }
+    ]
+  }
+}

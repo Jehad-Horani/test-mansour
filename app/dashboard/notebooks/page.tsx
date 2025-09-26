@@ -1,349 +1,469 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
+import { RetroWindow } from "@/app/components/retro-window"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
-import { RetroWindow } from "@/app/components/retro-window"
+import { Label } from "@/app/components/ui/label"
+import { Textarea } from "@/app/components/ui/textarea"
 import { Badge } from "@/app/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/app/components/ui/dialog"
-import { Progress } from "@/app/components/ui/progress"
-import Link from "next/link"
-import { ArrowRight, Upload, Eye, RefreshCw, FileText } from "lucide-react"
+import { 
+  Upload,
+  Calendar,
+  Clock,
+  FileText,
+  GraduationCap,
+  Plus,
+  Eye,
+  CheckCircle,
+  XCircle,
+  AlertCircle
+} from "lucide-react"
+import { toast } from "sonner"
 
-const mockNotebooks = [
-  {
-    id: 1,
-    title: "محاضرة مبادئ القانون - الأسبوع 1",
-    course: "LAW 101",
-    uploadDate: "2024-01-15",
-    status: "approved" as const,
-    views: 45,
-  },
-  {
-    id: 2,
-    title: "محاضرة البرمجة - المتغيرات",
-    course: "CS 101",
-    uploadDate: "2024-01-20",
-    status: "pending" as const,
-    views: 0,
-  },
-  {
-    id: 3,
-    title: "محاضرة التشريح - الجهاز العصبي",
-    course: "MED 101",
-    uploadDate: "2024-01-18",
-    status: "rejected" as const,
-    views: 0,
-    reason: "جودة الصورة غير واضحة",
-  },
-]
+interface Lecture {
+  id: string
+  title: string
+  description: string
+  subject_name: string
+  university_name: string
+  major: string
+  lecture_date: string
+  duration_minutes: number
+  file_url?: string
+  file_name?: string
+  approval_status: 'pending' | 'approved' | 'rejected'
+  rejection_reason?: string
+  created_at: string
+}
 
 export default function NotebooksPage() {
-  const [uploadModalOpen, setUploadModalOpen] = useState(false)
-  const [uploadStep, setUploadStep] = useState(1)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [notebooks, setNotebooks] = useState(mockNotebooks)
-  const [selectedNotebook, setSelectedNotebook] = useState<any>(null)
-  const [viewModalOpen, setViewModalOpen] = useState(false)
+  const { user, isLoggedIn } = useAuth()
+  const router = useRouter()
+  const [lectures, setLectures] = useState<Lecture[]>([])
+  const [approvedLectures, setApprovedLectures] = useState<Lecture[]>([])
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [showUploadForm, setShowUploadForm] = useState(false)
+
+  // Form state
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    subject_name: '',
+    university_name: '',
+    major: '',
+    lecture_date: '',
+    duration_minutes: 60
+  })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  useEffect(() => {
+   
+    fetchLectures()
+    fetchApprovedLectures()
+  }, [isLoggedIn, router])
+
+  const fetchLectures = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/notebooks')
+      const data = await res.json()
+      
+      if (res.ok) {
+        setLectures(data.lectures || [])
+      } else {
+        console.error("Error fetching lectures:", data.error)
+        toast.error("خطأ في جلب المحاضرات")
+      }
+    } catch (error) {
+      console.error("Error fetching lectures:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchApprovedLectures = async () => {
+    try {
+      const res = await fetch('/api/notebooks?approved=true')
+      const data = await res.json()
+       
+      if (res.ok) {
+        setApprovedLectures(data.lectures || [])
+      }
+    } catch (error) {
+      console.error("Error fetching approved lectures:", error)
+    }
+  }
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!selectedFile) {
+      toast.error("يرجى اختيار ملف")
+      return
+    }
+
+    try {
+      setUploading(true)
+      
+      const uploadData = new FormData()
+      uploadData.append('file', selectedFile)
+      uploadData.append('title', formData.title)
+      uploadData.append('description', formData.description)
+      uploadData.append('subject_name', formData.subject_name)
+      uploadData.append('university_name', formData.university_name)
+      uploadData.append('major', formData.major)
+      uploadData.append('lecture_date', formData.lecture_date)
+      uploadData.append('duration_minutes', formData.duration_minutes.toString())
+
+      const res = await fetch('/api/notebooks/upload', {
+        method: 'POST',
+        body: uploadData
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        toast.success("تم رفع المحاضرة بنجاح! في انتظار موافقة الإدارة")
+        setShowUploadForm(false)
+        resetForm()
+        fetchLectures()
+      } else {
+        console.error("Error uploading lecture:", data.error)
+        toast.error(data.error || "خطأ في رفع المحاضرة")
+      }
+    } catch (error) {
+      console.error("Error uploading lecture:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      subject_name: '',
+      university_name: '',
+      major: '',
+      lecture_date: '',
+      duration_minutes: 60
+    })
+    setSelectedFile(null)
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <CheckCircle className="w-4 h-4 text-green-600" />
+      case 'rejected':
+        return <XCircle className="w-4 h-4 text-red-600" />
+      default:
+        return <AlertCircle className="w-4 h-4 text-yellow-600" />
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'approved': return 'مقبولة'
+      case 'rejected': return 'مرفوضة'
+      default: return 'في الانتظار'
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-800"
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "rejected":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-gray-100 text-gray-800"
+      case 'approved': return 'bg-green-100 text-green-800'
+      case 'rejected': return 'bg-red-100 text-red-800'
+      default: return 'bg-yellow-100 text-yellow-800'
     }
   }
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "مقبول"
-      case "pending":
-        return "قيد المراجعة"
-      case "rejected":
-        return "مرفوض"
-      default:
-        return "غير معروف"
-    }
-  }
-
-  const handleUpload = () => {
-    setUploadStep(2)
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setUploadStep(3)
-          return 100
-        }
-        return prev + 10
-      })
-    }, 200)
-  }
-
-  const resetUpload = () => {
-    setUploadStep(1)
-    setUploadProgress(0)
-    setUploadModalOpen(false)
-  }
-
-  const handleViewNotebook = (notebook: any) => {
-    setSelectedNotebook(notebook)
-    setViewModalOpen(true)
-  }
-
-  const handleReUpload = (notebookId: number) => {
-    setNotebooks((prev) =>
-      prev.map((notebook) =>
-        notebook.id === notebookId ? { ...notebook, status: "pending" as const, reason: undefined } : notebook,
-      ),
-    )
-    alert("تم إعادة رفع المحاضرة للمراجعة")
-  }
-
-  const handleEditNotebook = (notebookId: number) => {
-    const notebook = notebooks.find((n) => n.id === notebookId)
-    if (notebook) {
-      const newTitle = prompt("عنوان جديد للمحاضرة:", notebook.title)
-      if (newTitle && newTitle.trim()) {
-        setNotebooks((prev) => prev.map((n) => (n.id === notebookId ? { ...n, title: newTitle.trim() } : n)))
-        alert("تم تحديث المحاضرة بنجاح")
-      }
-    }
-  }
-
-  const handleDeleteNotebook = (notebookId: number) => {
-    if (confirm("هل أنت متأكد من حذف هذه المحاضرة؟")) {
-      setNotebooks((prev) => prev.filter((n) => n.id !== notebookId))
-      alert("تم حذف المحاضرة بنجاح")
-    }
+  if (!isLoggedIn) {
+    return null
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--panel)" }}>
-      {/* Header */}
-      <section className="py-8 px-4">
-        <div className="max-w-6xl mx-auto">
-          <RetroWindow title="إدارة المحاضرات">
-            <div className="p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <Button asChild variant="outline" className="retro-button bg-transparent">
-                  <Link href="/dashboard">
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                    العودة للوحة التحكم
-                  </Link>
+    <div className="min-h-screen bg-retro-bg p-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <RetroWindow title="دفتر المحاضرات">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-xl font-bold text-black">دفتر المحاضرات اليومية</h1>
+                <Button 
+                  onClick={() => setShowUploadForm(!showUploadForm)}
+                  className="retro-button bg-green-500 text-white hover:bg-green-600"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  رفع محاضرة جديدة
                 </Button>
               </div>
-              <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--ink)" }}>
-                إدارة المحاضرات
-              </h1>
-              <p className="text-gray-600">ارفع وإدارة محاضراتك المشتركة</p>
+              
+              <p className="text-gray-600">
+                شارك محاضراتك مع الطلاب الآخرين واحصل على موافقة الإدارة لنشرها
+              </p>
             </div>
           </RetroWindow>
         </div>
-      </section>
 
-      {/* Upload Section */}
-      <section className="py-4 px-4">
-        <div className="max-w-6xl mx-auto">
-          <RetroWindow title="محاضراتي">
-            <div className="p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <div>
-                  <h2 className="text-lg font-semibold mb-2" style={{ color: "var(--ink)" }}>
-                    قائمة المحاضرات
-                  </h2>
-                  <p className="text-gray-600">إجمالي المحاضرات: {notebooks.length}</p>
+        {/* Upload Form */}
+        {showUploadForm && (
+          <div className="mb-6">
+            <RetroWindow title="رفع محاضرة جديدة">
+              <form onSubmit={handleUpload} className="p-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="title">عنوان المحاضرة *</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      placeholder="أدخل عنوان المحاضرة"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="subject_name">اسم المادة *</Label>
+                    <Input
+                      id="subject_name"
+                      value={formData.subject_name}
+                      onChange={(e) => setFormData({...formData, subject_name: e.target.value})}
+                      placeholder="مثل: الرياضيات"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="university_name">الجامعة *</Label>
+                    <Input
+                      id="university_name"
+                      value={formData.university_name}
+                      onChange={(e) => setFormData({...formData, university_name: e.target.value})}
+                      placeholder="أدخل اسم الجامعة"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="major">التخصص *</Label>
+                    <Input
+                      id="major"
+                      value={formData.major}
+                      onChange={(e) => setFormData({...formData, major: e.target.value})}
+                      placeholder="مثل: علوم الحاسوب"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="lecture_date">تاريخ المحاضرة *</Label>
+                    <Input
+                      id="lecture_date"
+                      type="datetime-local"
+                      value={formData.lecture_date}
+                      onChange={(e) => setFormData({...formData, lecture_date: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="duration_minutes">مدة المحاضرة (دقيقة)</Label>
+                    <Input
+                      id="duration_minutes"
+                      type="number"
+                      min="15"
+                      max="240"
+                      value={formData.duration_minutes}
+                      onChange={(e) => setFormData({...formData, duration_minutes: parseInt(e.target.value)})}
+                    />
+                  </div>
                 </div>
-                <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
-                      <Upload className="w-4 h-4 ml-1" />
-                      رفع محاضرة جديدة
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="retro-window">
-                    <DialogHeader>
-                      <DialogTitle style={{ color: "var(--ink)" }}>رفع محاضرة جديدة</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      {uploadStep === 1 && (
-                        <>
-                          <Input
-                            placeholder="عنوان المحاضرة"
-                            className="retro-window"
-                            style={{ background: "white", border: "2px inset #c0c0c0" }}
-                          />
-                          <Select>
-                            <SelectTrigger
-                              className="retro-window"
-                              style={{ background: "white", border: "2px inset #c0c0c0" }}
-                            >
-                              <SelectValue placeholder="اختر المقرر" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="law-101">LAW 101 - مبادئ القانون</SelectItem>
-                              <SelectItem value="cs-101">CS 101 - مقدمة في البرمجة</SelectItem>
-                              <SelectItem value="med-101">MED 101 - علم التشريح</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <Input
-                            type="file"
-                            accept="image/*,application/pdf"
-                            className="retro-window"
-                            style={{ background: "white", border: "2px inset #c0c0c0" }}
-                          />
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={handleUpload}
-                              className="retro-button"
-                              style={{ background: "var(--primary)", color: "white" }}
-                            >
-                              بدء الرفع
-                            </Button>
-                            <Button variant="outline" onClick={resetUpload} className="retro-button bg-transparent">
-                              إلغاء
-                            </Button>
-                          </div>
-                        </>
-                      )}
-                      {uploadStep === 2 && (
-                        <div className="space-y-4">
-                          <p className="text-center">جاري رفع المحاضرة...</p>
-                          <Progress value={uploadProgress} className="w-full" />
-                          <p className="text-center text-sm text-gray-600">{uploadProgress}%</p>
-                        </div>
-                      )}
-                      {uploadStep === 3 && (
-                        <div className="space-y-4 text-center">
-                          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                            <span className="text-green-600 text-2xl">✓</span>
-                          </div>
-                          <p className="font-semibold">تم رفع المحاضرة بنجاح!</p>
-                          <p className="text-sm text-gray-600">ستتم مراجعة المحاضرة وإشعارك بالنتيجة</p>
-                          <Button onClick={resetUpload}>إغلاق</Button>
-                        </div>
-                      )}
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
+                
+                <div>
+                  <Label htmlFor="description">وصف المحاضرة</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    placeholder="وصف مختصر لمحتوى المحاضرة"
+                    rows={3}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="file">ملف المحاضرة *</Label>
+                  <Input
+                    id="file"
+                    type="file"
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    accept=".pdf,.doc,.docx,.ppt,.pptx"
+                    required
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    الملفات المدعومة: PDF, DOC, DOCX, PPT, PPTX (حجم أقصى 50MB)
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 justify-end">
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowUploadForm(false)}
+                    className="retro-button bg-transparent"
+                  >
+                    إلغاء
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={uploading}
+                    className="retro-button bg-green-500 text-white hover:bg-green-600"
+                  >
+                    <Upload className="w-4 h-4 mr-1" />
+                    {uploading ? 'جاري الرفع...' : 'رفع المحاضرة'}
+                  </Button>
+                </div>
+              </form>
+            </RetroWindow>
+          </div>
+        )}
 
-              {/* Notebooks Grid */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {notebooks.map((notebook) => (
-                  <div key={notebook.id} className="retro-window bg-white hover:shadow-lg transition-shadow">
-                    <div className="retro-titlebar mb-4">
-                      <h3 className="text-sm font-bold text-white">{notebook.course}</h3>
-                    </div>
-                    <div className="p-4 space-y-4">
-                      <div>
-                        <h4 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
-                          {notebook.title}
-                        </h4>
-                        <p className="text-sm text-gray-600">تاريخ الرفع: {notebook.uploadDate}</p>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Badge
-                          className={`${getStatusColor(notebook.status)} retro-button`}
-                          style={{ fontSize: "0.75rem" }}
-                        >
-                          {getStatusLabel(notebook.status)}
-                        </Badge>
-                        {notebook.status === "approved" && (
-                          <span className="text-sm text-gray-500">
-                            <FileText className="w-4 h-4 inline ml-1" />
-                            {notebook.views} مشاهدة
-                          </span>
-                        )}
-                      </div>
-                      {notebook.status === "rejected" && notebook.reason && (
-                        <div className="retro-window bg-red-50 p-3" style={{ border: "2px inset #ffcccc" }}>
-                          <p className="text-sm text-red-700">سبب الرفض: {notebook.reason}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* My Lectures */}
+          <RetroWindow title="محاضراتي">
+            <div className="p-4">
+              {loading ? (
+                <div className="text-center py-8">جاري تحميل محاضراتك...</div>
+              ) : lectures.length === 0 ? (
+                <div className="text-center py-8">
+                  <GraduationCap className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-600 mb-4">لم ترفع أي محاضرات بعد</p>
+                  <Button 
+                    onClick={() => setShowUploadForm(true)}
+                    className="retro-button bg-green-500 text-white"
+                  >
+                    رفع أول محاضرة
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {lectures.map((lecture) => (
+                    <div key={lecture.id} className="bg-white border border-gray-400 p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-black">{lecture.title}</h3>
+                            {getStatusIcon(lecture.approval_status)}
+                            <Badge className={getStatusColor(lecture.approval_status)}>
+                              {getStatusText(lecture.approval_status)}
+                            </Badge>
+                          </div>
+                          
+                          <p className="text-sm text-gray-600 mb-2">{lecture.description}</p>
+                          
+                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                            <div><strong>المادة:</strong> {lecture.subject_name}</div>
+                            <div><strong>التخصص:</strong> {lecture.major}</div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              {new Date(lecture.lecture_date).toLocaleDateString('ar-SA')}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {lecture.duration_minutes} دقيقة
+                            </div>
+                          </div>
+                          
+                          {lecture.rejection_reason && (
+                            <div className="mt-2 p-2 bg-red-50 border border-red-200 text-sm text-red-800">
+                              <strong>سبب الرفض:</strong> {lecture.rejection_reason}
+                            </div>
+                          )}
                         </div>
-                      )}
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 retro-button bg-transparent"
-                          onClick={() => handleViewNotebook(notebook)}
-                        >
-                          <Eye className="w-4 h-4 ml-1" />
-                          عرض
-                        </Button>
-                        {notebook.status === "rejected" && (
-                          <Button
-                            size="sm"
-                            className="flex-1 retro-button"
-                            style={{ background: "var(--accent)", color: "white" }}
-                            onClick={() => handleReUpload(notebook.id)}
-                          >
-                            <RefreshCw className="w-4 h-4 ml-1" />
-                            إعادة رفع
-                          </Button>
-                        )}
-                        {notebook.status === "approved" && (
-                          <>
+                        
+                        <div className="mr-4">
+                          {lecture.file_url && (
                             <Button
+                              asChild
                               size="sm"
                               variant="outline"
                               className="retro-button bg-transparent"
-                              onClick={() => handleEditNotebook(notebook.id)}
                             >
-                              تعديل
+                              <a href={lecture.file_url} target="_blank" rel="noopener noreferrer">
+                                <Eye className="w-4 h-4 mr-1" />
+                                عرض
+                              </a>
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="retro-button bg-transparent text-red-600"
-                              onClick={() => handleDeleteNotebook(notebook.id)}
-                            >
-                              حذف
-                            </Button>
-                          </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </RetroWindow>
+
+          {/* Approved Lectures */}
+          <RetroWindow title="المحاضرات المقبولة">
+            <div className="p-4">
+              {approvedLectures.length === 0 ? (
+                <div className="text-center py-8">
+                  <CheckCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-600">لا توجد محاضرات مقبولة حالياً</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {approvedLectures.slice(0, 10).map((lecture) => (
+                    <div key={lecture.id} className="bg-green-50 border border-green-200 p-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-green-800 mb-1">{lecture.title}</h4>
+                          <p className="text-sm text-green-600 mb-2">{lecture.description}</p>
+                          <div className="text-xs text-green-500">
+                            {lecture.subject_name} • {lecture.major}
+                          </div>
+                        </div>
+                        {lecture.file_url && (
+                          <Button
+                            asChild
+                            size="sm"
+                            className="retro-button bg-green-500 text-white"
+                          >
+                            <a href={lecture.file_url} target="_blank" rel="noopener noreferrer">
+                              <FileText className="w-3 h-3 mr-1" />
+                              تحميل
+                            </a>
+                          </Button>
                         )}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                  
+                  {approvedLectures.length > 10 && (
+                    <div className="text-center">
+                      <Button 
+                        asChild
+                        variant="outline" 
+                        className="retro-button bg-transparent"
+                      >
+                        <a href="/lectures">عرض جميع المحاضرات المقبولة</a>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </RetroWindow>
         </div>
-      </section>
-
-      {/* View Notebook Modal */}
-      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="retro-window max-w-2xl">
-          <DialogHeader>
-            <DialogTitle style={{ color: "var(--ink)" }}>عرض المحاضرة</DialogTitle>
-          </DialogHeader>
-          {selectedNotebook && (
-            <div className="space-y-4">
-              <div className="retro-window bg-gray-50 p-4">
-                <h3 className="font-semibold mb-2">{selectedNotebook.title}</h3>
-                <p className="text-sm text-gray-600 mb-2">المقرر: {selectedNotebook.course}</p>
-                <p className="text-sm text-gray-600 mb-2">تاريخ الرفع: {selectedNotebook.uploadDate}</p>
-                <Badge className={getStatusColor(selectedNotebook.status)}>
-                  {getStatusLabel(selectedNotebook.status)}
-                </Badge>
-              </div>
-              <div className="retro-window bg-white p-4 min-h-[200px] flex items-center justify-center">
-                <p className="text-gray-500">معاينة المحاضرة ستظهر هنا</p>
-              </div>
-              <Button onClick={() => setViewModalOpen(false)}>إغلاق</Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      </div>
     </div>
   )
 }
