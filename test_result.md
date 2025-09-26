@@ -293,11 +293,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Summaries Upload API - Database Schema Fix"
     - "Database Schema Verification - Apply Migration Script"
-  stuck_tasks:
-    - "Summaries Upload API"
-    - "Database Schema Verification"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
