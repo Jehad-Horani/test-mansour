@@ -9,7 +9,7 @@ import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
 import { Textarea } from "@/app/components/ui/textarea"
 import { Badge } from "@/app/components/ui/badge"
-import { 
+import {
   Upload,
   Calendar,
   Clock,
@@ -57,12 +57,12 @@ export default function NotebooksPage() {
     major: '',
     lecture_date: '',
     duration_minutes: 60,
-    file_url : ''
+    file_url: ''
   })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
-   
+
     fetchLectures()
     fetchApprovedLectures()
   }, [isLoggedIn, router])
@@ -72,7 +72,7 @@ export default function NotebooksPage() {
       setLoading(true)
       const res = await fetch('/api/notebooks')
       const data = await res.json()
-      
+
       if (res.ok) {
         setLectures(data.lectures || [])
       } else {
@@ -91,7 +91,7 @@ export default function NotebooksPage() {
     try {
       const res = await fetch('/api/notebooks?approved=true')
       const data = await res.json()
-       
+
       if (res.ok) {
         setApprovedLectures(data.lectures || [])
       }
@@ -102,7 +102,7 @@ export default function NotebooksPage() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!selectedFile) {
       toast.error("يرجى اختيار ملف")
       return
@@ -110,9 +110,11 @@ export default function NotebooksPage() {
 
     try {
       setUploading(true)
-      
+
       const uploadData = new FormData()
-      uploadData.append('file', formData.file_url)
+      if (selectedFile) {
+        uploadData.append('file', selectedFile)
+      }
       uploadData.append('title', formData.title)
       uploadData.append('description', formData.description)
       uploadData.append('subject_name', formData.subject_name)
@@ -154,7 +156,7 @@ export default function NotebooksPage() {
       major: '',
       lecture_date: '',
       duration_minutes: 60,
-      file_url : ''
+      file_url: ''
     })
     setSelectedFile(null)
   }
@@ -199,7 +201,7 @@ export default function NotebooksPage() {
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <h1 className="text-xl font-bold text-black">دفتر المحاضرات اليومية</h1>
-                <Button 
+                <Button
                   onClick={() => setShowUploadForm(!showUploadForm)}
                   className="retro-button bg-green-500 text-white hover:bg-green-600"
                 >
@@ -207,7 +209,7 @@ export default function NotebooksPage() {
                   رفع محاضرة جديدة
                 </Button>
               </div>
-              
+
               <p className="text-gray-600">
                 شارك محاضراتك مع الطلاب الآخرين واحصل على موافقة الإدارة لنشرها
               </p>
@@ -226,56 +228,56 @@ export default function NotebooksPage() {
                     <Input
                       id="title"
                       value={formData.title}
-                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       placeholder="أدخل عنوان المحاضرة"
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="subject_name">اسم المادة *</Label>
                     <Input
                       id="subject_name"
                       value={formData.subject_name}
-                      onChange={(e) => setFormData({...formData, subject_name: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, subject_name: e.target.value })}
                       placeholder="مثل: الرياضيات"
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="university_name">الجامعة *</Label>
                     <Input
                       id="university_name"
                       value={formData.university_name}
-                      onChange={(e) => setFormData({...formData, university_name: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, university_name: e.target.value })}
                       placeholder="أدخل اسم الجامعة"
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="major">التخصص *</Label>
                     <Input
                       id="major"
                       value={formData.major}
-                      onChange={(e) => setFormData({...formData, major: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, major: e.target.value })}
                       placeholder="مثل: علوم الحاسوب"
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="lecture_date">تاريخ المحاضرة *</Label>
                     <Input
                       id="lecture_date"
                       type="datetime-local"
                       value={formData.lecture_date}
-                      onChange={(e) => setFormData({...formData, lecture_date: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, lecture_date: e.target.value })}
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="duration_minutes">مدة المحاضرة (دقيقة)</Label>
                     <Input
@@ -284,39 +286,39 @@ export default function NotebooksPage() {
                       min="15"
                       max="240"
                       value={formData.duration_minutes}
-                      onChange={(e) => setFormData({...formData, duration_minutes: parseInt(e.target.value)})}
+                      onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="description">وصف المحاضرة</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="وصف مختصر لمحتوى المحاضرة"
                     rows={3}
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="file">ملف المحاضرة *</Label>
                   <Input
                     id="file"
                     type="file"
-                    value={formData.file_url}
                     onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                     accept=".pdf,.doc,.docx,.ppt,.pptx"
                     required
                   />
+
                   <div className="text-xs text-gray-500 mt-1">
                     الملفات المدعومة: PDF, DOC, DOCX, PPT, PPTX (حجم أقصى 50MB)
                   </div>
                 </div>
-                
+
                 <div className="flex gap-2 justify-end">
-                  <Button 
+                  <Button
                     type="button"
                     variant="outline"
                     onClick={() => setShowUploadForm(false)}
@@ -324,8 +326,8 @@ export default function NotebooksPage() {
                   >
                     إلغاء
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={uploading}
                     className="retro-button bg-green-500 text-white hover:bg-green-600"
                   >
@@ -348,7 +350,7 @@ export default function NotebooksPage() {
                 <div className="text-center py-8">
                   <GraduationCap className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-600 mb-4">لم ترفع أي محاضرات بعد</p>
-                  <Button 
+                  <Button
                     onClick={() => setShowUploadForm(true)}
                     className="retro-button bg-green-500 text-white"
                   >
@@ -368,9 +370,9 @@ export default function NotebooksPage() {
                               {getStatusText(lecture.approval_status)}
                             </Badge>
                           </div>
-                          
+
                           <p className="text-sm text-gray-600 mb-2">{lecture.description}</p>
-                          
+
                           <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
                             <div><strong>المادة:</strong> {lecture.subject_name}</div>
                             <div><strong>التخصص:</strong> {lecture.major}</div>
@@ -383,14 +385,14 @@ export default function NotebooksPage() {
                               {lecture.duration_minutes} دقيقة
                             </div>
                           </div>
-                          
+
                           {lecture.rejection_reason && (
                             <div className="mt-2 p-2 bg-red-50 border border-red-200 text-sm text-red-800">
                               <strong>سبب الرفض:</strong> {lecture.rejection_reason}
                             </div>
                           )}
                         </div>
-                        
+
                         <div className="mr-4">
                           {lecture.file_url && (
                             <Button
@@ -449,12 +451,12 @@ export default function NotebooksPage() {
                       </div>
                     </div>
                   ))}
-                  
+
                   {approvedLectures.length > 10 && (
                     <div className="text-center">
-                      <Button 
+                      <Button
                         asChild
-                        variant="outline" 
+                        variant="outline"
                         className="retro-button bg-transparent"
                       >
                         <a href="/lectures">عرض جميع المحاضرات المقبولة</a>
