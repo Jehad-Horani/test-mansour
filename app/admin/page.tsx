@@ -56,8 +56,20 @@ export default function AdminDashboardPage() {
     
   }, [ profile])
 
+
   const loadDashboardData = async () => {
-    try {
+     try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        limit: '20'
+      })
+      
+     
+      
+      const res = await fetch(`/api/admin/users?${params}`)
+      const data = await res.json()
+      
+    
       setLoading(true)
       
       // Load book stats
@@ -66,7 +78,7 @@ export default function AdminDashboardPage() {
       
       // Load user stats
       const userStatsData = await marketplaceApi.getUserStats()
-      setUserStats(userStatsData)
+      setUserStats(data.pagination)
       
       // Load recent admin activities
       const activitiesData = await marketplaceApi.getAdminActivities(10)
@@ -75,11 +87,12 @@ export default function AdminDashboardPage() {
     } catch (error: any) {
       console.error("Error loading dashboard data:", error)
       toast.error("حدث خطأ أثناء تحميل البيانات")
-    } finally {
+    }
+     finally {
       setLoading(false)
     }
+     
   }
-
 
 
   if (!isAdmin()) {
