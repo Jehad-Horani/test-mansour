@@ -204,18 +204,18 @@ class BackendTester:
                 
                 if has_all_fields:
                     summary_data = response_data.get('data', {})
-                    required_db_fields = ['user_id', 'status', 'file_url']
+                    required_db_fields = ['user_id', 'is_approved', 'file_url']
                     db_fields_present = all(field in summary_data for field in required_db_fields)
                     
-                    if db_fields_present and summary_data.get('status') == 'pending':
+                    if db_fields_present and summary_data.get('is_approved') == False:
                         self.log_test(
                             "Summary Upload API - Full Functionality",
                             True,
-                            "API successfully uploads to 'summaries' bucket and saves to summaries table with correct status column",
+                            "API successfully uploads to 'summaries' bucket and saves to summaries table with correct is_approved column",
                             {
                                 "response_fields": list(response_data.keys()),
                                 "db_fields": list(summary_data.keys()),
-                                "status": summary_data.get('status'),
+                                "is_approved": summary_data.get('is_approved'),
                                 "file_url_present": bool(response_data.get('file_url'))
                             }
                         )
@@ -223,10 +223,10 @@ class BackendTester:
                         self.log_test(
                             "Summary Upload API - Database Schema",
                             False,
-                            "Missing required database fields (user_id, status) or incorrect status value",
+                            "Missing required database fields (user_id, is_approved) or incorrect is_approved value",
                             {
                                 "missing_fields": [f for f in required_db_fields if f not in summary_data],
-                                "status": summary_data.get('status')
+                                "is_approved": summary_data.get('is_approved')
                             }
                         )
                 else:
