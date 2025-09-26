@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing for StudyShare Platform
-Testing all critical fixes applied by the main agent
+Comprehensive Backend API Testing for Next.js + Supabase StudyShare Platform
+Testing upload functionality and database fixes as requested in review
 """
 
 import requests
 import json
 import time
 import os
+import io
 from typing import Dict, Any, Optional
 
 class BackendTester:
@@ -18,8 +19,8 @@ class BackendTester:
         self.session = requests.Session()
         self.test_results = []
         
-        # Test data
-        self.test_user_email = "testuser@university.edu"
+        # Test data with realistic university information
+        self.test_user_email = "student@stanford.edu"
         self.test_admin_email = "admin@studyshare.com"
         
     def log_test(self, test_name: str, success: bool, message: str, details: Optional[Dict] = None):
