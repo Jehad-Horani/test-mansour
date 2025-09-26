@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     // Generate unique file name
     const fileExt = file.name.split(".").pop()
     const fileName = `${user.id}_${Date.now()}.${fileExt}`
-    const filePath = `lectures/${fileName}`
+const filePath = `lectures/test_upload_${Date.now()}.pdf`
 
     console.log("📤 Uploading to:", filePath)
 
