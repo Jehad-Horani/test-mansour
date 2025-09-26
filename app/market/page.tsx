@@ -46,7 +46,7 @@ interface Books {
     university?: string
     phone?: string
     email?: string
-    role? : string
+    role?: string
   }
 }
 
@@ -60,6 +60,8 @@ export default function MarketPage() {
   const [books, setBooks] = useState<Book[]>([])
   const [bookss, setBookss] = useState<Books | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
   const [adding, setAdding] = useState<string | null>(null)
 
 
@@ -71,7 +73,7 @@ export default function MarketPage() {
 
       if (res.ok) {
         setBookss(data)
-      } 
+      }
     } catch (error) {
       console.error("Error fetching book:", error)
       toast.error("خطأ في تحميل تفاصيل الكتاب")
@@ -193,6 +195,22 @@ export default function MarketPage() {
     }
     return labels[condition] || condition
   }
+    const nextImage = () => {
+    if (bookss?.book_images && bookss.book_images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % bookss.book_images.length)
+    }
+  }
+
+  const prevImage = () => {
+    if (bookss?.book_images && bookss.book_images.length > 1) {
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? bookss.book_images.length - 1 : prev - 1
+      )
+    }
+  }
+
+  const images = bookss?.book_images || []
+  const currentImage = images[currentImageIndex]
 
   return (
     <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
