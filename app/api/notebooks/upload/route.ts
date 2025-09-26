@@ -4,20 +4,20 @@ import { createClient } from "@/lib/supabase/server"
 export async function POST(request: Request) {
   try {
     console.log("🎓 Starting lecture upload...")
-    
+
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user) {
       console.error("❌ No user found in request")
       return NextResponse.json({ error: "Authentication required" }, { status: 401 })
     }
 
     console.log("✅ User authenticated:", user.id)
-    
+
     const formData = await request.formData()
     const file = formData.get("file") as File
-    
+
     if (!file) {
       console.error("❌ No file found in request")
       return NextResponse.json({ error: "File is required" }, { status: 400 })
@@ -32,8 +32,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "File too large. Maximum size is 50MB" }, { status: 400 })
     }
 
+    // Convert File → Uint8Array
+    const bytes = await file.arrayBuffer()
+    const buffer = new Uint8Array(bytes)
+
     // Generate unique file name
-    const fileExt = file.name.split('.').pop()
+    const fileExt = file.name.split(".").pop()
     const fileName = `${user.id}_${Date.now()}.${fileExt}`
     const filePath = `lectures/${fileName}`
 
@@ -42,16 +46,17 @@ export async function POST(request: Request) {
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("lectures")
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
+      .upload(filePath, buffer, {
+        contentType: file.type || "application/octet-stream",
+        cacheControl: "3600",
+        upsert: false,
       })
 
     if (uploadError) {
       console.error("❌ Lecture upload error:", uploadError)
-      return NextResponse.json({ 
-        error: "Failed to upload lecture file", 
-        details: uploadError.message 
+      return NextResponse.json({
+        error: "Failed to upload lecture file",
+        details: uploadError.message,
       }, { status: 500 })
     }
 
@@ -76,7 +81,7 @@ export async function POST(request: Request) {
       file_url: urlData.publicUrl,
       file_name: file.name,
       instructor_id: user.id,
-      approval_status: "pending"
+      approval_status: "pending",
     }
 
     console.log("💾 Saving lecture data:", lectureData)
@@ -90,24 +95,24 @@ export async function POST(request: Request) {
 
     if (lectureError) {
       console.error("❌ Lecture creation error:", lectureError)
-      return NextResponse.json({ 
-        error: "Failed to save lecture", 
-        details: lectureError.message 
+      return NextResponse.json({
+        error: "Failed to save lecture",
+        details: lectureError.message,
       }, { status: 500 })
     }
 
     console.log("✅ Lecture created successfully:", lecture.id)
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: "Lecture uploaded successfully",
       data: lecture,
-      file_url: urlData.publicUrl
+      file_url: urlData.publicUrl,
     })
   } catch (error: any) {
     console.error("💥 Error in /api/notebooks/upload:", error)
-    return NextResponse.json({ 
-      error: "Internal server error", 
-      details: error.message 
+    return NextResponse.json({
+      error: "Internal server error",
+      details: error.message,
     }, { status: 500 })
   }
 }
