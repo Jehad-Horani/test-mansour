@@ -16,7 +16,7 @@ export async function GET(request: Request) {
       .from('daily_lectures')
       .select(`
         *,
-        instructor:profiles!daily_lectures_instructor_id_fkey(name, avatar_url, university)
+        profiles!daily_lectures_instructor_id_fkey(name, avatar_url, university)
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
     
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       query = query.eq('approval_status', 'approved')
     } else {
       // Show user's own lectures regardless of approval status
-      query = query.eq('instructor_id', user.id)
+      query = query.eq('profiles_id', user.id)
     }
     
     const { data, error, count } = await query
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       .from('daily_lectures')
       .insert([{
         ...lectureData,
-        instructor_id: user.id,
+        profiles_id: user.id,
         approval_status: 'pending'
       }])
       .select()
