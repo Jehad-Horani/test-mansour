@@ -794,420 +794,18 @@ class BackendTester:
                 {"exception": str(e)}
             )
     
-    def test_books_api_with_profiles(self):
-        """Test books API that requires profiles table with email column"""
-        print("\n📚 Testing Books API with Profiles Integration...")
-        
-        try:
-            # First get list of books
-            response = self.session.get(f"{self.api_base}/books")
-            
-            if response.status_code == 200:
-                data = response.json()
-                books = data.get('books', [])
-                
-                if books:
-                    # Test individual book details - this was failing due to missing email column
-                    book_id = books[0]['id']
-                    detail_response = self.session.get(f"{self.api_base}/books/{book_id}")
-                    
-                    if detail_response.status_code == 200:
-                        book_data = detail_response.json()
-                        seller = book_data.get('seller')
-                        
-                        # The API is working without database schema errors
-                        # Seller being null could be due to missing profile data, not schema issues
-                        if seller is None:
-                            self.log_test(
-                                "Individual Book Details API - Profiles Schema",
-                                True,
-                                "Book details API works without database schema errors (seller data may be missing but no schema error)",
-                                {"seller_status": "null", "book_id": book_id, "api_working": True}
-                            )
-                        elif isinstance(seller, dict):
-                            # Check if seller has required fields
-                            required_fields = ['name', 'university', 'phone']
-                            available_fields = list(seller.keys()) if seller else []
-                            missing_fields = [field for field in required_fields if field not in available_fields]
-                            
-                            if not missing_fields:
-                                self.log_test(
-                                    "Individual Book Details API - Profiles Schema",
-                                    True,
-                                    "Book details API works with proper seller information",
-                                    {"seller_fields": available_fields, "book_id": book_id}
-                                )
-                            else:
-                                self.log_test(
-                                    "Individual Book Details API - Profiles Schema",
-                                    True,
-                                    f"Book details API works but seller missing some fields: {missing_fields}",
-                                    {"available_fields": available_fields, "missing": missing_fields}
-                                )
-                        else:
-                            self.log_test(
-                                "Individual Book Details API - Profiles Schema",
-                                True,
-                                "Book details API works without database schema errors",
-                                {"seller_type": type(seller).__name__, "book_id": book_id}
-                            )
-                    else:
-                        error_text = detail_response.text
-                        if "email" in error_text.lower() and "does not exist" in error_text.lower():
-                            self.log_test(
-                                "Individual Book Details API - Profiles Schema",
-                                False,
-                                "Database schema issue - email column missing from profiles table",
-                                {"status_code": detail_response.status_code, "error": error_text}
-                            )
-                        else:
-                            self.log_test(
-                                "Individual Book Details API - Profiles Schema",
-                                False,
-                                f"Book details API failed with status {detail_response.status_code}",
-                                {"error": error_text}
-                            )
-                else:
-                    self.log_test(
-                        "Individual Book Details API - Profiles Schema",
-                        True,
-                        "No books available to test individual details, but books API works",
-                        {"books_count": 0}
-                    )
-            else:
-                self.log_test(
-                    "Books API - Basic Connectivity",
-                    False,
-                    f"Books listing API failed with status {response.status_code}",
-                    {"error": response.text}
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "Individual Book Details API - Profiles Schema",
-                False,
-                f"Connection error: {str(e)}",
-                {"exception": str(e)}
-            )
-    
-    def test_admin_apis(self):
-        """Test admin APIs that were fixed"""
-        print("\n👑 Testing Admin APIs...")
-        
-        # Test admin/books API
-        try:
-            response = self.session.get(f"{self.api_base}/admin/books")
-            
-            if response.status_code == 403:
-                self.log_test(
-                    "Admin Books API - Authentication",
-                    True,
-                    "Admin books API properly requires authentication (403 Unauthorized)",
-                    {"status_code": response.status_code}
-                )
-            elif response.status_code == 200:
-                data = response.json()
-                if 'books' in data:
-                    self.log_test(
-                        "Admin Books API - Database Schema",
-                        True,
-                        f"Admin books API works without database errors, returned {len(data['books'])} books",
-                        {"books_count": len(data['books'])}
-                    )
-                else:
-                    self.log_test(
-                        "Admin Books API - Response Format",
-                        False,
-                        "Admin books API missing 'books' field in response",
-                        {"response_keys": list(data.keys())}
-                    )
-            else:
-                error_text = response.text
-                if "email" in error_text.lower() and "does not exist" in error_text.lower():
-                    self.log_test(
-                        "Admin Books API - Database Schema",
-                        False,
-                        "Database schema issue - email column reference error",
-                        {"status_code": response.status_code, "error": error_text}
-                    )
-                else:
-                    self.log_test(
-                        "Admin Books API - General Error",
-                        False,
-                        f"Admin books API failed with status {response.status_code}",
-                        {"error": error_text}
-                    )
-                    
-        except Exception as e:
-            self.log_test(
-                "Admin Books API - Connection",
-                False,
-                f"Connection error: {str(e)}",
-                {"exception": str(e)}
-            )
-        
-        # Test admin/users API
-        try:
-            response = self.session.get(f"{self.api_base}/admin/users")
-            
-            if response.status_code == 403:
-                self.log_test(
-                    "Admin Users API - Authentication",
-                    True,
-                    "Admin users API properly requires authentication (403 Unauthorized)",
-                    {"status_code": response.status_code}
-                )
-            elif response.status_code == 200:
-                data = response.json()
-                if 'users' in data:
-                    self.log_test(
-                        "Admin Users API - Database Schema",
-                        True,
-                        f"Admin users API works without database errors, returned {len(data['users'])} users",
-                        {"users_count": len(data['users'])}
-                    )
-                else:
-                    self.log_test(
-                        "Admin Users API - Response Format",
-                        False,
-                        "Admin users API missing 'users' field in response",
-                        {"response_keys": list(data.keys())}
-                    )
-            else:
-                error_text = response.text
-                self.log_test(
-                    "Admin Users API - General Error",
-                    False,
-                    f"Admin users API failed with status {response.status_code}",
-                    {"error": error_text}
-                )
-                    
-        except Exception as e:
-            self.log_test(
-                "Admin Users API - Connection",
-                False,
-                f"Connection error: {str(e)}",
-                {"exception": str(e)}
-            )
-        
-        # Test admin/analytics API
-        try:
-            response = self.session.get(f"{self.api_base}/admin/analytics")
-            
-            if response.status_code == 403:
-                self.log_test(
-                    "Admin Analytics API - Authentication",
-                    True,
-                    "Admin analytics API properly requires authentication (403 Unauthorized)",
-                    {"status_code": response.status_code}
-                )
-            elif response.status_code == 200:
-                self.log_test(
-                    "Admin Analytics API - Functionality",
-                    True,
-                    "Admin analytics API works without console errors",
-                    {"status_code": response.status_code}
-                )
-            else:
-                self.log_test(
-                    "Admin Analytics API - General Error",
-                    False,
-                    f"Admin analytics API failed with status {response.status_code}",
-                    {"error": response.text}
-                )
-                    
-        except Exception as e:
-            self.log_test(
-                "Admin Analytics API - Connection",
-                False,
-                f"Connection error: {str(e)}",
-                {"exception": str(e)}
-            )
-        
-        # Test admin/lectures API (mentioned in review as should show lectures from notebooks uploads)
-        try:
-            response = self.session.get(f"{self.api_base}/admin/lectures")
-            
-            if response.status_code == 403:
-                self.log_test(
-                    "Admin Lectures API - Authentication",
-                    True,
-                    "Admin lectures API properly requires authentication (403 Unauthorized)",
-                    {"status_code": response.status_code}
-                )
-            elif response.status_code == 200:
-                data = response.json()
-                self.log_test(
-                    "Admin Lectures API - Functionality",
-                    True,
-                    "Admin lectures API works and should show lectures from notebooks uploads",
-                    {"status_code": response.status_code, "response_type": type(data).__name__}
-                )
-            else:
-                self.log_test(
-                    "Admin Lectures API - General Error",
-                    False,
-                    f"Admin lectures API failed with status {response.status_code}",
-                    {"error": response.text}
-                )
-                    
-        except Exception as e:
-            self.log_test(
-                "Admin Lectures API - Connection",
-                False,
-                f"Connection error: {str(e)}",
-                {"exception": str(e)}
-            )
-    
-    def test_upload_endpoints(self):
-        """Test upload endpoints that were enhanced"""
-        print("\n📤 Testing Upload Endpoints...")
-        
-        # Test summaries upload endpoint
-        try:
-            # Create a simple test file
-            test_file_content = b"This is a test summary file content"
-            files = {'file': ('test_summary.pdf', test_file_content, 'application/pdf')}
-            data = {
-                'title': 'Test Summary',
-                'subject_name': 'Computer Science',
-                'university_name': 'Test University',
-                'semester': 'Fall 2024',
-                'college': 'Engineering',
-                'major': 'Computer Science',
-                'description': 'Test summary description'
-            }
-            
-            response = self.session.post(f"{self.api_base}/summaries/upload", files=files, data=data)
-            
-            if response.status_code == 401:
-                self.log_test(
-                    "Summaries Upload API - Authentication",
-                    True,
-                    "Summaries upload API properly requires authentication (401 Unauthorized)",
-                    {"status_code": response.status_code}
-                )
-            elif response.status_code == 200:
-                data = response.json()
-                if 'message' in data and 'data' in data:
-                    self.log_test(
-                        "Summaries Upload API - Functionality",
-                        True,
-                        "Summaries upload API works with proper response format",
-                        {"response_keys": list(data.keys())}
-                    )
-                else:
-                    self.log_test(
-                        "Summaries Upload API - Response Format",
-                        False,
-                        "Summaries upload API missing expected response fields",
-                        {"response": data}
-                    )
-            else:
-                self.log_test(
-                    "Summaries Upload API - General Error",
-                    False,
-                    f"Summaries upload API failed with status {response.status_code}",
-                    {"error": response.text}
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "Summaries Upload API - Connection",
-                False,
-                f"Connection error: {str(e)}",
-                {"exception": str(e)}
-            )
-        
-        # Test notebooks upload endpoint
-        try:
-            test_file_content = b"This is a test notebook file content"
-            files = {'file': ('test_notebook.pdf', test_file_content, 'application/pdf')}
-            data = {
-                'title': 'Test Lecture Notes',
-                'subject': 'Mathematics',
-                'date': '2024-01-15'
-            }
-            
-            response = self.session.post(f"{self.api_base}/notebooks/upload", files=files, data=data)
-            
-            if response.status_code == 401:
-                self.log_test(
-                    "Notebooks Upload API - Authentication",
-                    True,
-                    "Notebooks upload API properly requires authentication (401 Unauthorized)",
-                    {"status_code": response.status_code}
-                )
-            elif response.status_code == 200:
-                self.log_test(
-                    "Notebooks Upload API - Functionality",
-                    True,
-                    "Notebooks upload API works and saves to daily_lectures table",
-                    {"status_code": response.status_code}
-                )
-            else:
-                self.log_test(
-                    "Notebooks Upload API - General Error",
-                    False,
-                    f"Notebooks upload API failed with status {response.status_code}",
-                    {"error": response.text}
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "Notebooks Upload API - Connection",
-                False,
-                f"Connection error: {str(e)}",
-                {"exception": str(e)}
-            )
-        
-        # Test profile avatar upload endpoint
-        try:
-            test_image_content = b"fake_image_content_for_testing"
-            files = {'file': ('avatar.jpg', test_image_content, 'image/jpeg')}
-            
-            response = self.session.post(f"{self.api_base}/profile/upload-avatar", files=files)
-            
-            if response.status_code == 401:
-                self.log_test(
-                    "Profile Avatar Upload API - Authentication",
-                    True,
-                    "Profile avatar upload API properly requires authentication (401 Unauthorized)",
-                    {"status_code": response.status_code}
-                )
-            elif response.status_code == 200:
-                self.log_test(
-                    "Profile Avatar Upload API - Functionality",
-                    True,
-                    "Profile avatar upload API works with file type validation",
-                    {"status_code": response.status_code}
-                )
-            else:
-                self.log_test(
-                    "Profile Avatar Upload API - General Error",
-                    False,
-                    f"Profile avatar upload API failed with status {response.status_code}",
-                    {"error": response.text}
-                )
-                
-        except Exception as e:
-            self.log_test(
-                "Profile Avatar Upload API - Connection",
-                False,
-                f"Connection error: {str(e)}",
-                {"exception": str(e)}
-            )
-    
-    def test_authentication_security(self):
-        """Test authentication and security fixes"""
-        print("\n🔐 Testing Authentication & Security...")
+    def test_authentication_system(self):
+        """Test authentication system as specified in review"""
+        print("\n🔐 Testing Authentication System...")
         
         # Test that protected endpoints require authentication
         protected_endpoints = [
-            ("/api/summaries", "POST"),
+            ("/api/summaries/upload", "POST"),
+            ("/api/notebooks/upload", "POST"),
             ("/api/books", "POST"),
             ("/api/cart", "GET"),
             ("/api/cart", "POST"),
+            ("/api/profile/upload-avatar", "POST"),
         ]
         
         for endpoint, method in protected_endpoints:
@@ -1215,18 +813,30 @@ class BackendTester:
                 if method == "GET":
                     response = self.session.get(f"{self.base_url}{endpoint}")
                 elif method == "POST":
-                    response = self.session.post(f"{self.base_url}{endpoint}", json={})
+                    # Use proper form data for upload endpoints
+                    if "upload" in endpoint:
+                        files = {'file': ('test.pdf', b'test content', 'application/pdf')}
+                        response = self.session.post(f"{self.base_url}{endpoint}", files=files)
+                    else:
+                        response = self.session.post(f"{self.base_url}{endpoint}", json={})
                 
                 if response.status_code == 401:
                     self.log_test(
-                        f"Authentication Protection - {endpoint} {method}",
+                        f"Authentication System - {endpoint} {method}",
                         True,
                         f"Endpoint properly requires authentication (401 Unauthorized)",
                         {"endpoint": endpoint, "method": method}
                     )
+                elif response.status_code == 403:
+                    self.log_test(
+                        f"Authentication System - {endpoint} {method}",
+                        True,
+                        f"Endpoint properly requires authentication (403 Forbidden)",
+                        {"endpoint": endpoint, "method": method}
+                    )
                 else:
                     self.log_test(
-                        f"Authentication Protection - {endpoint} {method}",
+                        f"Authentication System - {endpoint} {method}",
                         False,
                         f"Endpoint should require authentication but returned {response.status_code}",
                         {"endpoint": endpoint, "method": method, "status": response.status_code}
@@ -1234,7 +844,7 @@ class BackendTester:
                     
             except Exception as e:
                 self.log_test(
-                    f"Authentication Protection - {endpoint} {method}",
+                    f"Authentication System - {endpoint} {method}",
                     False,
                     f"Connection error: {str(e)}",
                     {"exception": str(e)}
@@ -1254,14 +864,21 @@ class BackendTester:
                 
                 if response.status_code == 403:
                     self.log_test(
-                        f"Admin Role Protection - {endpoint}",
+                        f"Authentication System - Admin {endpoint}",
                         True,
                         "Admin endpoint properly requires admin role (403 Forbidden)",
                         {"endpoint": endpoint}
                     )
+                elif response.status_code == 401:
+                    self.log_test(
+                        f"Authentication System - Admin {endpoint}",
+                        True,
+                        "Admin endpoint properly requires authentication (401 Unauthorized)",
+                        {"endpoint": endpoint}
+                    )
                 else:
                     self.log_test(
-                        f"Admin Role Protection - {endpoint}",
+                        f"Authentication System - Admin {endpoint}",
                         False,
                         f"Admin endpoint should require admin role but returned {response.status_code}",
                         {"endpoint": endpoint, "status": response.status_code}
@@ -1269,23 +886,30 @@ class BackendTester:
                     
             except Exception as e:
                 self.log_test(
-                    f"Admin Role Protection - {endpoint}",
+                    f"Authentication System - Admin {endpoint}",
                     False,
                     f"Connection error: {str(e)}",
                     {"exception": str(e)}
                 )
     
     def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting Comprehensive Backend API Testing...")
+        """Run all backend tests as specified in review request"""
+        print("🚀 Starting Comprehensive Backend API Testing for Upload Functionality and Database Fixes...")
         print(f"🌐 Testing against: {self.base_url}")
+        print("📋 Review Focus Areas:")
+        print("   1. Lecture Upload API (/api/notebooks/upload)")
+        print("   2. Summary Upload API (/api/summaries/upload)")
+        print("   3. Admin Lectures API (/api/admin/lectures)")
+        print("   4. Database Schema Verification")
+        print("   5. Authentication System")
         
-        # Run all test categories
-        self.test_database_connectivity()
-        self.test_books_api_with_profiles()
-        self.test_admin_apis()
-        self.test_upload_endpoints()
-        self.test_authentication_security()
+        # Run all test categories as specified in review
+        self.test_lecture_upload_api()
+        self.test_summary_upload_api()
+        self.test_admin_lectures_api()
+        self.test_database_schema_verification()
+        self.test_storage_buckets_verification()
+        self.test_authentication_system()
         
         # Generate summary
         self.generate_summary()
@@ -1293,7 +917,7 @@ class BackendTester:
     def generate_summary(self):
         """Generate test summary"""
         print("\n" + "="*80)
-        print("📊 BACKEND TESTING SUMMARY")
+        print("📊 BACKEND TESTING SUMMARY - UPLOAD FUNCTIONALITY & DATABASE FIXES")
         print("="*80)
         
         total_tests = len(self.test_results)
@@ -1311,11 +935,13 @@ class BackendTester:
                 if not result['success']:
                     print(f"❌ {result['test']}: {result['message']}")
         
-        print("\n📋 CRITICAL AREAS TESTED:")
-        print("✓ Database Schema Issues (summaries foreign key, profiles email column)")
-        print("✓ Upload Functionality (summaries, notebooks, avatar uploads)")
-        print("✓ Admin APIs (books, users, analytics endpoints)")
-        print("✓ Authentication & Security (protected endpoints, admin role verification)")
+        print("\n📋 REVIEW REQUEST AREAS TESTED:")
+        print("✓ Lecture Upload API (/api/notebooks/upload) - File upload to 'lectures' bucket & database insertion")
+        print("✓ Summary Upload API (/api/summaries/upload) - File upload to 'summaries' bucket & database insertion")
+        print("✓ Admin Lectures API (/api/admin/lectures) - GET with instructor profile join & PATCH for approval")
+        print("✓ Database Schema Verification - profiles.email, daily_lectures columns, summaries.status")
+        print("✓ Storage Buckets Verification - summaries, lectures, avatars, book-images buckets")
+        print("✓ Authentication System - Protected routes and admin role verification")
         
         # Save results to file
         with open('/app/backend_test_results.json', 'w') as f:
