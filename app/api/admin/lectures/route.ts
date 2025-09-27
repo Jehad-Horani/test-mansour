@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const supabase = createAdminClient()
     
     let query = supabase
-      .from('daily_lectures')
+      .from('lectures')
       .select(`
         *,
         instructor:profiles!daily_lectures_instructor_id_fkey(name, university, phone)
@@ -79,7 +79,7 @@ export async function PATCH(request: Request) {
     }
     
     const { data, error } = await supabase
-      .from('daily_lectures')
+      .from('lectures')
       .update(updates)
       .eq('id', lectureId)
       .select()
