@@ -6,7 +6,7 @@ import { useUserContext } from "@/contexts/user-context"
 import { RetroWindow } from "@/app/components/retro-window"
 import { Button } from "@/app/components/ui/button"
 import { Badge } from "@/app/components/ui/badge"
-import { 
+import {
   GraduationCap,
   User,
   Clock,
@@ -18,6 +18,13 @@ import {
   ChevronRight
 } from "lucide-react"
 import { toast } from "sonner"
+import { createClient } from "@supabase/supabase-js"
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
 
 interface Lecture {
   id: string
@@ -72,10 +79,10 @@ export default function AdminDailyLecturesPage() {
         page: page.toString(),
         limit: '20'
       })
-      
+
       const res = await fetch(`/api/admin/lectures?${params}`)
       const data = await res.json()
-      
+
       if (res.ok) {
         setLectures(data.lectures || [])
         setPagination(data.pagination)
@@ -92,71 +99,40 @@ export default function AdminDailyLecturesPage() {
   }
 
   const handleApprove = async (lectureId: string) => {
-    if (!confirm('هل تريد الموافقة على هذه المحاضرة؟')) return
-
     try {
       setUpdating(lectureId)
-      const res = await fetch('/api/admin/lectures', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          lectureId,
-          action: 'approve'
-        })
-      })
+      const { error } = await supabase
+        .from("lectures")
+        .update({ approval_status: "approved" })
+        .eq("id", lectureId)
 
-      const data = await res.json()
+      if (error) throw error
 
-      if (res.ok) {
-        setLectures(prev => prev.map(lecture => 
-          lecture.id === lectureId ? { ...lecture, approval_status: 'approved' } : lecture
-        ))
-        toast.success("تم قبول المحاضرة بنجاح")
-      } else {
-        console.error("Error approving lecture:", data.error)
-        toast.error("خطأ في قبول المحاضرة")
-      }
-    } catch (error) {
-      console.error("Error approving lecture:", error)
-      toast.error("خطأ في الاتصال")
+      setLectures(prev => prev.map(l => l.id === lectureId ? { ...l, approval_status: "approved" } : l))
+      toast.success("تم قبول المحاضرة بنجاح")
+    } catch (err) {
+      console.error(err)
+      toast.error("خطأ في قبول المحاضرة")
     } finally {
       setUpdating(null)
     }
   }
 
-  const handleReject = async () => {
-    if (!rejectionModal || !rejectionReason.trim()) return
-
+  const handleReject = async (lectureId: string, reason: string) => {
     try {
-      setUpdating(rejectionModal.lectureId)
-      const res = await fetch('/api/admin/lectures', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          lectureId: rejectionModal.lectureId,
-          action: 'reject',
-          reason: rejectionReason
-        })
-      })
+      setUpdating(lectureId)
+      const { error } = await supabase
+        .from("lectures")
+        .delete()
+        .eq("id", lectureId)
 
-      const data = await res.json()
+      if (error) throw error
 
-      if (res.ok) {
-        setLectures(prev => prev.map(lecture => 
-          lecture.id === rejectionModal.lectureId 
-            ? { ...lecture, approval_status: 'rejected', rejection_reason: rejectionReason } 
-            : lecture
-        ))
-        toast.success("تم رفض المحاضرة")
-        setRejectionModal(null)
-        setRejectionReason("")
-      } else {
-        console.error("Error rejecting lecture:", data.error)
-        toast.error("خطأ في رفض المحاضرة")
-      }
-    } catch (error) {
-      console.error("Error rejecting lecture:", error)
-      toast.error("خطأ في الاتصال")
+      setLectures(prev => prev.filter(l => l.id !== lectureId))
+      toast.success("تم رفض المحاضرة وحذفها")
+    } catch (err) {
+      console.error(err)
+      toast.error("خطأ في رفض المحاضرة")
     } finally {
       setUpdating(null)
     }
@@ -207,9 +183,8 @@ export default function AdminDailyLecturesPage() {
                     <button
                       key={status}
                       onClick={() => setFilter(status)}
-                      className={`px-3 py-1 text-sm border border-gray-400 ${
-                        filter === status ? "bg-retro-accent text-white" : "bg-white text-black hover:bg-gray-50"
-                      }`}
+                      className={`px-3 py-1 text-sm border border-gray-400 ${filter === status ? "bg-retro-accent text-white" : "bg-white text-black hover:bg-gray-50"
+                        }`}
                     >
                       {status === 'all' ? 'الكل' : getStatusText(status)}
                     </button>
@@ -262,7 +237,7 @@ export default function AdminDailyLecturesPage() {
                         <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
                           <GraduationCap className="w-8 h-8 text-white" />
                         </div>
-                        
+
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <h3 className="font-semibold text-black">{lecture.title}</h3>
@@ -401,12 +376,13 @@ export default function AdminDailyLecturesPage() {
                 إلغاء
               </Button>
               <Button
-                onClick={handleReject}
-                disabled={!rejectionReason.trim() || updating === rejectionModal.lectureId}
+                onClick={() => handleReject(rejectionModal!.lectureId, rejectionReason)}
+                disabled={!rejectionReason.trim() || updating === rejectionModal?.lectureId}
                 className="retro-button bg-red-500 text-white hover:bg-red-600"
               >
                 رفض المحاضرة
               </Button>
+
             </div>
           </div>
         </div>

@@ -22,6 +22,7 @@ import {
   AlertCircle
 } from "lucide-react"
 import { toast } from "sonner"
+import { createClient } from "@/lib/supabase/client"
 
 interface Lecture {
   id: string
@@ -48,6 +49,8 @@ export default function NotebooksPage() {
   const [uploading, setUploading] = useState(false)
   const [showUploadForm, setShowUploadForm] = useState(false)
 
+  const supabase = createClient()
+
   // Form state
   const [formData, setFormData] = useState({
     title: '',
@@ -62,7 +65,6 @@ export default function NotebooksPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
-
     fetchLectures()
     fetchApprovedLectures()
   }, [isLoggedIn, router])
@@ -70,18 +72,17 @@ export default function NotebooksPage() {
   const fetchLectures = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/notebooks')
-      const data = await res.json()
+      const { data, error } = await supabase
+        .from("lectures")
+        .select("*")
+        .eq("instructor_id", user?.id)
+        .order("created_at", { ascending: false })
 
-      if (res.ok) {
-        setLectures(data.lectures || [])
-      } else {
-        console.error("Error fetching lectures:", data.error)
-        toast.error("خطأ في جلب المحاضرات")
-      }
+      if (error) throw error
+      setLectures(data || [])
     } catch (error) {
       console.error("Error fetching lectures:", error)
-      toast.error("خطأ في الاتصال")
+      toast.error("خطأ في جلب المحاضرات")
     } finally {
       setLoading(false)
     }
@@ -89,12 +90,14 @@ export default function NotebooksPage() {
 
   const fetchApprovedLectures = async () => {
     try {
-      const res = await fetch('/api/notebooks?approved=true')
-      const data = await res.json()
+      const { data, error } = await supabase
+        .from("lectures")
+        .select("*")
+        .eq("approval_status", "approved")
+        .order("created_at", { ascending: false })
 
-      if (res.ok) {
-        setApprovedLectures(data.lectures || [])
-      }
+      if (error) throw error
+      setApprovedLectures(data || [])
     } catch (error) {
       console.error("Error fetching approved lectures:", error)
     }
@@ -111,37 +114,37 @@ export default function NotebooksPage() {
     try {
       setUploading(true)
 
-      const uploadData = new FormData()
-      if (selectedFile) {
-        uploadData.append('file', selectedFile)
-      }
-      uploadData.append('title', formData.title)
-      uploadData.append('description', formData.description)
-      uploadData.append('subject_name', formData.subject_name)
-      uploadData.append('university_name', formData.university_name)
-      uploadData.append('major', formData.major)
-      uploadData.append('lecture_date', formData.lecture_date)
-      uploadData.append('duration_minutes', formData.duration_minutes.toString())
+      // رفع الملف على Storage
+      const filePath = `${user?.id}/${Date.now()}_${selectedFile.name}`
+      const { error: uploadError } = await supabase.storage
+        .from("lectures")
+        .upload(filePath, selectedFile)
 
-      const res = await fetch('/api/notebooks/upload', {
-        method: 'POST',
-        body: uploadData
-      })
+      if (uploadError) throw uploadError
 
-      const data = await res.json()
+      const { data: publicUrlData } = supabase.storage
+        .from("lectures")
+        .getPublicUrl(filePath)
 
-      if (res.ok) {
-        toast.success("تم رفع المحاضرة بنجاح! في انتظار موافقة الإدارة")
-        setShowUploadForm(false)
-        resetForm()
-        fetchLectures()
-      } else {
-        console.error("Error uploading lecture:", data.error)
-        toast.error(data.error || "خطأ في رفع المحاضرة")
-      }
+      // حفظ البيانات في جدول lectures
+      const { error: insertError } = await supabase.from("lectures").insert([
+        {
+          ...formData,
+          file_url: publicUrlData.publicUrl,
+          file_name: selectedFile.name,
+          instructor_id: user?.id,
+        },
+      ])
+
+      if (insertError) throw insertError
+
+      toast.success("تم رفع المحاضرة بنجاح! في انتظار موافقة الإدارة")
+      setShowUploadForm(false)
+      resetForm()
+      fetchLectures()
     } catch (error) {
       console.error("Error uploading lecture:", error)
-      toast.error("خطأ في الاتصال")
+      toast.error("خطأ في رفع المحاضرة")
     } finally {
       setUploading(false)
     }
@@ -188,9 +191,7 @@ export default function NotebooksPage() {
     }
   }
 
-  if (!isLoggedIn) {
-    return null
-  }
+  if (!isLoggedIn) return null
 
   return (
     <div className="min-h-screen bg-retro-bg p-4">
