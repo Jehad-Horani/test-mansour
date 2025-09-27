@@ -82,7 +82,6 @@ export default function NotebooksPage() {
       setLectures(data || [])
     } catch (error) {
       console.error("Error fetching lectures:", error)
-      toast.error("خطأ في جلب المحاضرات")
     } finally {
       setLoading(false)
     }

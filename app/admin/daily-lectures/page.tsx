@@ -38,6 +38,8 @@ interface Lecture {
   approval_status: 'pending' | 'approved' | 'rejected'
   created_at: string
   rejection_reason?: string
+  file_url?: string
+  file_name?: string
   instructor: {
     name: string
     email: string
@@ -306,8 +308,10 @@ export default function AdminDailyLecturesPage() {
                             variant="outline"
                             className="retro-button bg-transparent"
                           >
-                            <Eye className="w-4 h-4 mr-1" />
-                            عرض التفاصيل
+                           <a href={lecture.file_url} target="_blank" rel="noopener noreferrer">
+                                <Eye className="w-4 h-4 mr-1" />
+                           عرض التفاصيل
+                              </a>
                           </Button>
                         </div>
                       </div>
