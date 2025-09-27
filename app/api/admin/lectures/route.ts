@@ -17,7 +17,7 @@ export async function GET(request: Request) {
       .from('lectures')
       .select(`
         *,
-        instructor:profiles!daily_lectures_instructor_id_fkey(name, university, phone)
+        instructor:profiles!lectures_instructor_id_fkey(name, university, phone)
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
     
