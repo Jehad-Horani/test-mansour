@@ -267,6 +267,15 @@ const { data, loading1, error1 } = useSupabaseClient()
                         >
                           عرض الملف
                         </a>
+                          <button
+                              onClick={() => {
+                                setSelectedSummary(summary)
+                                setShowRejectionModal(true)
+                              }}
+                              className="retro-button bg-red-500 text-white px-3 py-1 text-sm hover:bg-red-600"
+                            >
+                              حذف الملف
+                            </button>
 
                         {summary.status === "pending" && (
                           <>
