@@ -1,112 +1,150 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+// app/api/notebooks/upload/route.ts
+import { NextRequest, NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
+import { authServer } from "@/lib/supabase/server"
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    console.log("🎓 Starting lecture upload...");
-
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
+    // Verify user is authenticated
+    const user = await authServer.getUser()
     if (!user) {
-      console.error("❌ No user found in request");
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    console.log("✅ User authenticated:", user.id);
+    // Parse form data
+    const formData = await request.formData()
+    const file = formData.get('file') as File | null
+    const title = formData.get('title') as string
+    const description = formData.get('description') as string
+    const subject_name = formData.get('subject_name') as string
+    const university_name = formData.get('university_name') as string
+    const major = formData.get('major') as string
+    const lecture_date = formData.get('lecture_date') as string
+    const duration_minutes = parseInt(formData.get('duration_minutes') as string || '60')
 
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
-
-    if (!file) {
-      console.error("❌ No file found in request");
-      return NextResponse.json({ error: "File is required" }, { status: 400 });
+    // Validate required fields
+    if (!title || !subject_name || !university_name || !major || !lecture_date) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      )
     }
 
-    console.log("📁 File received:", file.name, "Size:", file.size);
+    const supabase = createClient()
+    
+    let file_url = null
+    let file_name = null
 
-    const maxSize = 50 * 1024 * 1024; // 50MB
-    if (file.size > maxSize) {
-      console.error("❌ File too large:", file.size);
-      return NextResponse.json({ error: "File too large. Maximum size is 50MB" }, { status: 400 });
+    // Handle file upload if provided
+    if (file) {
+      // Validate file size (50MB limit)
+      if (file.size > 50 * 1024 * 1024) {
+        return NextResponse.json(
+          { error: "File size must be less than 50MB" },
+          { status: 400 }
+        )
+      }
+
+      // Validate file type
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      ]
+
+      if (!allowedTypes.includes(file.type)) {
+        return NextResponse.json(
+          { error: "Invalid file type. Only PDF, DOC, DOCX, PPT, and PPTX are allowed" },
+          { status: 400 }
+        )
+      }
+
+      // Generate unique file name
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`
+      const filePath = `lectures/${fileName}`
+
+      // Convert File to ArrayBuffer then to Uint8Array
+      const arrayBuffer = await file.arrayBuffer()
+      const uint8Array = new Uint8Array(arrayBuffer)
+
+      // Upload file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('lectures')
+        .upload(filePath, uint8Array, {
+          contentType: file.type,
+          upsert: false
+        })
+
+      if (uploadError) {
+        console.error("Storage upload error:", uploadError)
+        return NextResponse.json(
+          { error: "Failed to upload file" },
+          { status: 500 }
+        )
+      }
+
+      // Get public URL for the uploaded file
+      const { data: urlData } = supabase.storage
+        .from('lectures')
+        .getPublicUrl(filePath)
+
+      file_url = urlData.publicUrl
+      file_name = file.name
     }
 
-    const fileExt = file.name.split('.').pop();
-    const filePath = `lectures/${user.id}_${Date.now()}.${fileExt}`;
-
-    console.log("📤 Uploading to:", filePath);
-
-    // تحويل الملف لـ Buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("lectures")
-      .upload(filePath, buffer, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: file.type || "application/octet-stream",
-      });
-
-    if (uploadError) {
-      console.error("❌ Lecture upload error:", uploadError);
-      return NextResponse.json({
-        error: "Failed to upload lecture file",
-        details: uploadError.message
-      }, { status: 500 });
-    }
-
-    console.log("✅ File uploaded successfully:", uploadData.path);
-
-    const { data: urlData } = supabase.storage
-      .from("lectures")
-      .getPublicUrl(filePath);
-
-    console.log("🔗 Public URL:", urlData.publicUrl);
-
-    const lectureData = {
-      title: formData.get("title") as string || "بدون عنوان",
-      description: formData.get("description") as string || "",
-      subject_name: formData.get("subject_name") as string || "",
-      university_name: formData.get("university_name") as string || "",
-      major: formData.get("major") as string || "",
-      lecture_date: formData.get("lecture_date") as string || new Date().toISOString(),
-      duration_minutes: Number(formData.get("duration_minutes")) || 60,
-      file_url: urlData.publicUrl,
-      file_name: file.name,
-      instructor_id: user.id,
-      approval_status: "pending"
-    };
-
-    console.log("💾 Saving lecture data:", lectureData);
-
-    const { data: lecture, error: lectureError } = await supabase
-      .from("daily_lectures")
-      .insert(lectureData)
+    // Insert lecture record into database
+    const { data: lecture, error: dbError } = await supabase
+      .from('daily_lectures')
+      .insert([
+        {
+          instructor_id: user.id,
+          title,
+          description,
+          subject_name,
+          university_name,
+          major,
+          lecture_date: new Date(lecture_date).toISOString(),
+          duration_minutes,
+          file_url,
+          file_name,
+          approval_status: 'pending',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ])
       .select()
-      .single();
+      .single()
 
-    if (lectureError) {
-      console.error("❌ Lecture creation error:", lectureError);
-      return NextResponse.json({
-        error: "Failed to save lecture",
-        details: lectureError.message
-      }, { status: 500 });
+    if (dbError) {
+      console.error("Database insert error:", dbError)
+      
+      // If database insert fails and we uploaded a file, try to delete it
+      if (file_url) {
+        const fileName = file_url.split('/').pop()
+        await supabase.storage
+          .from('lectures')
+          .remove([`lectures/${fileName}`])
+      }
+
+      return NextResponse.json(
+        { error: "Failed to save lecture" },
+        { status: 500 }
+      )
     }
 
-    console.log("✅ Lecture created successfully:", lecture.id);
-
     return NextResponse.json({
-      message: "Lecture uploaded successfully",
-      data: lecture,
-      file_url: urlData.publicUrl
-    });
+      success: true,
+      lecture
+    })
 
-  } catch (error: any) {
-    console.error("💥 Error in /api/notebooks/upload:", error);
-    return NextResponse.json({
-      error: "Internal server error",
-      details: error.message
-    }, { status: 500 });
+  } catch (error) {
+    console.error("Error in POST /api/notebooks/upload:", error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
   }
 }
