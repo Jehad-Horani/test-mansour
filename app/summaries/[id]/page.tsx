@@ -32,7 +32,7 @@ export default function SummaryDetailPage() {
 
   const params = useParams()
   const router = useRouter()
-const { data, loading1, error1 } = useSupabaseClient()
+  const supabase = useSupabaseClient() // ✅ التصحيح هون
 
   useEffect(() => {
     if (params.id) {

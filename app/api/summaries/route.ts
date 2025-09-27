@@ -7,6 +7,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from("summaries")
       .select("*")
+      .eq("is_approved", true) // بس اللي مقبول
       .order("created_at", { ascending: false })
 
     if (error) {
@@ -16,7 +17,7 @@ export async function GET() {
 
     // Ensure we return an array
     const summaries = Array.isArray(data) ? data : []
-    
+
     return NextResponse.json(summaries)
   } catch (error: any) {
     console.error("Unexpected error in GET /api/summaries:", error)
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
   try {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 })
     }
