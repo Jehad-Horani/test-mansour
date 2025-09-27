@@ -41,28 +41,24 @@ const { data, loading1, error1 } = useSupabaseClient()
   }, [isLoggedIn, isAdmin, router, filter])
 
  const fetchSummaries = async () => {
-  try {
-    setLoading(true)
-    const res = await fetch("/api/summaries")
-    const data = await res.json()
-
-    let filtered = data
-    if (filter !== "all") {
-      filtered = data.filter((summary: any) => summary.status === filter)
+    try {
+      setLoading(true)
+      // API يعود كل السجلات؛ مع فلتر على السيرفر أو هنا
+      const res = await fetch("/api/summaries?forAdmin=true")
+      if (!res.ok) throw new Error("فشل في جلب الملخصات")
+      const data = await res.json()
+      let filtered = data
+      if (filter !== "all") {
+        filtered = data.filter((s: { status: string }) => s.status === filter)
+      }
+      setSummaries(filtered || [])
+    } catch (err) {
+      console.error(err)
+      setSummaries([])
+    } finally {
+      setLoading(false)
     }
-
-    const formattedSummaries = filtered.map((summary: any) => ({
-      ...summary,
-      user_name: summary.profiles?.name || "مستخدم غير معروف",
-    }))
-
-    setSummaries(formattedSummaries)
-  } catch (error) {
-    console.error("Error fetching summaries:", error)
-  } finally {
-    setLoading(false)
   }
-}
 
 
  const handleApprove = async (summaryId: string) => {
@@ -101,6 +97,21 @@ const { data, loading1, error1 } = useSupabaseClient()
     console.error("Error rejecting summary:", error)
   }
 }
+
+  const handleDelete = async (summaryId: any) => {
+    if (!confirm("هل تريد حذف الملخص نهائيًا؟")) return
+    try {
+      const res = await fetch("/api/summaries/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ summaryId }),
+      })
+      if (!res.ok) throw new Error("فشل في حذف الملخص")
+      fetchSummaries()
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
 
   const formatFileSize = (bytes: number) => {
@@ -269,8 +280,7 @@ const { data, loading1, error1 } = useSupabaseClient()
                         </a>
                           <button
                               onClick={() => {
-                                setSelectedSummary(summary)
-                                setShowRejectionModal(true)
+                                handleDelete(summary.id)
                               }}
                               className="retro-button bg-red-500 text-white px-3 py-1 text-sm hover:bg-red-600"
                             >
