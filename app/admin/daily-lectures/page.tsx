@@ -313,6 +313,14 @@ export default function AdminDailyLecturesPage() {
                            عرض التفاصيل
                               </a>
                           </Button>
+                             <Button
+                                size="sm"
+                                onClick={() => setRejectionModal({ lectureId: lecture.id, title: lecture.title })}
+                                className="retro-button bg-red-500 text-white hover:bg-red-600"
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                حذف المحاضرة
+                              </Button>
                         </div>
                       </div>
                     </div>
