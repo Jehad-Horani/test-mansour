@@ -53,7 +53,7 @@ DTEND:20240101T${item.time.split(" - ")[1].replace(":", "")}00
 SUMMARY:${item.course}
 DESCRIPTION:${item.instructor} - ${item.location}
 LOCATION:${item.location}
-RRULE:FREQ=WEEKLY;BYDAY=${item.day === "الأحد" ? "SU - TU - TH" : "MO - WE" }
+RRULE:FREQ=WEEKLY;BYDAY=${item.day === "الأحد" ? "SU - TU - TH" : "MO - WE"}
 END:VEVENT`,
         )
         .join("\n")}
@@ -75,13 +75,16 @@ END:VCALENDAR`
       alert("يرجى ملء جميع الحقول المطلوبة")
       return
     }
+    const { data: { user } } = await supabase.auth.getUser();
 
     const { data, error } = await supabase.from("schedules").insert
-    ([
-    {
-      ...newCourse,
-    }
-  ])
+      ([
+        {
+          ...newCourse,
+          user_id: user?.id
+
+        }
+      ])
 
     if (error) {
       console.error(error)
@@ -233,7 +236,7 @@ END:VCALENDAR`
                   <option value="">اختر اليوم</option>
                   <option value="أحد - ثلاثاء - خميس">أحد - ثلاثاء - خميس</option>
                   <option value="اثنين - اربعاء"> اثنين - اربعاء</option>
-                  
+
                 </select>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
