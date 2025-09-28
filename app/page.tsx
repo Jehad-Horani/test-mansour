@@ -9,10 +9,7 @@ import Link from "next/link"
 export default function HomePage() {
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
-      {/* Auth Debug Component */}
-      <div className="container mx-auto px-4 pt-4">
-        <AuthDebug />
-      </div>
+    
 
       {/* Hero Section */}
       <section className="py-8 md:py-16">
