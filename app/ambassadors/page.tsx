@@ -77,7 +77,7 @@ export default function AmbassadorsPage() {
         <RetroWindow title="السفراء الأكاديميون">
           <div className="space-y-6">
             {/* Filters */}
-            {/* <div className="retro-window bg-gray-50">
+            <div className="retro-window bg-gray-50">
               <div className="p-4">
                 <div className="grid md:grid-cols-4 gap-4">
                   <Input placeholder="ابحث عن سفير..." className="retro-button" />
@@ -117,7 +117,7 @@ export default function AmbassadorsPage() {
                   </Select>
                 </div>
               </div>
-            </div> */}
+            </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {ambassadors.map((ambassador) => (
