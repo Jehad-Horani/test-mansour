@@ -7,12 +7,12 @@ import { RetroWindow } from "@/app/components/retro-window"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Badge } from "@/app/components/ui/badge"
-import { 
-  Search, 
-  User, 
-  Mail, 
-  Phone, 
-  GraduationCap, 
+import {
+  Search,
+  User,
+  Mail,
+  Phone,
+  GraduationCap,
   Shield,
   Users,
   Crown,
@@ -65,14 +65,14 @@ export default function AdminUsersPage() {
         page: page.toString(),
         limit: '20'
       })
-      
+
       if (search) {
         params.append('search', search)
       }
-      
+
       const res = await fetch(`/api/admin/users?${params}`)
       const data = await res.json()
-      
+
       if (res.ok) {
         setUsers(data.users || [])
         setPagination(data.pagination)
@@ -107,7 +107,7 @@ export default function AdminUsersPage() {
       const data = await res.json()
 
       if (res.ok) {
-        setUsers(prev => prev.map(user => 
+        setUsers(prev => prev.map(user =>
           user.id === userId ? { ...user, role: newRole } : user
         ))
         toast.success("تم تحديث دور المستخدم بنجاح")
@@ -138,7 +138,7 @@ export default function AdminUsersPage() {
       const data = await res.json()
 
       if (res.ok) {
-        setUsers(prev => prev.map(user => 
+        setUsers(prev => prev.map(user =>
           user.id === userId ? { ...user, subscription_tier: tier } : user
         ))
         toast.success("تم تحديث الاشتراك بنجاح")
@@ -153,6 +153,35 @@ export default function AdminUsersPage() {
       setUpdating(null)
     }
   }
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm("هل أنت متأكد أنك تريد حذف هذا المستخدم بشكل كامل؟")) return;
+
+    try {
+      setUpdating(userId)
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setUsers(prev => prev.filter(user => user.id !== userId))
+        toast.success("تم حذف المستخدم بنجاح")
+      } else {
+        console.error("Error deleting user:", data.error)
+        toast.error("خطأ في حذف المستخدم")
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setUpdating(null)
+    }
+  }
+
 
   const getRoleColor = (role: string) => {
     return role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
@@ -255,7 +284,7 @@ export default function AdminUsersPage() {
                               <User className="w-6 h-6 text-gray-500" />
                             )}
                           </div>
-                          
+
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="font-semibold text-black">{user.name}</h3>
@@ -301,7 +330,7 @@ export default function AdminUsersPage() {
                             <option value="student">طالب</option>
                             <option value="admin">مشرف</option>
                           </select>
-                          
+
                           <select
                             value={user.subscription_tier}
                             onChange={(e) => updateSubscription(user.id, e.target.value)}
@@ -311,6 +340,15 @@ export default function AdminUsersPage() {
                             <option value="basic">عادي</option>
                             <option value="premium">مميز</option>
                           </select>
+
+                          <Button
+                            variant="destructive"
+                            onClick={() => deleteUser(user.id)}
+                            disabled={updating === user.id}
+                            className="px-2 py-1 text-xs bg-red-600 text-white hover:bg-red-700"
+                          >
+                            حذف
+                          </Button>
                         </div>
                       </div>
                     </div>

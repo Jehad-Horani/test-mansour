@@ -82,3 +82,18 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
+export async function DELETE(req: Request) {
+  await authServer.requireAdmin()
+  const supabase = createAdminClient()
+
+  const { userId } = await req.json()
+
+  const { error } = await supabase.from("profiles").delete().eq("id", userId)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 })
+  }
+
+  return NextResponse.json({ success: true })
+}
