@@ -29,49 +29,26 @@ export default function PricingPage() {
       popular: false,
     },
     {
-      name: "قياسي",
-      price: 10,
+      name: "مميز",
+      price: 15,
       period: "شهرياً",
       description: "الأفضل للطلاب النشطين",
-      icon: Zap,
+      icon: Crown,
       color: "blue",
       features: [
-        { name: "وصول كامل لجميع الكتب", included: true },
+        { name: "جميع مميزات الخطة المجانية", included: true },
+        { name: " وصول كامل لجميع الكتب والمحاضرات والملخصات", included: true },
+        { name: "استشارات غير محدودة مع السفراء", included: true },
         { name: "رفع غير محدود للملفات", included: true },
-        { name: "تحميل جميع الكتب", included: true },
-        { name: "جدولة الامتحانات والمهام", included: true },
-        { name: "دعم فني أولوية", included: true },
+        { name: "وصول مبكر للميزات الجديدة", included: true },
+        { name: "جدولة الامتحانات والمحاضرات", included: true },
+        { name: "دعم فني متقدم (24/7)", included: true },
         { name: "إحصائيات التقدم", included: true },
-        { name: "استشارات مع السفراء (محدودة)", included: true },
-        { name: "جلسات دراسية جماعية", included: false },
         { name: "محتوى حصري", included: false },
       ],
       cta: "اشترك الآن",
       ctaLink: "/subscribe/standard",
       popular: true,
-    },
-    {
-      name: "مميز",
-      price: 20,
-      period: "شهرياً",
-      description: "للطلاب الذين يريدون الأفضل",
-      icon: Crown,
-      color: "purple",
-      features: [
-        { name: "جميع مميزات الخطة القياسية", included: true },
-        { name: "استشارات غير محدودة مع السفراء", included: true },
-        { name: "جلسات دراسية جماعية", included: true },
-        { name: "محتوى حصري ومتقدم", included: true },
-        { name: "وصول مبكر للميزات الجديدة", included: true },
-        { name: "دعم فني متقدم (24/7)", included: true },
-        { name: "تقارير تقدم مفصلة", included: true },
-        { name: "شهادات إتمام معتمدة", included: true },
-        { name: "خصومات على الفعاليات", included: true },
-        { name: "مدير حساب شخصي", included: true },
-      ],
-      cta: "اشترك الآن",
-      ctaLink: "/subscribe/premium",
-      popular: false,
     },
   ]
 
@@ -85,16 +62,12 @@ export default function PricingPage() {
       answer: "لا، جميع خططنا شهرية ويمكنك إلغاء اشتراكك في أي وقت دون أي رسوم إضافية.",
     },
     {
-      question: "ما هي طرق الدفع المتاحة؟",
-      answer: "نقبل جميع البطاقات الائتمانية الرئيسية، STC Pay، Apple Pay، والتحويل البنكي.",
-    },
-    {
       question: "هل يمكنني الحصول على فاتورة ضريبية؟",
       answer: "نعم، نرسل فاتورة ضريبية تلقائياً لجميع المشتركين عبر البريد الإلكتروني.",
     },
     {
       question: "هل هناك خصم للطلاب؟",
-      answer: "نعم، نوفر خصم 20% للطلاب المسجلين في الجامعات السعودية مع إثبات التسجيل.",
+      answer: "نعم، نوفر خصم 20% للطلاب المسجلين عن طريق السفراء باستخدام كود الخصم الخاص بالسفير.",
     },
   ]
 
@@ -146,7 +119,7 @@ export default function PricingPage() {
                       <span className="text-4xl font-bold" style={{ color: "var(--primary)" }}>
                         {plan.price}
                       </span>
-                      {plan.price > 0 && <span className="text-gray-600">ريال</span>}
+                      {plan.price > 0 && <span className="text-gray-600">دينار</span>}
                     </div>
                     <p className="text-gray-600 text-sm mb-2">{plan.period}</p>
                     <p className="text-gray-700 text-sm">{plan.description}</p>
@@ -169,13 +142,12 @@ export default function PricingPage() {
 
                   <Button
                     asChild
-                    className={`retro-button w-full ${
-                      plan.popular
-                        ? "text-white"
-                        : plan.price === 0
-                          ? "bg-transparent border-gray-300"
-                          : "bg-transparent"
-                    }`}
+                    className={`retro-button w-full ${plan.popular
+                      ? "text-white"
+                      : plan.price === 0
+                        ? "bg-transparent border-gray-300"
+                        : "bg-transparent"
+                      }`}
                     style={
                       plan.popular
                         ? { background: "var(--accent)", color: "white" }
@@ -200,7 +172,6 @@ export default function PricingPage() {
                 <tr className="border-b border-gray-200">
                   <th className="text-right py-3 px-4 font-semibold">الميزة</th>
                   <th className="text-center py-3 px-4 font-semibold">مجاني</th>
-                  <th className="text-center py-3 px-4 font-semibold">قياسي</th>
                   <th className="text-center py-3 px-4 font-semibold">مميز</th>
                 </tr>
               </thead>
@@ -218,7 +189,6 @@ export default function PricingPage() {
                   <tr key={index} className="border-b border-gray-100">
                     <td className="py-3 px-4 font-medium">{row.feature}</td>
                     <td className="py-3 px-4 text-center">{row.free}</td>
-                    <td className="py-3 px-4 text-center">{row.standard}</td>
                     <td className="py-3 px-4 text-center">{row.premium}</td>
                   </tr>
                 ))}
@@ -248,10 +218,10 @@ export default function PricingPage() {
             <p className="text-gray-600 mb-6">انضم إلى آلاف الطلاب الذين يحققون النجاح مع تخصصكُم</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="retro-button" style={{ background: "var(--accent)", color: "white" }}>
-                <Link href="/subscribe/standard">ابدأ بالخطة القياسية</Link>
+                <Link href="/subscribe/standard">ابدأ بالخطة المميزة</Link>
               </Button>
               <Button asChild variant="outline" className="retro-button bg-transparent">
-                <Link href="/register">جرب مجاناً</Link>
+                <Link href="/auth/register">جرب مجاناً</Link>
               </Button>
             </div>
           </div>
