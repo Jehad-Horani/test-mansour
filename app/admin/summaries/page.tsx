@@ -44,7 +44,7 @@ const { data, loading1, error1 } = useSupabaseClient()
     try {
       setLoading(true)
       // API يعود كل السجلات؛ مع فلتر على السيرفر أو هنا
-      const res = await fetch("/api/summaries?forAdmin=true")
+      const res = await fetch("/api/admin/summaries")
       if (!res.ok) throw new Error("فشل في جلب الملخصات")
       const data = await res.json()
       let filtered = data
