@@ -164,9 +164,7 @@ export default function AdminBackupPage() {
     }
   }
 
-  if (!isLoggedIn || !isAdmin()) {
-    return null
-  }
+ 
 
   return (
     <div className="min-h-screen bg-retro-bg p-4">
