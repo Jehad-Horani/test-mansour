@@ -7,10 +7,14 @@ import Link from "next/link"
 import { Edit, Settings, BookOpen, Users, Award, Calendar } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useState } from "react"
+import { createClient } from "@/lib/supabase/client"
+
 
 export default function ProfilePage() {
   const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState(profile?.avatar_url || "")
+  const supabase = createClient()
+
 
   if (!isLoggedIn) {
     return (
@@ -26,10 +30,47 @@ export default function ProfilePage() {
       </div>
     )
   }
-const handleAvatarUpload = (newAvatarUrl: string) => {
-  setCurrentAvatarUrl(newAvatarUrl);
-  alert("✅ تم تحديث الصورة الشخصية بنجاح");
-};
+const handleAvatarUpload = async (file: File) => {
+  if (!file) return
+
+  const fileExt = file.name.split(".").pop()
+  const fileName = `${Date.now()}.${fileExt}`
+  const filePath = `${user?.id}/${fileName}`
+
+  // 1. رفع الصورة للمخزن
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(filePath, file, {
+      upsert: true, // بيسمح يستبدل الصورة إذا نفس الاسم
+    })
+
+  if (uploadError) {
+    alert("❌ خطأ برفع الصورة: " + uploadError.message)
+    return
+  }
+
+  // 2. جلب رابط الصورة
+  const { data: urlData } = supabase.storage
+    .from("avatars")
+    .getPublicUrl(filePath)
+
+  const publicUrl = urlData.publicUrl
+
+  // 3. تحديث جدول profiles
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ avatar_url: publicUrl })
+    .eq("id", user?.id)
+
+  if (updateError) {
+    alert("❌ خطأ بتحديث البروفايل: " + updateError.message)
+    return
+  }
+
+  // 4. تحديث الواجهة
+  setCurrentAvatarUrl(publicUrl)
+  alert("✅ تم رفع الصورة بنجاح")
+}
 
 
 
@@ -158,45 +199,7 @@ const handleAvatarUpload = (newAvatarUrl: string) => {
           </RetroWindow>
         </div>
 
-        {/* Recent Activity */}
-        <div className="mt-6">
-          <RetroWindow title="النشاط الأخير">
-            <div className="p-6">
-              <div className="space-y-3">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="retro-window bg-white p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {activity.type === "book" && (
-                          <BookOpen className="w-5 h-5" style={{ color: "var(--primary)" }} />
-                        )}
-                        {activity.type === "consultation" && (
-                          <Users className="w-5 h-5" style={{ color: "var(--accent)" }} />
-                        )}
-                        {activity.type === "community" && (
-                          <Award className="w-5 h-5" style={{ color: "var(--primary)" }} />
-                        )}
-                        {activity.type === "course" && (
-                          <Calendar className="w-5 h-5" style={{ color: "var(--accent)" }} />
-                        )}
-                        <span className="font-medium" style={{ color: "var(--ink)" }}>
-                          {activity.title}
-                        </span>
-                      </div>
-                      <span className="text-sm text-gray-500">{activity.date}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-center mt-4">
-                <Button asChild variant="outline" className="retro-button bg-transparent">
-                  <Link href="/profile/activity">عرض جميع الأنشطة</Link>
-                </Button>
-              </div>
-            </div>
-          </RetroWindow>
-        </div>
+       
 
         {/* Quick Actions */}
         <div className="mt-6">

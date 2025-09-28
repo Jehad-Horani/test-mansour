@@ -11,7 +11,7 @@ interface AvatarUploadProps {
   currentAvatarUrl?: string
   userId: string
   userName: string
-  onAvatarUpdate?: (newAvatarUrl: string) => void
+  onAvatarUpdate: (file: File) => void // <-- بدل string إلى File
   size?: "sm" | "md" | "lg"
 }
 
@@ -121,7 +121,7 @@ export function AvatarUpload({
       setPreviewUrl(null)
       
       if (onAvatarUpdate) {
-        onAvatarUpdate('')
+        onAvatarUpdate
       }
 
     } catch (error: any) {
