@@ -29,7 +29,7 @@ interface User {
   phone?: string
   university?: string
   major?: string
-  role: "student" | "admin"
+  role: "student" | "admin" | "ambassador"
   subscription_tier: string
   created_at: string
   avatar_url?: string
@@ -88,40 +88,53 @@ export default function AdminUsersPage() {
     }
   }
 
-  const updateUserRole = async (userId: string, newRole: "student" | "admin") => {
-    if (!confirm(`هل تريد تغيير دور هذا المستخدم إلى ${newRole === 'admin' ? 'مشرف' : 'طالب'}؟`)) {
-      return
-    }
-
-    try {
-      setUpdating(userId)
-      const res = await fetch('/api/admin/users', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          updates: { role: newRole }
-        })
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        setUsers(prev => prev.map(user =>
-          user.id === userId ? { ...user, role: newRole } : user
-        ))
-        toast.success("تم تحديث دور المستخدم بنجاح")
-      } else {
-        console.error("Error updating user role:", data.error)
-        toast.error("خطأ في تحديث دور المستخدم")
-      }
-    } catch (error) {
-      console.error("Error updating user role:", error)
-      toast.error("خطأ في الاتصال")
-    } finally {
-      setUpdating(null)
-    }
+ const updateUserRole = async (
+  userId: string,
+  newRole: "student" | "admin" | "ambassador"
+) => {
+  // ترجم الأدوار لعرضها بالعربي
+  const roleLabels: Record<"student" | "admin" | "ambassador", string> = {
+    student: "طالب",
+    admin: "مشرف",
+    ambassador: "سفير",
   }
+
+  if (!confirm(`هل تريد تغيير دور هذا المستخدم إلى ${roleLabels[newRole]}؟`)) {
+    return
+  }
+
+  try {
+    setUpdating(userId)
+    const res = await fetch("/api/admin/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        updates: { role: newRole },
+      }),
+    })
+
+    const data = await res.json()
+
+    if (res.ok) {
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId ? { ...user, role: newRole } : user
+        )
+      )
+      toast.success("تم تحديث دور المستخدم بنجاح")
+    } else {
+      console.error("Error updating user role:", data.error)
+      toast.error("خطأ في تحديث دور المستخدم")
+    }
+  } catch (error) {
+    console.error("Error updating user role:", error)
+    toast.error("خطأ في الاتصال")
+  } finally {
+    setUpdating(null)
+  }
+}
+
 
   const updateSubscription = async (userId: string, tier: string) => {
     try {
@@ -323,7 +336,7 @@ export default function AdminUsersPage() {
                         <div className="flex gap-2">
                           <select
                             value={user.role}
-                            onChange={(e) => updateUserRole(user.id, e.target.value as "student" | "admin")}
+                            onChange={(e) => updateUserRole(user.id, e.target.value as "student" | "admin" |"ambassador")}
                             disabled={updating === user.id}
                             className="px-2 py-1 text-xs border border-gray-300 rounded"
                           >
