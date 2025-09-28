@@ -30,47 +30,47 @@ export default function ProfilePage() {
       </div>
     )
   }
-const handleAvatarUpload = async (file: File) => {
-  if (!file) return
+  const handleAvatarUpload = async (file: File) => {
+    if (!file) return
 
-  const fileExt = file.name.split(".").pop()
-  const fileName = `${Date.now()}.${fileExt}`
-  const filePath = `${fileName}`
+    const fileExt = file.name.split(".").pop()
+    const fileName = `${Date.now()}.${fileExt}`
+    const filePath = `${user?.id}/${fileName}`
 
-  // 1. رفع الصورة للمخزن
-  const { error: uploadError } = await supabase.storage
-    .from("avatars")
-    .upload(filePath, file, {
-      upsert: true, // بيسمح يستبدل الصورة إذا نفس الاسم
-    })
+    // 1. رفع الصورة للمخزن
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, {
+        upsert: true, // بيسمح يستبدل الصورة إذا نفس الاسم
+      })
 
-  if (uploadError) {
-    alert("❌ خطأ برفع الصورة: " + uploadError.message)
-    return
+    if (uploadError) {
+      alert("❌ خطأ برفع الصورة: " + uploadError.message)
+      return
+    }
+
+    // 2. جلب رابط الصورة
+    const { data: urlData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(filePath)
+
+    const publicUrl = urlData.publicUrl
+
+    // 3. تحديث جدول profiles
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ avatar_url: publicUrl })
+      .eq("id", user?.id)
+
+    if (updateError) {
+      alert("❌ خطأ بتحديث البروفايل: " + updateError.message)
+      return
+    }
+
+    // 4. تحديث الواجهة
+    setCurrentAvatarUrl(publicUrl)
+    alert("✅ تم رفع الصورة بنجاح")
   }
-
-  // 2. جلب رابط الصورة
-  const { data: urlData } = supabase.storage
-    .from("avatars")
-    .getPublicUrl(filePath)
-
-  const publicUrl = urlData.publicUrl
-
-  // 3. تحديث جدول profiles
-  const { error: updateError } = await supabase
-    .from("profiles")
-    .update({ avatar_url: publicUrl })
-    .eq("id", user?.id)
-
-  if (updateError) {
-    alert("❌ خطأ بتحديث البروفايل: " + updateError.message)
-    return
-  }
-
-  // 4. تحديث الواجهة
-  setCurrentAvatarUrl(publicUrl)
-  alert("✅ تم رفع الصورة بنجاح")
-}
 
 
 
@@ -199,7 +199,7 @@ const handleAvatarUpload = async (file: File) => {
           </RetroWindow>
         </div>
 
-       
+
 
         {/* Quick Actions */}
         <div className="mt-6">
