@@ -15,7 +15,7 @@ interface Summary {
   file_url: string
   file_name: string
   file_size: number
-  status: "pending" | "approved" | "rejected"
+  is_approved: boolean | null
   created_at: string
   user_id: string
   user_name: string
@@ -43,9 +43,15 @@ export default function AdminSummariesPage() {
       if (!res.ok) throw new Error("فشل في جلب الملخصات")
       const data: Summary[] = await res.json()
 
-      let filtered = data
+      // تحويل is_approved -> status
+      const mapped = data.map((s) => ({
+        ...s,
+        status: s.is_approved === null ? "pending" : s.is_approved ? "approved" : "rejected"
+      }))
+
+      let filtered = mapped
       if (filter !== "all") {
-        filtered = data.filter((s) => s.status === filter)
+        filtered = mapped.filter((s) => s.status === filter)
       }
 
       setSummaries(filtered || [])
@@ -168,19 +174,19 @@ export default function AdminSummariesPage() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div className="bg-yellow-50 border border-yellow-200 p-3 text-center">
                   <div className="text-lg font-bold text-yellow-800">
-                    {summaries.filter((s) => s.status === "pending").length}
+                    {summaries.filter((s: any) => s.status === "pending").length}
                   </div>
                   <div className="text-sm text-yellow-600">في الانتظار</div>
                 </div>
                 <div className="bg-green-50 border border-green-200 p-3 text-center">
                   <div className="text-lg font-bold text-green-800">
-                    {summaries.filter((s) => s.status === "approved").length}
+                    {summaries.filter((s: any) => s.status === "approved").length}
                   </div>
                   <div className="text-sm text-green-600">مقبول</div>
                 </div>
                 <div className="bg-red-50 border border-red-200 p-3 text-center">
                   <div className="text-lg font-bold text-red-800">
-                    {summaries.filter((s) => s.status === "rejected").length}
+                    {summaries.filter((s: any) => s.status === "rejected").length}
                   </div>
                   <div className="text-sm text-red-600">مرفوض</div>
                 </div>
@@ -206,7 +212,7 @@ export default function AdminSummariesPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {summaries.map((summary) => (
+                {summaries.map((summary: any) => (
                   <div key={summary.id} className="bg-white border border-gray-400 p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
