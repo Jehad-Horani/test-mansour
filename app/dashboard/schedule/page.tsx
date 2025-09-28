@@ -1,33 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { createClient } from "@/lib/supabase/client"
 import { RetroWindow } from "@/app/components/retro-window"
 import { RetroToggle } from "@/app/components/retro-toggle"
 import Link from "next/link"
 
-const mockSchedule = [
-  {
-    id: 1,
-    course: "مبادئ القانون",
-    code: "LAW 101",
-    time: "08:00 - 09:30",
-    day: "الأحد",
-    location: "قاعة 101",
-    instructor: "د. أحمد العلي",
-  },
-  {
-    id: 2,
-    course: "مقدمة في البرمجة",
-    code: "CS 101",
-    time: "10:00 - 11:30",
-    day: "الاثنين",
-    location: "مختبر الحاسب 1",
-    instructor: "د. عبدالله الشهري",
-  },
-]
-
 export default function SchedulePage() {
-  const [schedule, setSchedule] = useState(mockSchedule)
+  const [schedule, setSchedule] = useState<any[]>([])
   const [newCourse, setNewCourse] = useState({
     course: "",
     code: "",
@@ -38,6 +18,25 @@ export default function SchedulePage() {
   })
   const [editingCourse, setEditingCourse] = useState<any>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
+
+  const supabase = createClient()
+
+  useEffect(() => {
+    fetchSchedule()
+  }, [])
+
+  const fetchSchedule = async () => {
+    const { data, error } = await supabase
+      .from("schedules")
+      .select("*")
+      .order("id", { ascending: true })
+
+    if (error) {
+      console.error(error)
+    } else {
+      setSchedule(data)
+    }
+  }
 
   const exportToICS = () => {
     const icsContent = `BEGIN:VCALENDAR
@@ -71,30 +70,29 @@ END:VCALENDAR`
     URL.revokeObjectURL(url)
   }
 
-  const handleAddCourse = () => {
+  const handleAddCourse = async () => {
     if (!newCourse.course || !newCourse.code || !newCourse.time || !newCourse.day) {
       alert("يرجى ملء جميع الحقول المطلوبة")
       return
     }
 
-    setSchedule((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        ...newCourse,
-      },
-    ])
+    const { data, error } = await supabase.from("schedules").insert([newCourse])
 
-    setNewCourse({
-      course: "",
-      code: "",
-      time: "",
-      day: "",
-      location: "",
-      instructor: "",
-    })
-
-    alert("تم إضافة المقرر بنجاح!")
+    if (error) {
+      console.error(error)
+      alert("حدث خطأ أثناء إضافة المقرر")
+    } else {
+      setSchedule((prev) => [...prev, data[0]])
+      setNewCourse({
+        course: "",
+        code: "",
+        time: "",
+        day: "",
+        location: "",
+        instructor: "",
+      })
+      alert("تم إضافة المقرر بنجاح!")
+    }
   }
 
   const handleEditCourse = (course: any) => {
@@ -102,22 +100,41 @@ END:VCALENDAR`
     setEditModalOpen(true)
   }
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingCourse.course || !editingCourse.code || !editingCourse.time || !editingCourse.day) {
       alert("يرجى ملء جميع الحقول المطلوبة")
       return
     }
 
-    setSchedule((prev) => prev.map((item) => (item.id === editingCourse.id ? editingCourse : item)))
-    setEditModalOpen(false)
-    setEditingCourse(null)
-    alert("تم تحديث المقرر بنجاح!")
+    const { error } = await supabase
+      .from("schedules")
+      .update(editingCourse)
+      .eq("id", editingCourse.id)
+
+    if (error) {
+      console.error(error)
+      alert("حدث خطأ أثناء تحديث المقرر")
+    } else {
+      setSchedule((prev) =>
+        prev.map((item) => (item.id === editingCourse.id ? editingCourse : item)),
+      )
+      setEditModalOpen(false)
+      setEditingCourse(null)
+      alert("تم تحديث المقرر بنجاح!")
+    }
   }
 
-  const handleDeleteCourse = (courseId: number) => {
+  const handleDeleteCourse = async (courseId: number) => {
     if (confirm("هل أنت متأكد من حذف هذا المقرر؟")) {
-      setSchedule((prev) => prev.filter((item) => item.id !== courseId))
-      alert("تم حذف المقرر بنجاح!")
+      const { error } = await supabase.from("schedules").delete().eq("id", courseId)
+
+      if (error) {
+        console.error(error)
+        alert("حدث خطأ أثناء حذف المقرر")
+      } else {
+        setSchedule((prev) => prev.filter((item) => item.id !== courseId))
+        alert("تم حذف المقرر بنجاح!")
+      }
     }
   }
 
