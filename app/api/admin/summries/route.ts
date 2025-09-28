@@ -4,26 +4,9 @@ import { createAdminClient } from "@/lib/supabase/server"
 export async function GET() {
   try {
     const supabase = createAdminClient()
-
     const { data, error } = await supabase
       .from("summaries")
-      .select(`
-        id,
-        title,
-        subject_name,
-        university_name,
-        semester,
-        college,
-        major,
-        file_url,
-        file_name,
-        file_size,
-        is_approved,
-        created_at,
-        user_id,
-        rejection_reason,
-        profiles!summaries_user_id_fkey(name)  -- لجلب اسم المستخدم
-      `)
+      .select("*")
       .order("created_at", { ascending: false })
 
     if (error) {
@@ -31,16 +14,16 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // تعديل البيانات لتشمل status و user_name
-    const summaries = (data || []).map((s: any) => ({
-      ...s,
-      status: s.is_approved === null ? "pending" : s.is_approved ? "approved" : "rejected",
-      user_name: s.profiles?.name || "غير معروف"
+    // نضيف حقل status بناءً على is_approved
+    const summariesWithStatus = (data || []).map((summary: any) => ({
+      ...summary,
+      status: summary.is_approved === null ? "pending" : summary.is_approved ? "approved" : "rejected"
     }))
 
-    return NextResponse.json(summaries)
+    return NextResponse.json(summariesWithStatus)
   } catch (error: any) {
     console.error("Unexpected error in GET /api/admin/summaries:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
