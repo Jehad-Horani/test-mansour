@@ -92,10 +92,10 @@ export default function AmbassadorsPage() {
                     {/* Ambassador Header */}
                     <div className="text-center mb-6">
 
-                      <h3 className="font-bold text-xl mb-2 text-gray-800">{ambassador.name}</h3>
+                      <h3 className="font-bold text-xl mb-2 text-gray-800">{ambassador.name}السفير :</h3>
                       <div className="space-y-1">
-                        <p className="text-lg font-semibold text-blue-600">{ambassador.major}</p>
-                        <p className="text-sm text-gray-600">{ambassador.university}</p>
+                        <p className="text-lg font-semibold text-blue-600">{ambassador.major}التخصص :</p>
+                        <p className="text-sm text-gray-600">{ambassador.university} الجامعة:</p>
                       </div>
                     </div>
 
