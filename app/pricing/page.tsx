@@ -177,7 +177,6 @@ export default function PricingPage() {
               </thead>
               <tbody>
                 {[
-                  { feature: "عدد الكتب المتاحة", free: "5 شهرياً", standard: "غير محدود", premium: "غير محدود" },
                   { feature: "تحميل الكتب", free: "1 شهريا", standard: "✓", premium: "غير محدود" },
                   { feature: "رفع الملفات", free: "3 شهرياً", standard: "غير محدود", premium: "غير محدود" },
                   { feature: "استشارات السفراء", free: "✗", standard: "محدودة", premium: "غير محدود" },
