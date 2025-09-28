@@ -13,10 +13,7 @@ import {
   Mail,
   Phone,
   GraduationCap,
-  Shield,
   Users,
-  Crown,
-  Settings,
   ChevronLeft,
   ChevronRight
 } from "lucide-react"
@@ -195,9 +192,11 @@ export default function AdminUsersPage() {
     }
   }
 
-
+  // 🎨 ألوان مختلفة لكل دور
   const getRoleColor = (role: string) => {
-    return role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+    if (role === 'admin') return 'bg-red-100 text-red-800'
+    if (role === 'ambassador') return 'bg-green-100 text-green-800'
+    return 'bg-blue-100 text-blue-800'
   }
 
   const getTierColor = (tier: string) => {
@@ -255,17 +254,17 @@ export default function AdminUsersPage() {
                   </div>
                   <div className="text-sm text-red-600">مشرفين</div>
                 </div>
+                <div className="bg-green-50 border border-green-200 p-3 text-center">
+                  <div className="text-lg font-bold text-green-800">
+                    {users.filter(u => u.role === 'ambassador').length}
+                  </div>
+                  <div className="text-sm text-green-600">سفراء</div>
+                </div>
                 <div className="bg-yellow-50 border border-yellow-200 p-3 text-center">
                   <div className="text-lg font-bold text-yellow-800">
                     {users.filter(u => u.subscription_tier === 'premium').length}
                   </div>
                   <div className="text-sm text-yellow-600">مشتركين مميزين</div>
-                </div>
-                <div className="bg-gray-50 border border-gray-200 p-3 text-center">
-                  <div className="text-lg font-bold text-gray-800">
-                    {users.filter(u => u.subscription_tier === 'basic').length}
-                  </div>
-                  <div className="text-sm text-gray-600">مشتركين عاديين</div>
                 </div>
               </div>
             </div>
@@ -302,7 +301,11 @@ export default function AdminUsersPage() {
                             <div className="flex items-center gap-2 mb-1">
                               <h3 className="font-semibold text-black">{user.name}</h3>
                               <Badge className={getRoleColor(user.role)}>
-                                {user.role === 'admin' ? 'مشرف' : 'طالب'}
+                                {user.role === 'admin'
+                                  ? 'مشرف'
+                                  : user.role === 'ambassador'
+                                  ? 'سفير'
+                                  : 'طالب'}
                               </Badge>
                               <Badge className={getTierColor(user.subscription_tier)}>
                                 {user.subscription_tier === 'premium' ? 'مميز' : 'عادي'}
