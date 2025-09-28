@@ -15,12 +15,12 @@ interface AvatarUploadProps {
   size?: "sm" | "md" | "lg"
 }
 
-export function AvatarUpload({ 
-  currentAvatarUrl, 
-  userId, 
-  userName, 
-  onAvatarUpdate, 
-  size = "md" 
+export function AvatarUpload({
+  currentAvatarUrl,
+  userId,
+  userName,
+  onAvatarUpdate,
+  size = "md"
 }: AvatarUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -28,19 +28,19 @@ export function AvatarUpload({
 
   const sizeClasses = {
     sm: "w-12 h-12",
-    md: "w-24 h-24", 
+    md: "w-24 h-24",
     lg: "w-32 h-32"
   }
 
   const uploadAvatar = async (file: File) => {
     try {
       setUploading(true)
-      
+
       // Validate file
       if (!file.type.startsWith('image/')) {
         throw new Error('يجب أن يكون الملف صورة')
       }
-      
+
       if (file.size > 5 * 1024 * 1024) {
         throw new Error('حجم الملف يجب أن يكون أقل من 5 ميجابايت')
       }
@@ -48,7 +48,7 @@ export function AvatarUpload({
       // Create file name
       const fileExt = file.name.split('.').pop()
       const fileName = `${userId}-${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
+      const filePath = `${userId}/${fileName}`;
 
       // Upload to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -65,7 +65,7 @@ export function AvatarUpload({
       // Update profile in database
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ 
+        .update({
           avatar_url: urlData.publicUrl,
           updated_at: new Date().toISOString()
         })
@@ -75,7 +75,7 @@ export function AvatarUpload({
 
       toast.success('تم تحديث صورة الملف الشخصي بنجاح')
       setPreviewUrl(urlData.publicUrl)
-      
+
       if (onAvatarUpdate) {
         onAvatarUpdate(urlData.publicUrl)
       }
@@ -97,7 +97,7 @@ export function AvatarUpload({
         setPreviewUrl(e.target?.result as string)
       }
       reader.readAsDataURL(file)
-      
+
       // Upload file
       uploadAvatar(file)
     }
@@ -109,7 +109,7 @@ export function AvatarUpload({
 
       const { error } = await supabase
         .from('profiles')
-        .update({ 
+        .update({
           avatar_url: null,
           updated_at: new Date().toISOString()
         })
@@ -119,7 +119,7 @@ export function AvatarUpload({
 
       toast.success('تم حذف صورة الملف الشخصي')
       setPreviewUrl(null)
-      
+
       if (onAvatarUpdate) {
         onAvatarUpdate
       }
@@ -144,7 +144,7 @@ export function AvatarUpload({
             {userInitials}
           </AvatarFallback>
         </Avatar>
-        
+
         {displayUrl && !uploading && (
           <Button
             size="sm"
@@ -177,7 +177,7 @@ export function AvatarUpload({
             )}
           </label>
         </Button>
-        
+
         <input
           id={`avatar-upload-${userId}`}
           type="file"
