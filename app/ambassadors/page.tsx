@@ -5,56 +5,22 @@ import { Input } from "@/app/components/ui/input"
 import { RetroWindow } from "../components/retro-window"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { Badge } from "@/app/components/ui/badge"
-import { Star, ArrowRight, MessageCircle, User } from "lucide-react"
+import { Star, ArrowRight, MessageCircle, User, Phone } from "lucide-react"
 import Link from "next/link"
+import { useAuth } from "@/hooks/use-auth"
+
 
 export default function AmbassadorsPage() {
+
+  const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
+
   const ambassadors = [
     {
-      id: 1,
-      name: "د. أحمد محمد السالم",
-      specialty: "القانون التجاري",
-      university: "الجامعة الأردنية",
-      rating: 4.9,
-      sessions: 127,
-      image: "/placeholder.svg?height=100&width=100&text=أحمد+السالم",
-      experience: "15 سنة",
-      languages: ["العربية", "الإنجليزية"],
-      available: true,
-    },
-    {
-      id: 2,
-      name: "م. فاطمة علي أحمد",
-      specialty: "هندسة البرمجيات",
-      university: "جامعة العلوم والتكنولوجيا الأردنية",
-      rating: 4.8,
-      sessions: 89,
-      image: "/placeholder.svg?height=100&width=100&text=فاطمة+أحمد",
-      experience: "12 سنة",
-      languages: ["العربية", "الإنجليزية"],
-      available: true,
-    },
-    {
-      id: 3,
-      name: "د. سارة أحمد محمد",
-      specialty: "الطب الباطني",
-      university: "جامعة مؤتة",
-      rating: 5.0,
-      sessions: 156,
-      image: "/placeholder.svg?height=100&width=100&text=سارة+محمد",
-      experience: "18 سنة",
-      languages: ["العربية"],
-      available: false,
-    },
-    {
-      id: 4,
-      name: "د. محمد علي الأحمد",
-      specialty: "إدارة الأعمال",
-      university: "جامعة اليرموك",
-      rating: 4.7,
-      sessions: 203,
-      image: "/placeholder.svg?height=100&width=100&text=محمد+الأحمد",
-      experience: "10 سنوات",
+      id: user?.id,
+      name: profile?.name,
+      major: profile?.major,
+      university: profile?.major,
+      phone: profile?.phone,
       languages: ["العربية", "الإنجليزية"],
       available: true,
     },
@@ -125,23 +91,27 @@ export default function AmbassadorsPage() {
                   <div className="p-6">
                     {/* Ambassador Header */}
                     <div className="text-center mb-6">
-                   
+
                       <h3 className="font-bold text-xl mb-2 text-gray-800">{ambassador.name}</h3>
                       <div className="space-y-1">
-                        <p className="text-lg font-semibold text-blue-600">{ambassador.specialty}</p>
+                        <p className="text-lg font-semibold text-blue-600">{ambassador.major}</p>
                         <p className="text-sm text-gray-600">{ambassador.university}</p>
                       </div>
                     </div>
 
-                  
+
 
                     {/* Action Buttons */}
-                     <div className="space-y-3">
+                    <div className="space-y-3">
                       <Button
                         asChild
                         className="retro-button w-full bg-green-600 hover:bg-green-700 text-white"
                       >
-                        <Link href={`/ambassadors/${ambassador.id}/chat`}>
+                        <Link href={`https://wa.me/${ambassador.phone}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center"
+                        >
                           <MessageCircle className="w-4 h-4 ml-2" />
                           بدء محادثة
                         </Link>

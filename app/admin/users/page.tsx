@@ -329,6 +329,7 @@ export default function AdminUsersPage() {
                           >
                             <option value="student">طالب</option>
                             <option value="admin">مشرف</option>
+                            <option value="Ambassador">سفير</option>
                           </select>
 
                           <select

@@ -30,7 +30,7 @@ export interface Profile {
   student_id?: string
   avatar_url?: string
   bio?: string
-  role: "student" | "admin"
+  role: "student" | "admin" | "Ambassador"
   subscription_tier: "free" | "standard" | "premium"
   subscription_expires_at?: string
 
