@@ -42,26 +42,32 @@ export default function AmbassadorsPage() {
     fetchAmbassadors()
   }, [supabase])
 
-  // filters
-  const filteredAmbassadors = ambassadors.filter((amb) => {
-    const matchesSearch =
-      amb.name?.toLowerCase().includes(search.toLowerCase()) ||
-      amb.major?.toLowerCase().includes(search.toLowerCase()) ||
-      amb.university?.toLowerCase().includes(search.toLowerCase())
+ // filters
+const filteredAmbassadors = ambassadors.filter((amb) => {
+  const name = amb.name?.toLowerCase() || ""
+  const major = amb.major?.toLowerCase() || ""
+  const university = amb.university?.toLowerCase() || ""
 
-    const matchesMajor =
-      majorFilter === "all" || amb.major === majorFilter
+  const matchesSearch =
+    name.includes(search.toLowerCase()) ||
+    major.includes(search.toLowerCase()) ||
+    university.includes(search.toLowerCase())
 
-    const matchesUniversity =
-      universityFilter === "all" || amb.university === universityFilter
+  const matchesMajor =
+    majorFilter === "all" || major === majorFilter.toLowerCase()
 
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "available" && amb.available) ||
-      (statusFilter === "busy" && !amb.available)
+  const matchesUniversity =
+    universityFilter === "all" ||
+    university === universityFilter.toLowerCase()
 
-    return matchesSearch && matchesMajor && matchesUniversity && matchesStatus
-  })
+  const matchesStatus =
+    statusFilter === "all" ||
+    (statusFilter === "available" && amb.available === true) ||
+    (statusFilter === "busy" && amb.available === false)
+
+  return matchesSearch && matchesMajor && matchesUniversity && matchesStatus
+})
+
 
   return (
     <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
@@ -83,13 +89,16 @@ export default function AmbassadorsPage() {
             <div className="retro-window bg-gray-50">
               <div className="p-4">
                 <div className="grid md:grid-cols-4 gap-4">
+                  {/* البحث */}
                   <Input
                     placeholder="ابحث عن سفير..."
                     className="retro-button"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
-                  <Select onValueChange={(val) => setMajorFilter(val)}>
+
+                  {/* الفلترة حسب التخصص */}
+                  <Select value={majorFilter} onValueChange={(val) => setMajorFilter(val)}>
                     <SelectTrigger className="retro-button">
                       <SelectValue placeholder="التخصص" />
                     </SelectTrigger>
@@ -101,37 +110,32 @@ export default function AmbassadorsPage() {
                       <SelectItem value="إدارة أعمال">إدارة أعمال</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Select onValueChange={(val) => setUniversityFilter(val)}>
+
+                  {/* الفلترة حسب الجامعة */}
+                  <Select
+                    value={universityFilter}
+                    onValueChange={(val) => setUniversityFilter(val)}
+                  >
                     <SelectTrigger className="retro-button">
                       <SelectValue placeholder="الجامعة" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">جميع الجامعات</SelectItem>
-                      <SelectItem value="الجامعة الأردنية">
-                        الجامعة الأردنية
-                      </SelectItem>
+                      <SelectItem value="الجامعة الأردنية">الجامعة الأردنية</SelectItem>
                       <SelectItem value="جامعة العلوم والتكنولوجيا">
                         جامعة العلوم والتكنولوجيا
                       </SelectItem>
                       <SelectItem value="جامعة مؤتة">جامعة مؤتة</SelectItem>
-                      <SelectItem value="جامعة اليرموك">
-                        جامعة اليرموك
-                      </SelectItem>
+                      <SelectItem value="جامعة اليرموك">جامعة اليرموك</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Select onValueChange={(val) => setStatusFilter(val)}>
-                    <SelectTrigger className="retro-button">
-                      <SelectValue placeholder="الحالة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">جميع السفراء</SelectItem>
-                      <SelectItem value="available">متاح</SelectItem>
-                      <SelectItem value="busy">مشغول</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+               
+                
                 </div>
               </div>
             </div>
+
 
             {/* Ambassadors list */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
