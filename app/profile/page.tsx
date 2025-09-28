@@ -53,17 +53,7 @@ export default function ProfilePage() {
           <div className="p-6">
             <div className="flex flex-col md:flex-row gap-6 items-start">
               {/* Avatar and Basic Info */}
-              <div className="flex flex-col items-center text-center">
-                {user && (
-                  <AvatarUpload
-                    currentAvatarUrl={currentAvatarUrl}
-                    userId={user.id}
-                    userName={profile?.name || "مستخدم"}
-                    onAvatarUpdate={handleAvatarUpload}
-                    size="lg"
-                  />
-                )}
-              </div>
+             
 
               {/* User Details */}
               <div className="flex-1">
@@ -151,8 +141,6 @@ export default function ProfilePage() {
             </div>
           </RetroWindow>
         </div>
-
-
 
         {/* Quick Actions */}
         <div className="mt-6">
