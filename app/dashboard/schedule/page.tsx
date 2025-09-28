@@ -70,38 +70,44 @@ END:VCALENDAR`
     URL.revokeObjectURL(url)
   }
 
-  const handleAddCourse = async () => {
-    if (!newCourse.course || !newCourse.code || !newCourse.time || !newCourse.day) {
-      alert("يرجى ملء جميع الحقول المطلوبة")
-      return
-    }
-    const { data: { user } } = await supabase.auth.getUser();
-
-    const { data, error } = await supabase.from("schedules").insert
-      ([
-        {
-          ...newCourse,
-          user_id: user?.id
-
-        }
-      ])
-
-    if (error) {
-      console.error(error)
-      alert("حدث خطأ أثناء إضافة المقرر")
-    } else {
-      setSchedule((prev) => [...prev, data[0]])
-      setNewCourse({
-        course: "",
-        code: "",
-        time: "",
-        day: "",
-        location: "",
-        instructor: "",
-      })
-      alert("تم إضافة المقرر بنجاح!")
-    }
+const handleAddCourse = async () => {
+  if (!newCourse.course || !newCourse.code || !newCourse.time || !newCourse.day) {
+    alert("يرجى ملء جميع الحقول المطلوبة")
+    return
   }
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const { data, error } = await supabase
+    .from("schedules")
+    .insert([
+      {
+        ...newCourse,
+        user_id: user?.id
+      }
+    ])
+    .select()
+
+  if (error) {
+    console.error(error)
+    alert("حدث خطأ أثناء إضافة المقرر")
+  } else {
+    setSchedule((prev) => [...prev, data[0]])
+    setNewCourse({
+      course: "",
+      code: "",
+      time: "",
+      day: "",
+      location: "",
+      instructor: "",
+    })
+    alert("تم إضافة المقرر بنجاح!")
+
+    // Refresh البيانات مرتين
+    fetchSchedule()
+    fetchSchedule()
+  }
+}
 
   const handleEditCourse = (course: any) => {
     setEditingCourse({ ...course })
