@@ -432,48 +432,50 @@ export default function NotebooksPage() {
           {/* Approved Lectures */}
           <RetroWindow title="المحاضرات المقبولة">
             <div className="p-4">
-                    {/* Search Input */}
-            <div className="mb-4">
-              <Input
-                placeholder="ابحث عن محاضرة..."
-                value={approvedSearch}
-                onChange={(e) => setApprovedSearch(e.target.value)}
-                className="retro-button"
-              />
-            </div>
+              {/* Search Input */}
+              <div className="mb-4">
+                <label className="font-bold text-lg">ابحث عن اسم المادة\التخصص او اسم المحاضرة</label>
+                <Input
+                  placeholder="ابحث عن محاضرة..."
+                  value={approvedSearch}
+                  onChange={(e) => setApprovedSearch(e.target.value)}
+                  className="retro-button"
+                />
+              </div>
 
-               {filteredApprovedLectures.length === 0 ? (
-              <div className="text-center py-8">
-                <CheckCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-600">لا توجد محاضرات مطابقة للبحث</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredApprovedLectures.slice(0, 10).map((lecture) => (
-                  <div
-                    key={lecture.id}
-                    className="p-4 retro-window bg-white shadow-md"
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-bold text-lg">{lecture.title}</h3>
-                        <p className="text-sm text-gray-600">
-                          {lecture.subject_name} - {lecture.university_name}
-                        </p>
-                        <p className="text-sm text-gray-500">{lecture.major}</p>
-                      </div>
+              {filteredApprovedLectures.length === 0 ? (
+                <div className="text-center py-8">
+                  <CheckCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-600">لا توجد محاضرات مطابقة للبحث</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredApprovedLectures.slice(0, 10).map((lecture) => (
+                    <div
+                      key={lecture.id}
+                      className="p-4 retro-window bg-white shadow-md"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-bold text-lg">{lecture.title}</h3>
+                          <p className="text-sm text-gray-600">
+                            {lecture.subject_name} - {lecture.university_name}
+                          </p>
+                          <p className="text-sm text-gray-500">{lecture.major}</p>
+                        </div>
                         <Button className="retro-button bg-green-600 text-white hover:bg-green-700">
-                      <Link href={`/lectures/${lecture.id}`}>
-                          عرض التفاصيل
-                      </Link>
+                          <Link href={`${lecture.file_url}`} target="_blank" rel="noopener noreferrer">
+                            <FileText className="w-3 h-3 mr-1" />
+                            عرض ملف المحاضرة
+                          </Link>
                         </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </RetroWindow>
+                  ))}
+                </div>
+              )}
+            </div>
+          </RetroWindow>
         </div>
       </div>
     </div>
