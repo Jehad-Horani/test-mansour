@@ -217,39 +217,7 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto">
           <RetroWindow title="خطط الاشتراك">
             {/* Standard Plan */}
-            <div className="retro-window bg-white">
-              <div className="retro-window-title">
-                <span>الخطة القياسية</span>
-              </div>
-              <div className="p-6 text-center">
-                <div className="text-3xl font-bold mb-2" style={{ color: "var(--primary)" }}>
-                  15 دينار
-                </div>
-                <p className="text-gray-600 mb-6">شهرياً</p>
-                <ul className="space-y-2 text-sm text-right mb-6">
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    وصول لجميع الكتب
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    مشاركة في المجتمع
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600">✓</span>
-                    دعم فني أساسي
-                  </li>
-                </ul>
-                <Button
-                  asChild
-                  className="retro-button w-full"
-                  style={{ background: "var(--primary)", color: "white" }}
-                >
-                  <Link href="/pricing">اشترك الآن</Link>
-                </Button>
-              </div>
-            </div>
-
+           
             {/* Premium Plan */}
             <div className="retro-window bg-white">
               <div className="retro-window-title">
@@ -257,7 +225,7 @@ export default function HomePage() {
               </div>
               <div className="p-6 text-center">
                 <div className="text-3xl font-bold mb-2" style={{ color: "var(--accent)" }}>
-                  25 دينار
+                  15 دينار
                 </div>
                 <p className="text-gray-600 mb-6">شهرياً</p>
                 <ul className="space-y-2 text-sm text-right mb-6">
