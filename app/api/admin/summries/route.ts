@@ -1,29 +1,39 @@
 import { NextResponse } from "next/server"
-import { createAdminClient } from "@/lib/supabase/server"
+import { createAdminClient, authServer } from "@/lib/supabase/server"
 
 export async function GET() {
-  try {
-    const supabase = createAdminClient()
-    const { data, error } = await supabase
-      .from("summaries")
-      .select("*")
-      .order("created_at", { ascending: false })
+  await authServer.requireAdmin()
 
-    if (error) {
-      console.error("Error fetching summaries:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from("summaries")
+    .select(`
+      id,
+      title,
+      subject_name,
+      university_name,
+      semester,
+      college,
+      major,
+      file_url,
+      file_name,
+      file_size,
+      status,
+      created_at,
+      user_id,
+      user_name,
+      rejection_reason
+    `)
+    .order("created_at", { ascending: false })
 
-    // نضيف حقل status بناءً على is_approved
-    const summariesWithStatus = (data || []).map((summary: any) => ({
-      ...summary,
-      status: summary.is_approved === null ? "pending" : summary.is_approved ? "approved" : "rejected"
-    }))
-
-    return NextResponse.json(summariesWithStatus)
-  } catch (error: any) {
-    console.error("Unexpected error in GET /api/admin/summaries:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
-}
 
+  const enrichedData = data?.map((summary) => ({
+    ...summary,
+    status: summary.status || "pending",
+  }))
+
+  return NextResponse.json(enrichedData)
+}
