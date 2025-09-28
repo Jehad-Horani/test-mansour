@@ -41,7 +41,8 @@ export default function ProfilePage() {
     const { error: uploadError } = await supabase.storage
       .from("avatars")
       .upload(filePath, file, {
-        upsert: true, // بيسمح يستبدل الصورة إذا نفس الاسم
+        cacheControl: '3600',
+        upsert: false
       })
 
     if (uploadError) {
