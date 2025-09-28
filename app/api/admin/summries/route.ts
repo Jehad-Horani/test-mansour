@@ -1,68 +1,45 @@
+// api/summaries/route.ts
 import { NextResponse } from "next/server"
-import { createClient, createAdminClient } from "@/lib/supabase/server"
+import { createAdminClient, authServer } from "@/lib/supabase/server"
 
 export async function GET() {
   try {
+    await authServer.requireAdmin()
     const supabase = createAdminClient()
-    const { data, error } = await supabase
-      .from("summaries")
-      .select("*")
-      .order("created_at", { ascending: false })
-
-    if (error) {
-      console.error("Error fetching summaries:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    // Ensure we return an array
-    const summaries = Array.isArray(data) ? data : []
-
-    return NextResponse.json(summaries)
-  } catch (error: any) {
-    console.error("Unexpected error in GET /api/summaries:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 })
-    }
-
-    const body = await request.json()
-    const { title, subject_name, university_name, semester, college, major, description, file_url, file_name, file_size } = body
 
     const { data, error } = await supabase
       .from("summaries")
-      .insert({
+      .select(`
+        id,
         title,
         subject_name,
         university_name,
         semester,
         college,
         major,
-        description,
         file_url,
         file_name,
         file_size,
-        user_id: user.id,
-        is_approved: false // Use is_approved instead of status (pending = false)
-      })
-      .select()
-      .single()
+        status,
+        is_approved,
+        created_at,
+        user_id,
+        user_name,
+        rejection_reason
+      `)
+      .order("created_at", { ascending: false })
 
-    if (error) {
-      console.error("Error creating summary:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
+    if (error) throw error
 
-    return NextResponse.json(data)
-  } catch (error: any) {
-    console.error("Unexpected error in POST /api/summaries:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    // نتاكد انه status موجود دايمًا
+    const summaries = data.map((s) => ({
+      ...s,
+      status: s.status || (s.is_approved ? "approved" : "pending"),
+    }))
+
+    return NextResponse.json(summaries)
+  } catch (err) {
+    console.error("Error fetching summaries:", err)
+    return NextResponse.json({ error: "فشل في جلب الملخصات" }, { status: 500 })
   }
 }
