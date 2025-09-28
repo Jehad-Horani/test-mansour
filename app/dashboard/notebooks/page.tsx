@@ -434,7 +434,7 @@ export default function NotebooksPage() {
             <div className="p-4">
               {/* Search Input */}
               <div className="mb-4">
-                <label className="font-bold text-lg pb-1">ابحث عن اسم المادة\التخصص او اسم المحاضرة :</label>
+                <label className="font-bold text-lg mb-1">ابحث عن اسم المادة\التخصص او اسم المحاضرة :</label>
                 <Input
                   placeholder="ابحث عن محاضرة..."
                   value={approvedSearch}
