@@ -35,7 +35,7 @@ const handleAvatarUpload = async (file: File) => {
 
   const fileExt = file.name.split(".").pop()
   const fileName = `${Date.now()}.${fileExt}`
-  const filePath = `${user?.id}/${fileName}`
+  const filePath = `${fileName}`
 
   // 1. رفع الصورة للمخزن
   const { error: uploadError } = await supabase.storage
