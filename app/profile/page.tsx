@@ -33,39 +33,36 @@ export default function ProfilePage() {
   const handleAvatarUpload = async (file: File) => {
     if (!file) return
 
-    const fileExt = file.name.split(".").pop()
-    const fileName = `${Date.now()}.${fileExt}`
-    const filePath = `${user?.id}/${fileName}`
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${user?.id}/${fileName}`;
 
-    // 1. رفع الصورة للمخزن
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
+    const { data, error: uploadError } = await supabase.storage
+      .from("avatars") // اسم الـ bucket
       .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      })
+        cacheControl: "3600",
+        upsert: true
+      });
 
     if (uploadError) {
-      alert("❌ خطأ برفع الصورة: " + uploadError.message)
-      return
+      console.error("Error uploading avatar:", uploadError);
+      return;
     }
 
-    // 2. جلب رابط الصورة
-    const { data: urlData } = supabase.storage
+    const { data: publicUrlData } = supabase.storage
       .from("avatars")
-      .getPublicUrl(filePath)
+      .getPublicUrl(filePath);
 
-    const publicUrl = urlData.publicUrl
+    const publicUrl = publicUrlData.publicUrl;
 
-    // 3. تحديث جدول profiles
+    // تحديث جدول profiles
     const { error: updateError } = await supabase
       .from("profiles")
       .update({ avatar_url: publicUrl })
-      .eq("id", user?.id)
+      .eq("id", user?.id);
 
     if (updateError) {
-      alert("❌ خطأ بتحديث البروفايل: " + updateError.message)
-      return
+      console.error("Error updating profile avatar URL:", updateError);
     }
 
     // 4. تحديث الواجهة
