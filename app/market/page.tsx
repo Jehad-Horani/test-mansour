@@ -180,7 +180,7 @@ export default function MarketPage() {
           {/* Filters */}
           <div className="retro-window bg-gray-50 mb-6">
             <div className="p-4">
-              <div className="grid md:grid-cols-4 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div className="relative">
                   <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
@@ -190,19 +190,6 @@ export default function MarketPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="retro-button">
-                    <SelectValue placeholder="التصنيف" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
 
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="retro-button">
@@ -216,11 +203,6 @@ export default function MarketPage() {
                     ))}
                   </SelectContent>
                 </Select>
-
-                <Button variant="outline" className="retro-button bg-transparent">
-                  <Filter className="w-4 h-4 ml-2" />
-                  فلاتر متقدمة
-                </Button>
               </div>
             </div>
           </div>
