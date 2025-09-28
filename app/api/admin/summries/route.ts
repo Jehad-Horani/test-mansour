@@ -7,7 +7,6 @@ export async function GET() {
     const { data, error } = await supabase
       .from("summaries")
       .select("*")
-      .eq("is_approved", false) // بس اللي مقبول
       .order("created_at", { ascending: false })
 
     if (error) {
@@ -15,8 +14,15 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Ensure we return an array
-    const summaries = Array.isArray(data) ? data : []
+    // Ensure we return an array and map is_approved -> status
+    const summaries = (Array.isArray(data) ? data : []).map((s) => ({
+      ...s,
+      status: s.is_approved
+        ? "approved"
+        : s.rejection_reason
+          ? "rejected"
+          : "pending",
+    }))
 
     return NextResponse.json(summaries)
   } catch (error: any) {
@@ -51,7 +57,7 @@ export async function POST(request: Request) {
         file_name,
         file_size,
         user_id: user.id,
-        is_approved: false // Use is_approved instead of status (pending = false)
+        is_approved: false, // default pending
       })
       .select()
       .single()
@@ -61,7 +67,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json(data)
+    // رجّع الملخص الجديد مع status
+    const summaryWithStatus = {
+      ...data,
+      status: data.is_approved
+        ? "approved"
+        : data.rejection_reason
+          ? "rejected"
+          : "pending",
+    }
+
+    return NextResponse.json(summaryWithStatus)
   } catch (error: any) {
     console.error("Unexpected error in POST /api/summaries:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

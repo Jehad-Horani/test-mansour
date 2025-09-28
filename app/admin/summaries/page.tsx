@@ -3,7 +3,6 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUserContext } from "@/contexts/user-context"
 import { RetroWindow } from "@/app/components/retro-window"
-import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 
 interface Summary {
   id: string
@@ -33,24 +32,22 @@ export default function AdminSummariesPage() {
   const [rejectionReason, setRejectionReason] = useState("")
   const [showRejectionModal, setShowRejectionModal] = useState(false)
 
-const { data, loading1, error1 } = useSupabaseClient()
-
   useEffect(() => {
-   
     fetchSummaries()
   }, [isLoggedIn, isAdmin, router, filter])
 
- const fetchSummaries = async () => {
+  const fetchSummaries = async () => {
     try {
       setLoading(true)
-      // API يعود كل السجلات؛ مع فلتر على السيرفر أو هنا
       const res = await fetch("/api/admin/summaries")
       if (!res.ok) throw new Error("فشل في جلب الملخصات")
-      const data = await res.json()
+      const data: Summary[] = await res.json()
+
       let filtered = data
       if (filter !== "all") {
-        filtered = data.filter((s: { status: string }) => s.status === filter)
+        filtered = data.filter((s) => s.status === filter)
       }
+
       setSummaries(filtered || [])
     } catch (err) {
       console.error(err)
@@ -60,45 +57,42 @@ const { data, loading1, error1 } = useSupabaseClient()
     }
   }
 
-
- const handleApprove = async (summaryId: string) => {
-  try {
-    await fetch("/api/summaries/approve", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ summaryId }),
-    })
-
-    fetchSummaries()
-  } catch (error) {
-    console.error("Error approving summary:", error)
+  const handleApprove = async (summaryId: string) => {
+    try {
+      await fetch("/api/summaries/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ summaryId }),
+      })
+      fetchSummaries()
+    } catch (error) {
+      console.error("Error approving summary:", error)
+    }
   }
-}
-
 
   const handleReject = async () => {
-  if (!selectedSummary || !rejectionReason.trim()) return
+    if (!selectedSummary || !rejectionReason.trim()) return
 
-  try {
-    await fetch("/api/summaries/reject", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        summaryId: selectedSummary.id,
-        rejectionReason,
-      }),
-    })
+    try {
+      await fetch("/api/summaries/reject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          summaryId: selectedSummary.id,
+          rejectionReason,
+        }),
+      })
 
-    setShowRejectionModal(false)
-    setSelectedSummary(null)
-    setRejectionReason("")
-    fetchSummaries()
-  } catch (error) {
-    console.error("Error rejecting summary:", error)
+      setShowRejectionModal(false)
+      setSelectedSummary(null)
+      setRejectionReason("")
+      fetchSummaries()
+    } catch (error) {
+      console.error("Error rejecting summary:", error)
+    }
   }
-}
 
-  const handleDelete = async (summaryId: any) => {
+  const handleDelete = async (summaryId: string) => {
     if (!confirm("هل تريد حذف الملخص نهائيًا؟")) return
     try {
       const res = await fetch("/api/summaries/delete", {
@@ -113,7 +107,6 @@ const { data, loading1, error1 } = useSupabaseClient()
     }
   }
 
-
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
     const k = 1024
@@ -124,27 +117,19 @@ const { data, loading1, error1 } = useSupabaseClient()
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "approved":
-        return "bg-green-100 text-green-800"
-      case "rejected":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-gray-100 text-gray-800"
+      case "pending": return "bg-yellow-100 text-yellow-800"
+      case "approved": return "bg-green-100 text-green-800"
+      case "rejected": return "bg-red-100 text-red-800"
+      default: return "bg-gray-100 text-gray-800"
     }
   }
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "pending":
-        return "في الانتظار"
-      case "approved":
-        return "مقبول"
-      case "rejected":
-        return "مرفوض"
-      default:
-        return status
+      case "pending": return "في الانتظار"
+      case "approved": return "مقبول"
+      case "rejected": return "مرفوض"
+      default: return status
     }
   }
 
@@ -170,13 +155,10 @@ const { data, loading1, error1 } = useSupabaseClient()
                         filter === status ? "bg-retro-accent text-white" : "bg-white text-black hover:bg-gray-50"
                       }`}
                     >
-                      {status === "all"
-                        ? "الكل"
-                        : status === "pending"
-                          ? "في الانتظار"
-                          : status === "approved"
-                            ? "مقبول"
-                            : "مرفوض"}
+                      {status === "all" ? "الكل"
+                        : status === "pending" ? "في الانتظار"
+                        : status === "approved" ? "مقبول"
+                        : "مرفوض"}
                     </button>
                   ))}
                 </div>
@@ -236,24 +218,12 @@ const { data, loading1, error1 } = useSupabaseClient()
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-600 mb-3">
-                          <div>
-                            <strong>المادة:</strong> {summary.subject_name}
-                          </div>
-                          <div>
-                            <strong>الجامعة:</strong> {summary.university_name}
-                          </div>
-                          <div>
-                            <strong>الفصل:</strong> {summary.semester}
-                          </div>
-                          <div>
-                            <strong>الكلية:</strong> {summary.college}
-                          </div>
-                          <div>
-                            <strong>التخصص:</strong> {summary.major}
-                          </div>
-                          <div>
-                            <strong>المرفوع بواسطة:</strong> {summary.user_name}
-                          </div>
+                          <div><strong>المادة:</strong> {summary.subject_name}</div>
+                          <div><strong>الجامعة:</strong> {summary.university_name}</div>
+                          <div><strong>الفصل:</strong> {summary.semester}</div>
+                          <div><strong>الكلية:</strong> {summary.college}</div>
+                          <div><strong>التخصص:</strong> {summary.major}</div>
+                          <div><strong>المرفوع بواسطة:</strong> {summary.user_name}</div>
                         </div>
 
                         <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
@@ -278,14 +248,12 @@ const { data, loading1, error1 } = useSupabaseClient()
                         >
                           عرض الملف
                         </a>
-                          <button
-                              onClick={() => {
-                                handleDelete(summary.id)
-                              }}
-                              className="retro-button bg-red-500 text-white px-3 py-1 text-sm hover:bg-red-600"
-                            >
-                              حذف الملف
-                            </button>
+                        <button
+                          onClick={() => handleDelete(summary.id)}
+                          className="retro-button bg-red-500 text-white px-3 py-1 text-sm hover:bg-red-600"
+                        >
+                          حذف الملف
+                        </button>
 
                         {summary.status === "pending" && (
                           <>
