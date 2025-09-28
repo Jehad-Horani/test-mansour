@@ -173,57 +173,8 @@ const fetchSummaries = async () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="retro-input flex-1"
                 />
-                <Button
-                  onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-                  variant="outline"
-                  className="retro-button bg-transparent"
-                >
-                  <PixelIcon type="filter" className="w-4 h-4 ml-2" />
-                  فلتر متقدم
-                </Button>
               </div>
 
-              {/* Basic Filter - College */}
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <Select value={selectedCollege} onValueChange={setSelectedCollege}>
-                    <SelectTrigger className="retro-input">
-                      <SelectValue placeholder="اختر الكلية" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">جميع الكليات</SelectItem>
-                      {colleges.map((college) => (
-                        <SelectItem key={college} value={college}>
-                          {college}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Advanced Filter - Major */}
-                {showAdvancedFilter && selectedCollege !== "all" && (
-                  <div className="flex-1">
-                    <Select value={selectedMajor} onValueChange={setSelectedMajor}>
-                      <SelectTrigger className="retro-input">
-                        <SelectValue placeholder="اختر التخصص" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">جميع التخصصات</SelectItem>
-                        {majorsByCollege[selectedCollege]?.map((major) => (
-                          <SelectItem key={major} value={major}>
-                            {major}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                <Button onClick={resetFilters} variant="outline" className="retro-button bg-transparent">
-                  إعادة تعيين
-                </Button>
-              </div>
             </div>
           </div>
         </RetroWindow>
