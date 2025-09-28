@@ -96,7 +96,7 @@ export default function PricingPage() {
         </RetroWindow>
 
         {/* Pricing Plans */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 gap-8 mb-12 mt-5">
           {plans.map((plan) => {
             const IconComponent = plan.icon
             return (
