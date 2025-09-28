@@ -342,7 +342,7 @@ export default function AdminUsersPage() {
                           >
                             <option value="student">طالب</option>
                             <option value="admin">مشرف</option>
-                            <option value="Ambassador">سفير</option>
+                            <option value="ambassador">سفير</option>
                           </select>
 
                           <select
