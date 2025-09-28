@@ -1,20 +1,16 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
 import { AvatarUpload } from "@/app/components/avatar-upload"
 import Link from "next/link"
 import { Edit, Settings, BookOpen, Users, Award, Calendar } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
-
 
 export default function ProfilePage() {
   const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState(profile?.avatar_url || "")
-  const supabase = createClient()
-
 
   if (!isLoggedIn) {
     return (
@@ -30,47 +26,11 @@ export default function ProfilePage() {
       </div>
     )
   }
-  const handleAvatarUpload = async (file: File) => {
-    if (!file) return
 
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `${user?.id}/${fileName}`;
-
-    const { data, error: uploadError } = await supabase.storage
-      .from("avatars") // اسم الـ bucket
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: true
-      });
-
-    if (uploadError) {
-      console.error("Error uploading avatar:", uploadError);
-      return;
-    }
-
-    const { data: publicUrlData } = supabase.storage
-      .from("avatars")
-      .getPublicUrl(filePath);
-
-    const publicUrl = publicUrlData.publicUrl;
-
-    // تحديث جدول profiles
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({ avatar_url: publicUrl })
-      .eq("id", user?.id);
-
-    if (updateError) {
-      console.error("Error updating profile avatar URL:", updateError);
-    }
-
-    // 4. تحديث الواجهة
-    setCurrentAvatarUrl(publicUrl)
-    alert("✅ تم رفع الصورة بنجاح")
+  const handleAvatarUpload = (newAvatarUrl: string) => {
+    setCurrentAvatarUrl(newAvatarUrl)
+    alert("✅ تم تحديث الصورة الشخصية بنجاح")
   }
-
-
 
   const stats = profile?.stats || {
     coursesEnrolled: 0,
@@ -87,6 +47,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
       <div className="max-w-6xl mx-auto">
+
         {/* Profile Header */}
         <RetroWindow title="الملف الشخصي">
           <div className="p-6">
@@ -98,7 +59,7 @@ export default function ProfilePage() {
                     currentAvatarUrl={currentAvatarUrl}
                     userId={user.id}
                     userName={profile?.name || "مستخدم"}
-                    onAvatarUpdate={handleAvatarUpload} // ← هون ضفت فنكشن الرفع
+                    onAvatarUpdate={handleAvatarUpload}
                     size="lg"
                   />
                 )}
@@ -119,10 +80,7 @@ export default function ProfilePage() {
                   <div>
                     <div className="mb-4">
                       <span className="text-sm text-gray-600">نوع الاشتراك: </span>
-                      <span
-                        className="font-bold px-2 py-1 text-xs rounded"
-                        style={{ background: "var(--accent)", color: "white" }}
-                      >
+                      <span className="font-bold px-2 py-1 text-xs rounded" style={{ background: "var(--accent)", color: "white" }}>
                         {getTierLabel(profile?.subscription_tier)}
                       </span>
                     </div>
@@ -162,7 +120,6 @@ export default function ProfilePage() {
                     <div className="text-sm text-gray-600">المقررات المسجلة</div>
                   </div>
                 </div>
-
                 <div className="text-center">
                   <div className="retro-window bg-white p-4">
                     <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
@@ -172,7 +129,6 @@ export default function ProfilePage() {
                     <div className="text-sm text-gray-600">الكتب المملوكة</div>
                   </div>
                 </div>
-
                 <div className="text-center">
                   <div className="retro-window bg-white p-4">
                     <Users className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
@@ -182,7 +138,6 @@ export default function ProfilePage() {
                     <div className="text-sm text-gray-600">الاستشارات</div>
                   </div>
                 </div>
-
                 <div className="text-center">
                   <div className="retro-window bg-white p-4">
                     <Award className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />

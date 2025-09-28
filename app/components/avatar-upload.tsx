@@ -11,7 +11,7 @@ interface AvatarUploadProps {
   currentAvatarUrl?: string
   userId: string
   userName: string
-  onAvatarUpdate: (file: File) => void // <-- بدل string إلى File
+  onAvatarUpdate: (newAvatarUrl: string) => void
   size?: "sm" | "md" | "lg"
 }
 
@@ -37,51 +37,46 @@ export function AvatarUpload({
       setUploading(true)
 
       // Validate file
-      if (!file.type.startsWith('image/')) {
-        throw new Error('يجب أن يكون الملف صورة')
+      if (!file.type.startsWith("image/")) {
+        throw new Error("يجب أن يكون الملف صورة")
       }
-
       if (file.size > 5 * 1024 * 1024) {
-        throw new Error('حجم الملف يجب أن يكون أقل من 5 ميجابايت')
+        throw new Error("حجم الملف يجب أن يكون أقل من 5 ميجابايت")
       }
 
       // Create file name
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${userId}-${Date.now()}.${fileExt}`
-      const filePath = `${userId}/${fileName}`;
+      const fileExt = file.name.split(".").pop()
+      const fileName = `${Date.now()}.${fileExt}`
+      const filePath = `${userId}/${fileName}` // مهم جداً: مجلد باسم userId
 
-      // Upload to storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('avatars')
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
         .upload(filePath, file, { upsert: true })
 
       if (uploadError) throw uploadError
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from('avatars')
+        .from("avatars")
         .getPublicUrl(filePath)
+
+      if (!urlData.publicUrl) throw new Error("فشل في جلب رابط الصورة")
 
       // Update profile in database
       const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          avatar_url: urlData.publicUrl,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId)
+        .from("profiles")
+        .update({ avatar_url: urlData.publicUrl })
+        .eq("id", userId)
 
       if (updateError) throw updateError
 
-      toast.success('تم تحديث صورة الملف الشخصي بنجاح')
+      toast.success("تم تحديث صورة الملف الشخصي بنجاح")
       setPreviewUrl(urlData.publicUrl)
-
-      if (onAvatarUpdate) {
-        onAvatarUpdate(urlData.publicUrl)
-      }
+      onAvatarUpdate(urlData.publicUrl)
 
     } catch (error: any) {
-      console.error('Error uploading avatar:', error)
+      console.error("Error uploading avatar:", error)
       toast.error(`خطأ في رفع الصورة: ${error.message}`)
     } finally {
       setUploading(false)
@@ -106,40 +101,36 @@ export function AvatarUpload({
   const removeAvatar = async () => {
     try {
       setUploading(true)
-
       const { error } = await supabase
-        .from('profiles')
-        .update({
-          avatar_url: null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId)
+        .from("profiles")
+        .update({ avatar_url: null })
+        .eq("id", userId)
 
       if (error) throw error
 
-      toast.success('تم حذف صورة الملف الشخصي')
+      toast.success("تم حذف صورة الملف الشخصي")
       setPreviewUrl(null)
-
-      if (onAvatarUpdate) {
-        onAvatarUpdate
-      }
-
+      onAvatarUpdate("")
     } catch (error: any) {
-      console.error('Error removing avatar:', error)
-      toast.error('خطأ في حذف الصورة')
+      console.error("Error removing avatar:", error)
+      toast.error("خطأ في حذف الصورة")
     } finally {
       setUploading(false)
     }
   }
 
   const displayUrl = previewUrl || currentAvatarUrl
-  const userInitials = userName?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'
+  const userInitials = userName
+    ?.split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2) || "U"
 
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="relative">
         <Avatar className={`${sizeClasses[size]} border-2 border-gray-300`}>
-          <AvatarImage src={displayUrl} alt={userName} />
+          <AvatarImage src={displayUrl || ""} alt={userName} />
           <AvatarFallback className="text-lg font-semibold bg-gray-100">
             {userInitials}
           </AvatarFallback>
@@ -167,12 +158,10 @@ export function AvatarUpload({
           asChild
         >
           <label htmlFor={`avatar-upload-${userId}`} className="cursor-pointer">
-            {uploading ? (
-              <>جاري الرفع...</>
-            ) : (
+            {uploading ? <>جاري الرفع...</> : (
               <>
                 <Camera className="w-4 h-4 ml-1" />
-                {displayUrl ? 'تغيير' : 'رفع صورة'}
+                {displayUrl ? "تغيير" : "رفع صورة"}
               </>
             )}
           </label>
