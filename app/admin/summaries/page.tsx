@@ -39,7 +39,7 @@ export default function AdminSummariesPage() {
   const fetchSummaries = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/admin/summries")
+      const res = await fetch("/api/summaries")
       if (!res.ok) throw new Error("فشل في جلب الملخصات")
       const data: Summary[] = await res.json()
 
