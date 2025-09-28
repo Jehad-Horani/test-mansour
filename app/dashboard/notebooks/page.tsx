@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import Link from "next/link"
 
 interface Lecture {
   id: string
@@ -48,6 +49,7 @@ export default function NotebooksPage() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [showUploadForm, setShowUploadForm] = useState(false)
+  const [approvedSearch, setApprovedSearch] = useState("")
 
   const supabase = createClient()
 
@@ -189,6 +191,17 @@ export default function NotebooksPage() {
       default: return 'bg-yellow-100 text-yellow-800'
     }
   }
+
+  const filteredApprovedLectures = approvedLectures.filter((lecture) => {
+    const query = approvedSearch.toLowerCase()
+    return (
+      lecture.title.toLowerCase().includes(query) ||
+      lecture.description?.toLowerCase().includes(query) ||
+      lecture.subject_name.toLowerCase().includes(query) ||
+      lecture.major.toLowerCase().includes(query)
+    )
+  })
+
 
   if (!isLoggedIn) return null
 
@@ -419,54 +432,48 @@ export default function NotebooksPage() {
           {/* Approved Lectures */}
           <RetroWindow title="المحاضرات المقبولة">
             <div className="p-4">
-              {approvedLectures.length === 0 ? (
-                <div className="text-center py-8">
-                  <CheckCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600">لا توجد محاضرات مقبولة حالياً</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {approvedLectures.slice(0, 10).map((lecture) => (
-                    <div key={lecture.id} className="bg-green-50 border border-green-200 p-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-green-800 mb-1">{lecture.title}</h4>
-                          <p className="text-sm text-green-600 mb-2">{lecture.description}</p>
-                          <div className="text-xs text-green-500">
-                            {lecture.subject_name} • {lecture.major}
-                          </div>
-                        </div>
-                        {lecture.file_url && (
-                          <Button
-                            asChild
-                            size="sm"
-                            className="retro-button bg-green-500 text-white"
-                          >
-                            <a href={lecture.file_url} target="_blank" rel="noopener noreferrer">
-                              <FileText className="w-3 h-3 mr-1" />
-                              تحميل
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                  {approvedLectures.length > 10 && (
-                    <div className="text-center">
-                      <Button
-                        asChild
-                        variant="outline"
-                        className="retro-button bg-transparent"
-                      >
-                        <a href="/lectures">عرض جميع المحاضرات المقبولة</a>
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
+                    {/* Search Input */}
+            <div className="mb-4">
+              <Input
+                placeholder="ابحث عن محاضرة..."
+                value={approvedSearch}
+                onChange={(e) => setApprovedSearch(e.target.value)}
+                className="retro-button"
+              />
             </div>
-          </RetroWindow>
+
+               {filteredApprovedLectures.length === 0 ? (
+              <div className="text-center py-8">
+                <CheckCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-600">لا توجد محاضرات مطابقة للبحث</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredApprovedLectures.slice(0, 10).map((lecture) => (
+                  <div
+                    key={lecture.id}
+                    className="p-4 retro-window bg-white shadow-md"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-bold text-lg">{lecture.title}</h3>
+                        <p className="text-sm text-gray-600">
+                          {lecture.subject_name} - {lecture.university_name}
+                        </p>
+                        <p className="text-sm text-gray-500">{lecture.major}</p>
+                      </div>
+                        <Button className="retro-button bg-green-600 text-white hover:bg-green-700">
+                      <Link href={`/lectures/${lecture.id}`}>
+                          عرض التفاصيل
+                      </Link>
+                        </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </RetroWindow>
         </div>
       </div>
     </div>
