@@ -28,7 +28,7 @@ export default function HomePage() {
             <Button asChild className="retro-button text-white" style={{ background: "var(--primary)" }}>
               <Link href="/market">ادخل السوق</Link>
             </Button>
-           
+
           </div>
         </div>
       </section>
@@ -40,7 +40,7 @@ export default function HomePage() {
               {/* Law College */}
               <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
                 <div className="p-6 text-center">
-                  <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4"  />
+                  <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4" />
                   <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     كلية الحقوق
                   </h3>
@@ -51,7 +51,7 @@ export default function HomePage() {
               {/* IT College */}
               <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
                 <div className="p-6 text-center">
-                  <PixelIcon type="code" className="w-12 h-12 mx-auto mb-4"  />
+                  <PixelIcon type="code" className="w-12 h-12 mx-auto mb-4" />
                   <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     كلية تكنولوجيا المعلومات
                   </h3>
@@ -62,7 +62,7 @@ export default function HomePage() {
               {/* Business College */}
               <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
                 <div className="p-6 text-center">
-                  <PixelIcon type="briefcase" className="w-12 h-12 mx-auto mb-4"  />
+                  <PixelIcon type="briefcase" className="w-12 h-12 mx-auto mb-4" />
                   <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     كلية إدارة الأعمال
                   </h3>
@@ -101,7 +101,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-             
+
 
               {/* Ambassadors Feature */}
               <div className="retro-window bg-white">
@@ -152,16 +152,16 @@ export default function HomePage() {
                     <span className="text-2xl">📝</span>
                   </div>
                   <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-                    المذكرات الدراسية
+                    المحاضرات
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">ارفع وشارك مذكراتك الدراسية مع الطلاب الآخرين</p>
+                  <p className="text-sm text-gray-600 mb-4">ارفع وشارك محاضراتك الدراسية مع الطلاب الآخرين</p>
                   <Button
                     asChild
                     size="sm"
                     className="retro-button"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
-                    <Link href="/dashboard/notebooks">تصفح المذكرات</Link>
+                    <Link href="/dashboard/notebooks">تصفح المحاضرات</Link>
                   </Button>
                 </div>
               </div>
@@ -318,7 +318,7 @@ export default function HomePage() {
                     سوق الكتب
                   </Link>
                 </li>
-                
+
                 <li>
                   <Link href="/ambassadors" className="hover:underline text-white/90 hover:text-white">
                     السفراء

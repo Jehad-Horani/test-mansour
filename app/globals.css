@@ -125,7 +125,7 @@
   right: 0;
   top: 60px;
   bottom: 0;
-  overflow-y: auto;
+  overflow-y:hidden;
   z-index: 40;
   /* Added responsive behavior - hidden on mobile by default */
   transform: translateX(100%);
