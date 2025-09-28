@@ -80,7 +80,6 @@ END:VCALENDAR`
     ([
     {
       ...newCourse,
-      user_id: supabase.auth.getUser().data.user?.id
     }
   ])
 
