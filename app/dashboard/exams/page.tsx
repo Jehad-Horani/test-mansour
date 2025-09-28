@@ -1,35 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { RetroWindow } from "@/app/components/retro-window" // Replaced WindowCard import with RetroWindow
+import { useState, useEffect } from "react"
+import { RetroWindow } from "@/app/components/retro-window"
 import { RetroToggle } from "@/app/components/retro-toggle"
 import Link from "next/link"
-
-const mockExams = [
-  {
-    id: 1,
-    course: "مبادئ القانون",
-    code: "LAW 101",
-    date: "2024-02-15",
-    time: "09:00",
-    location: "قاعة الامتحانات الكبرى",
-    type: "نهائي",
-    status: "قادم",
-  },
-  {
-    id: 2,
-    course: "مقدمة في البرمجة",
-    code: "CS 101",
-    date: "2024-02-20",
-    time: "10:00",
-    location: "مختبر الحاسب 2",
-    type: "عملي",
-    status: "قادم",
-  },
-]
+import { createClient } from "@/lib/supabase/client"
 
 export default function ExamsPage() {
-  const [exams, setExams] = useState(mockExams)
+  const supabase = createClient()
+  const [exams, setExams] = useState<any[]>([])
   const [newExam, setNewExam] = useState({
     course: "",
     code: "",
@@ -41,57 +20,92 @@ export default function ExamsPage() {
   const [editingExam, setEditingExam] = useState<any>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
 
-  const handleAddExam = () => {
+  // ✅ جلب الامتحانات للمستخدم الحالي فقط
+  const fetchExams = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data, error } = await supabase
+      .from("exams")
+      .select("*")
+      .eq("user_id", user.id) // 🔑 فلترة حسب user_id
+      .order("date", { ascending: true })
+
+    if (error) {
+      console.error(error)
+    } else {
+      setExams(data || [])
+    }
+  }
+
+  useEffect(() => {
+    fetchExams()
+  }, [])
+
+  // ✅ إضافة امتحان
+  const handleAddExam = async () => {
     if (!newExam.course || !newExam.code || !newExam.date || !newExam.time) {
       alert("يرجى ملء جميع الحقول المطلوبة")
       return
     }
 
-    setExams((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        ...newExam,
-        status: "قادم",
-      },
-    ])
-
-    setNewExam({
-      course: "",
-      code: "",
-      date: "",
-      time: "",
-      location: "",
-      type: "",
-    })
-
-    alert("تم إضافة الامتحان بنجاح!")
-  }
-
-  const handleEditExam = (exam: any) => {
-    setEditingExam({ ...exam })
-    setEditModalOpen(true)
-  }
-
-  const handleSaveEdit = () => {
-    if (!editingExam.course || !editingExam.code || !editingExam.date || !editingExam.time) {
-      alert("يرجى ملء جميع الحقول المطلوبة")
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      alert("الرجاء تسجيل الدخول أولاً")
       return
     }
 
-    setExams((prev) => prev.map((item) => (item.id === editingExam.id ? editingExam : item)))
-    setEditModalOpen(false)
-    setEditingExam(null)
-    alert("تم تحديث الامتحان بنجاح!")
-  }
+    const { data, error } = await supabase
+      .from("exams")
+      .insert([{ ...newExam, user_id: user.id }]) // ✅ ربط باليوزر
+      .select()
 
-  const handleDeleteExam = (examId: number) => {
-    if (confirm("هل أنت متأكد من حذف هذا الامتحان؟")) {
-      setExams((prev) => prev.filter((item) => item.id !== examId))
-      alert("تم حذف الامتحان بنجاح!")
+    if (error) {
+      console.error(error)
+      alert("خطأ أثناء الإضافة")
+    } else {
+      setExams((prev) => [...prev, data[0]])
+      setNewExam({ course: "", code: "", date: "", time: "", location: "", type: "" })
+      alert("تمت إضافة الامتحان بنجاح!")
     }
   }
 
+  // ✅ تعديل امتحان
+  const handleSaveEdit = async () => {
+    const { data, error } = await supabase
+      .from("exams")
+      .update(editingExam)
+      .eq("id", editingExam.id)
+      .select()
+
+    if (error) {
+      console.error(error)
+      alert("خطأ أثناء التعديل")
+    } else {
+      setExams((prev) =>
+        prev.map((item) => (item.id === editingExam.id ? data[0] : item))
+      )
+      setEditModalOpen(false)
+      setEditingExam(null)
+      alert("تم تحديث الامتحان!")
+    }
+  }
+
+  // ✅ حذف امتحان
+  const handleDeleteExam = async (examId: string) => {
+    if (confirm("هل أنت متأكد من الحذف؟")) {
+      const { error } = await supabase.from("exams").delete().eq("id", examId)
+      if (error) {
+        console.error(error)
+        alert("خطأ أثناء الحذف")
+      } else {
+        setExams((prev) => prev.filter((e) => e.id !== examId))
+        alert("تم الحذف")
+      }
+    }
+  }
+
+  // ✅ Export to ICS
   const exportToICS = () => {
     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
@@ -103,11 +117,15 @@ ${exams
     (exam) => `BEGIN:VEVENT
 UID:${exam.id}@takhassus.com
 DTSTART:${exam.date.replace(/-/g, "")}T${exam.time.replace(":", "")}00
-DTEND:${exam.date.replace(/-/g, "")}T${(Number.parseInt(exam.time.split(":")[0]) + 2).toString().padStart(2, "0")}${exam.time.split(":")[1]}00
+DTEND:${exam.date.replace(/-/g, "")}T${(
+      Number.parseInt(exam.time.split(":")[0]) + 2
+    )
+      .toString()
+      .padStart(2, "0")}${exam.time.split(":")[1]}00
 SUMMARY:امتحان ${exam.course}
 DESCRIPTION:${exam.type} - ${exam.location}
 LOCATION:${exam.location}
-END:VEVENT`,
+END:VEVENT`
   )
   .join("\n")}
 END:VCALENDAR`
@@ -139,7 +157,7 @@ END:VCALENDAR`
         </div>
       </section>
 
-      {/* Upcoming Exams */}
+      {/* Exams */}
       <section className="px-4 pb-8">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
@@ -153,7 +171,7 @@ END:VCALENDAR`
 
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             {exams.map((exam) => (
-              <RetroWindow key={exam.id} title={exam.code} className="hover:shadow-lg transition-shadow">
+              <RetroWindow key={exam.id} title={exam.code}>
                 <div className="space-y-3">
                   <h3 className="font-semibold" style={{ color: "var(--ink)" }}>
                     {exam.course}
@@ -162,15 +180,16 @@ END:VCALENDAR`
                     <p>التاريخ: {exam.date}</p>
                     <p>الوقت: {exam.time}</p>
                     <p>المكان: {exam.location}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="retro-button text-xs px-2 py-1">{exam.type}</span>
-                      <span className="retro-button text-xs px-2 py-1" style={{ background: "#ffd93d", color: "#000" }}>
-                        {exam.status}
-                      </span>
-                    </div>
+                    <p>النوع: {exam.type}</p>
                   </div>
                   <div className="flex gap-2">
-                    <button className="retro-button" onClick={() => handleEditExam(exam)}>
+                    <button
+                      className="retro-button"
+                      onClick={() => {
+                        setEditingExam(exam)
+                        setEditModalOpen(true)
+                      }}
+                    >
                       تعديل
                     </button>
                     <button
