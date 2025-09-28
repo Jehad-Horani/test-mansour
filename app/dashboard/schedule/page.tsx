@@ -231,8 +231,8 @@ END:VCALENDAR`
                   onChange={(e) => setNewCourse({ ...newCourse, day: e.target.value })}
                 >
                   <option value="">اختر اليوم</option>
-                  <option value="الأحد">أحد - ثلاثاء - خميس</option>
-                  <option value="الاثنين"> اثنين - اربعاء</option>
+                  <option value="أحد - ثلاثاء - خميس">أحد - ثلاثاء - خميس</option>
+                  <option value="اثنين - اربعاء"> اثنين - اربعاء</option>
                   
                 </select>
               </div>
