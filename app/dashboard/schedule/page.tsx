@@ -76,7 +76,13 @@ END:VCALENDAR`
       return
     }
 
-    const { data, error } = await supabase.from("schedules").insert([newCourse])
+    const { data, error } = await supabase.from("schedules").insert
+    ([
+    {
+      ...newCourse,
+      user_id: supabase.auth.getUser().data.user?.id
+    }
+  ])
 
     if (error) {
       console.error(error)
