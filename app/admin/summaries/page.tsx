@@ -39,19 +39,13 @@ export default function AdminSummariesPage() {
   const fetchSummaries = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/admin/summaries")
+      const res = await fetch("/api/admin/summries")
       if (!res.ok) throw new Error("فشل في جلب الملخصات")
       const data: Summary[] = await res.json()
 
-      // نضيف status إذا مو موجود من API
-      const enrichedData = data.map((summary) => ({
-        ...summary,
-        status: summary.status || "pending",
-      }))
-
-      let filtered = enrichedData
+      let filtered = data
       if (filter !== "all") {
-        filtered = enrichedData.filter((s) => s.status === filter)
+        filtered = data.filter((s) => s.status === filter)
       }
 
       setSummaries(filtered || [])
@@ -146,6 +140,7 @@ export default function AdminSummariesPage() {
   return (
     <div className="min-h-screen bg-retro-bg p-4">
       <div className="max-w-7xl mx-auto">
+        {/* Header */}
         <div className="mb-6">
           <RetroWindow title="إدارة الملخصات">
             <div className="p-4">
@@ -169,6 +164,7 @@ export default function AdminSummariesPage() {
                 </div>
               </div>
 
+              {/* Statistics */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div className="bg-yellow-50 border border-yellow-200 p-3 text-center">
                   <div className="text-lg font-bold text-yellow-800">
@@ -197,6 +193,7 @@ export default function AdminSummariesPage() {
           </RetroWindow>
         </div>
 
+        {/* Summaries List */}
         <RetroWindow title="قائمة الملخصات">
           <div className="p-4">
             {loading ? (
@@ -286,6 +283,7 @@ export default function AdminSummariesPage() {
           </div>
         </RetroWindow>
 
+        {/* Rejection Modal */}
         {showRejectionModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white border-4 border-black p-6 max-w-md w-full mx-4">
