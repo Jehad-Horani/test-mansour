@@ -20,7 +20,6 @@ interface Summary {
   file_url: string
   file_name: string
   file_size: number
-  user_id: string
   is_approved: boolean
   created_at: string
 }
