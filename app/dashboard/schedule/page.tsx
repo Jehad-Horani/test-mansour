@@ -45,18 +45,18 @@ PRODID:-//TAKHASSUS//Schedule//AR
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 ${schedule
-  .map(
-    (item) => `BEGIN:VEVENT
+        .map(
+          (item) => `BEGIN:VEVENT
 UID:${item.id}@takhassus.com
 DTSTART:20240101T${item.time.split(" - ")[0].replace(":", "")}00
 DTEND:20240101T${item.time.split(" - ")[1].replace(":", "")}00
 SUMMARY:${item.course}
 DESCRIPTION:${item.instructor} - ${item.location}
 LOCATION:${item.location}
-RRULE:FREQ=WEEKLY;BYDAY=${item.day === "الأحد" ? "SU" : item.day === "الاثنين" ? "MO" : item.day === "الثلاثاء" ? "TU" : item.day === "الأربعاء" ? "WE" : "TH"}
+RRULE:FREQ=WEEKLY;BYDAY=${item.day === "الأحد" ? "SU - TU - TH" : "MO - WE" }
 END:VEVENT`,
-  )
-  .join("\n")}
+        )
+        .join("\n")}
 END:VCALENDAR`
 
     const blob = new Blob([icsContent], { type: "text/calendar" })
@@ -226,11 +226,9 @@ END:VCALENDAR`
                   onChange={(e) => setNewCourse({ ...newCourse, day: e.target.value })}
                 >
                   <option value="">اختر اليوم</option>
-                  <option value="الأحد">الأحد</option>
-                  <option value="الاثنين">الاثنين</option>
-                  <option value="الثلاثاء">الثلاثاء</option>
-                  <option value="الأربعاء">الأربعاء</option>
-                  <option value="الخميس">الخميس</option>
+                  <option value="الأحد">أحد - ثلاثاء - خميس</option>
+                  <option value="الاثنين"> اثنين - اربعاء</option>
+                  
                 </select>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
