@@ -34,9 +34,15 @@ export async function GET(
     const isOwner = user && user.id === data.seller_id
     const isAdmin = user && (await supabase.from('profiles').select('role').eq('id', user.id).single()).data?.role === 'admin'
     
-    if (data.approval_status !== 'approved' && !isOwner && !isAdmin) {
-      return NextResponse.json({ error: "Book not found" }, { status: 404 })
-    }
+  if (data.approval_status !== 'approved' && !isOwner && !isAdmin) {
+  data.seller = await supabase
+    .from('profiles')
+    .select('name, avatar_url, university, phone')
+    .eq('id', data.seller_id)
+    .single()
+    .then(res => res.data || null)
+}
+
     
     return NextResponse.json(data)
   } catch (error: any) {
