@@ -193,53 +193,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Quick Stats */}
-      <section className="py-4 px-4">
-        <div className="max-w-6xl mx-auto">
-          <RetroWindow title="إحصائياتك السريعة">
-            <div className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="retro-window bg-white p-4">
-                    <TrendingUp className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
-                    <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {profile?.stats?.uploadsCount || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">المحاضرات المرفوعة</div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="retro-window bg-white p-4">
-                    <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
-                    <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {profile?.stats?.coursesEnrolled || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">المقررات المتابعة</div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="retro-window bg-white p-4">
-                    <Calendar className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
-                    <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {profile?.stats?.booksOwned || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">الكتب المملوكة</div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="retro-window bg-white p-4">
-                    <MessageSquare className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
-                    <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {profile?.stats?.communityPoints || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">نقاط المجتمع</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </RetroWindow>
-        </div>
-      </section>
+    
 
       {/* Main Dashboard Grid */}
       <section className="py-4 px-4">
