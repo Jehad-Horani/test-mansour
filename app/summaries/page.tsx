@@ -55,7 +55,7 @@ export default function SummariesPage() {
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false)
   const { isLoggedIn } = useUserContext()
 
-const { data, loading1, error1 } = useSupabaseClient()
+  const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
     fetchSummaries()
@@ -65,21 +65,21 @@ const { data, loading1, error1 } = useSupabaseClient()
     filterSummaries()
   }, [summaries, searchTerm, selectedCollege, selectedMajor])
 
-const fetchSummaries = async () => {
-  try {
-    setLoading(true)
+  const fetchSummaries = async () => {
+    try {
+      setLoading(true)
 
-    const res = await fetch("/api/summaries") // نعمل كول على API route
-    if (!res.ok) throw new Error("فشل في جلب الملخصات")
+      const res = await fetch("/api/summaries") // نعمل كول على API route
+      if (!res.ok) throw new Error("فشل في جلب الملخصات")
 
-    const data = await res.json()
-    setSummaries(data || [])
-  } catch (error) {
-    console.error("Error fetching summaries:", error)
-  } finally {
-    setLoading(false)
+      const data = await res.json()
+      setSummaries(data || [])
+    } catch (error) {
+      console.error("Error fetching summaries:", error)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
 
   const filterSummaries = () => {
@@ -167,6 +167,8 @@ const fetchSummaries = async () => {
             <div className="space-y-4">
               {/* Search Bar */}
               <div className="flex gap-2">
+                <label className="font-bold text-lg pb-1">ابحث عن اسم المادة\الجامعة او اسم الملخص :</label>
+
                 <Input
                   placeholder="ابحث في الملخصات..."
                   value={searchTerm}
