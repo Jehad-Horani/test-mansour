@@ -412,7 +412,6 @@ export default function RegisterPage() {
                   <option value="2">السنة الثانية</option>
                   <option value="3">السنة الثالثة</option>
                   <option value="4">السنة الرابعة</option>
-                  <option value="graduate">دراسات عليا</option>
                 </select>
                 {errors.year && (
                   <p className="text-red-600 text-sm mt-1 flex items-center gap-1">

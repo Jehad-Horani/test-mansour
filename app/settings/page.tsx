@@ -20,7 +20,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("account")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  
+
   const [settings, setSettings] = useState({
     // Account settings
     name: "",
@@ -74,8 +74,6 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: "account", label: "الحساب", icon: User },
-    { id: "notifications", label: "الإشعارات", icon: Bell },
-    { id: "privacy", label: "الخصوصية", icon: Shield },
     { id: "subscription", label: "الاشتراك", icon: CreditCard },
     { id: "academic", label: "الأكاديمي", icon: GraduationCap },
   ]
@@ -176,7 +174,7 @@ export default function SettingsPage() {
     try {
       // Note: In production, you might want to soft-delete or handle this server-side
       toast.info("سيتم حذف حسابك خلال 24 ساعة. يمكنك إلغاء العملية بتسجيل الدخول مرة أخرى.")
-      
+
       // For now, just sign out
       await supabase.auth.signOut()
       router.push("/")
@@ -202,6 +200,7 @@ export default function SettingsPage() {
       </div>
     )
   }
+  const universities = ["الجامعة الأردنية", "جامعة العلوم والتكنولوجيا الأردنية", "جامعة اليرموك", "جامعة مؤتة", "جامعة عمان العربية"]
 
   return (
     <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
@@ -228,9 +227,8 @@ export default function SettingsPage() {
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center gap-3 p-3 text-right retro-button ${
-                          activeTab === tab.id ? "bg-blue-100 border-blue-300" : "bg-transparent hover:bg-gray-50"
-                        }`}
+                        className={`w-full flex items-center gap-3 p-3 text-right retro-button ${activeTab === tab.id ? "bg-blue-100 border-blue-300" : "bg-transparent hover:bg-gray-50"
+                          }`}
                       >
                         <Icon className="w-4 h-4" />
                         <span>{tab.label}</span>
@@ -281,6 +279,7 @@ export default function SettingsPage() {
                           رقم الهاتف
                         </label>
                         <Input
+                          type="phone"
                           value={settings.phone}
                           onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
                           className="retro-window"
@@ -368,9 +367,9 @@ export default function SettingsPage() {
               </RetroWindow>
             )}
 
-          
 
-           
+
+
 
             {/* Subscription Settings */}
             {activeTab === "subscription" && (
@@ -378,11 +377,11 @@ export default function SettingsPage() {
                 <div className="p-6 space-y-6">
                   <div className="text-center">
                     <Badge className="text-lg px-4 py-2 mb-4" style={{ background: "var(--accent)", color: "white" }}>
-                      {profile?.subscription_tier === 'premium' ? 'الخطة المميزة' : 
-                       profile?.subscription_tier === 'standard' ? 'الخطة القياسية' : 'الخطة المجانية'}
+                      {profile?.subscription_tier === 'premium' ? 'الخطة المميزة' :
+                        profile?.subscription_tier === 'standard' ? 'الخطة القياسية' : 'الخطة المجانية'}
                     </Badge>
                     <p className="text-gray-600 mb-4">
-                      {profile?.subscription_tier === 'free' 
+                      {profile?.subscription_tier === 'free'
                         ? 'أنت تستخدم الخطة المجانية حالياً'
                         : 'اشتراكك نشط'}
                     </p>
@@ -459,12 +458,11 @@ export default function SettingsPage() {
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
                       >
                         <option value="">اختر الجامعة</option>
-                        <option value="جامعة الملك سعود">جامعة الملك سعود</option>
-                        <option value="جامعة الملك عبدالعزيز">جامعة الملك عبدالعزيز</option>
-                        <option value="جامعة الإمام محمد بن سعود">جامعة الإمام محمد بن سعود</option>
-                        <option value="جامعة الملك فهد للبترول والمعادن">جامعة الملك فهد للبترول والمعادن</option>
-                        <option value="الجامعة الأردنية">الجامعة الأردنية</option>
-                        <option value="جامعة العلوم والتكنولوجيا الأردنية">جامعة العلوم والتكنولوجيا الأردنية</option>
+                        {universities.map((uni) => (
+                          <option key={uni} value={uni}>
+                            {uni}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
@@ -479,7 +477,7 @@ export default function SettingsPage() {
                       >
                         <option value="">اختر التخصص</option>
                         <option value="law">القانون</option>
-                        <option value="it">علوم الحاسب</option>
+                        <option value="it">تقنية المعلومات</option>
                         <option value="medical">الطب</option>
                         <option value="business">إدارة الأعمال</option>
                       </select>
@@ -493,7 +491,7 @@ export default function SettingsPage() {
                         onChange={(e) => setSettings({ ...settings, graduationYear: e.target.value })}
                         className="retro-window"
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
-                        placeholder="2025"
+                        placeholder="20??"
                       />
                     </div>
                     <div>
@@ -506,9 +504,11 @@ export default function SettingsPage() {
                         className="w-full p-2 retro-window"
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
                       >
-                        <option value="بكالوريوس">بكالوريوس</option>
-                        <option value="ماجستير">ماجستير</option>
-                        <option value="دكتوراه">دكتوراه</option>
+                        <option value="">اختر المستوى</option>
+                        <option value="1">السنة الأولى</option>
+                        <option value="2">السنة الثانية</option>
+                        <option value="3">السنة الثالثة</option>
+                        <option value="4">السنة الرابعة</option>
                       </select>
                     </div>
                   </div>
