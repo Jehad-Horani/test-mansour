@@ -88,8 +88,9 @@ const filteredAmbassadors = ambassadors.filter((amb) => {
             {/* Filters */}
             <div className="retro-window bg-gray-50">
               <div className="p-4">
-                <div className="grid md:grid-cols-4 gap-4">
+                <div className="grid md:grid-cols-1 gap-4">
                   {/* البحث */}
+                  <label>ابحث عن اسم الجامعة\التخصص او اسم السفير</label>
                   <Input
                     placeholder="ابحث عن سفير..."
                     className="retro-button"
@@ -97,41 +98,8 @@ const filteredAmbassadors = ambassadors.filter((amb) => {
                     onChange={(e) => setSearch(e.target.value)}
                   />
 
-                  {/* الفلترة حسب التخصص */}
-                  <Select value={majorFilter} onValueChange={(val) => setMajorFilter(val)}>
-                    <SelectTrigger className="retro-button">
-                      <SelectValue placeholder="التخصص" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">جميع التخصصات</SelectItem>
-                      <SelectItem value="قانون">قانون</SelectItem>
-                      <SelectItem value="تقنية">تقنية</SelectItem>
-                      <SelectItem value="طب">طب</SelectItem>
-                      <SelectItem value="إدارة أعمال">إدارة أعمال</SelectItem>
-                    </SelectContent>
-                  </Select>
+              
 
-                  {/* الفلترة حسب الجامعة */}
-                  <Select
-                    value={universityFilter}
-                    onValueChange={(val) => setUniversityFilter(val)}
-                  >
-                    <SelectTrigger className="retro-button">
-                      <SelectValue placeholder="الجامعة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">جميع الجامعات</SelectItem>
-                      <SelectItem value="الجامعة الأردنية">الجامعة الأردنية</SelectItem>
-                      <SelectItem value="جامعة العلوم والتكنولوجيا">
-                        جامعة العلوم والتكنولوجيا
-                      </SelectItem>
-                      <SelectItem value="جامعة مؤتة">جامعة مؤتة</SelectItem>
-                      <SelectItem value="جامعة اليرموك">جامعة اليرموك</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-               
-                
                 </div>
               </div>
             </div>
