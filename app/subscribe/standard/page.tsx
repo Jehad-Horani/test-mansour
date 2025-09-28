@@ -9,13 +9,24 @@ import { RetroWindow } from "@/app/components/retro-window"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
-import { CreditCard, Shield, Check } from "lucide-react"
+import { CreditCard, Shield, Check, Tag } from "lucide-react"
 
 export default function SubscribeStandardPage() {
   const router = useRouter()
   const { user, updateSubscription } = useUser()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [discountCode, setDiscountCode] = useState("")
+  const [isDiscountApplied, setIsDiscountApplied] = useState(false)
+
+  // السعر الأساسي
+  const basePrice = 15
+  // السعر بعد الخصم (20%)
+  const discountedPrice = (basePrice * 0.8).toFixed(2)
+
+  // كودات الخصم المتاحة
+  const validCodes = ["SAVE20", "STUDENT20"]
+
   const [formData, setFormData] = useState({
     cardNumber: "",
     expiryDate: "",
@@ -52,6 +63,16 @@ export default function SubscribeStandardPage() {
     }))
   }
 
+  const applyDiscount = () => {
+    if (validCodes.includes(discountCode.trim().toUpperCase())) {
+      setIsDiscountApplied(true)
+      setError("")
+    } else {
+      setIsDiscountApplied(false)
+      setError("كود الخصم غير صالح")
+    }
+  }
+
   return (
     <div className="min-h-screen bg-retro-bg p-4">
       <div className="max-w-2xl mx-auto">
@@ -79,7 +100,18 @@ export default function SubscribeStandardPage() {
                 </div>
               </div>
               <div className="mt-4 p-3 bg-blue-100 rounded">
-                <div className="text-2xl font-bold text-blue-800">15 دينار / شهر</div>
+                {isDiscountApplied ? (
+                  <>
+                    <div className="text-2xl font-bold text-blue-800 line-through">
+                      {basePrice} دينار / شهر
+                    </div>
+                    <div className="text-2xl font-bold text-green-700">
+                      {discountedPrice} دينار / شهر (بعد الخصم)
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-2xl font-bold text-blue-800">{basePrice} دينار / شهر</div>
+                )}
               </div>
             </div>
 
@@ -88,6 +120,28 @@ export default function SubscribeStandardPage() {
                 <p className="text-red-800 text-sm">{error}</p>
               </div>
             )}
+
+            {/* Discount Code */}
+            <div className="retro-pane p-4">
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-black">
+                <Tag className="w-5 h-5" />
+                كود الخصم
+              </h3>
+              <div className="flex gap-3">
+                <Input
+                  placeholder="ادخل كود الخصم"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value)}
+                  className="retro-input"
+                />
+                <Button type="button" onClick={applyDiscount} className="retro-button bg-green-600 text-white">
+                  تطبيق
+                </Button>
+              </div>
+              {isDiscountApplied && (
+                <p className="text-green-700 text-sm mt-2">تم تطبيق كود الخصم بنجاح ✅</p>
+              )}
+            </div>
 
             {/* Payment Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -168,7 +222,9 @@ export default function SubscribeStandardPage() {
                   <Shield className="w-5 h-5" />
                   <span className="font-semibold">دفع آمن ومشفر</span>
                 </div>
-                <p className="text-sm text-green-700 mt-1">جميع معلومات الدفع محمية بتشفير SSL 256-bit</p>
+                <p className="text-sm text-green-700 mt-1">
+                  جميع معلومات الدفع محمية بتشفير SSL 256-bit
+                </p>
               </div>
 
               {/* Action Buttons */}
@@ -186,7 +242,9 @@ export default function SubscribeStandardPage() {
                   disabled={loading}
                   className="retro-button bg-blue-600 text-white hover:bg-blue-700"
                 >
-                  {loading ? "جاري المعالجة..." : "اشترك الآن - 15 دينار"}
+                  {loading
+                    ? "جاري المعالجة..."
+                    : `اشترك الآن - ${isDiscountApplied ? discountedPrice : basePrice} دينار`}
                 </Button>
               </div>
             </form>
