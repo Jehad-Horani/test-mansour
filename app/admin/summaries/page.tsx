@@ -46,7 +46,7 @@ export default function AdminSummariesPage() {
       // تحويل is_approved -> status
       const mapped = data.map((s) => ({
         ...s,
-        status: s.is_approved === null ? "pending" : s.is_approved ? "approved" : "rejected"
+        status: s.is_approved === null ? "pending" : s.is_approved ? "approved" : "pending"
       }))
 
       let filtered = mapped
