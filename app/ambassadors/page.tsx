@@ -19,7 +19,7 @@ export default function AmbassadorsPage() {
       id: user?.id,
       name: profile?.name,
       major: profile?.major,
-      university: profile?.major,
+      university: profile?.university,
       phone: profile?.phone,
       languages: ["العربية", "الإنجليزية"],
       available: true,
