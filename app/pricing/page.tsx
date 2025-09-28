@@ -25,7 +25,7 @@ export default function PricingPage() {
         { name: "محتوى حصري", included: false },
       ],
       cta: "ابدأ مجاناً",
-      ctaLink: "/register",
+      ctaLink: "auth/register",
       popular: false,
     },
     {
@@ -44,7 +44,7 @@ export default function PricingPage() {
         { name: "جدولة الامتحانات والمحاضرات", included: true },
         { name: "دعم فني متقدم (24/7)", included: true },
         { name: "إحصائيات التقدم", included: true },
-        { name: "محتوى حصري", included: false },
+        { name: "محتوى حصري", included: true },
       ],
       cta: "اشترك الآن",
       ctaLink: "/subscribe/standard",
@@ -96,7 +96,7 @@ export default function PricingPage() {
         </RetroWindow>
 
         {/* Pricing Plans */}
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 gap-8 mb-12">
           {plans.map((plan) => {
             const IconComponent = plan.icon
             return (
