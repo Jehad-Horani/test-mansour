@@ -125,11 +125,7 @@ export default function AmbassadorsPage() {
                   <div className="p-6">
                     {/* Ambassador Header */}
                     <div className="text-center mb-6">
-                      <img
-                        src={ambassador.image || "/placeholder.svg"}
-                        alt={ambassador.name}
-                        className="w-20 h-20 rounded-full bg-gray-200 mx-auto mb-3 border-2 border-gray-300"
-                      />
+                   
                       <h3 className="font-bold text-xl mb-2 text-gray-800">{ambassador.name}</h3>
                       <div className="space-y-1">
                         <p className="text-lg font-semibold text-blue-600">{ambassador.specialty}</p>
@@ -137,55 +133,20 @@ export default function AmbassadorsPage() {
                       </div>
                     </div>
 
-                    {/* Ambassador Stats */}
-                    <div className="space-y-3 mb-6">
-                      {/* <div className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                          <span className="font-semibold">{ambassador.rating}</span>
-                        </div>
-                        <span className="text-gray-600">{ambassador.sessions} جلسة مكتملة</span>
-                      </div> */}
-
-                      {/* <div className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded">
-                        <span className="text-gray-600">سنوات الخبرة:</span>
-                        <span className="font-semibold">{ambassador.experience}</span>
-                      </div> */}
-
-                      {/* <div className="text-center">
-                        <Badge
-                          variant={ambassador.available ? "default" : "secondary"}
-                          className={`text-sm px-3 py-1 ${ambassador.available ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-                        >
-                          {ambassador.available ? "متاح للمحادثة" : "مشغول حالياً"}
-                        </Badge>
-                      </div> */}
-                    </div>
+                  
 
                     {/* Action Buttons */}
-                    {/* <div className="space-y-3">
-                      <Button
-                        asChild
-                        className="retro-button w-full bg-blue-600 hover:bg-blue-700 text-white"
-                        disabled={!ambassador.available}
-                      >
-                        <Link href={`/ambassadors/${ambassador.id}/profile`}>
-                          <User className="w-4 h-4 ml-2" />
-                          عرض الصفحة الشخصية
-                        </Link>
-                      </Button>
-
+                     <div className="space-y-3">
                       <Button
                         asChild
                         className="retro-button w-full bg-green-600 hover:bg-green-700 text-white"
-                        disabled={!ambassador.available}
                       >
                         <Link href={`/ambassadors/${ambassador.id}/chat`}>
                           <MessageCircle className="w-4 h-4 ml-2" />
                           بدء محادثة
                         </Link>
                       </Button>
-                    </div> */}
+                    </div>
                   </div>
                 </div>
               ))}
