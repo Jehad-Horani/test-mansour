@@ -90,9 +90,9 @@ const filteredAmbassadors = ambassadors.filter((amb) => {
               <div className="p-4">
                 <div className="grid md:grid-cols-1 gap-4">
                   {/* البحث */}
-                  <label>ابحث عن اسم الجامعة\التخصص او اسم السفير</label>
+                  <label className="font-bold text-3xl">ابحث عن اسم الجامعة\التخصص او اسم السفير :</label>
                   <Input
-                    placeholder="ابحث عن سفير..."
+                    placeholder="ابحث ..."
                     className="retro-button"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
