@@ -178,10 +178,9 @@ export default function PricingPage() {
               <tbody>
                 {[
                   { feature: "عدد الكتب المتاحة", free: "5 شهرياً", standard: "غير محدود", premium: "غير محدود" },
-                  { feature: "تحميل الكتب", free: "✗", standard: "✓", premium: "✓" },
+                  { feature: "تحميل الكتب", free: "1 شهريا", standard: "✓", premium: "غير محدود" },
                   { feature: "رفع الملفات", free: "3 شهرياً", standard: "غير محدود", premium: "غير محدود" },
                   { feature: "استشارات السفراء", free: "✗", standard: "محدودة", premium: "غير محدود" },
-                  { feature: "الجلسات الجماعية", free: "✗", standard: "✗", premium: "✓" },
                   { feature: "الدعم الفني", free: "بريد إلكتروني", standard: "أولوية", premium: "24/7" },
                   { feature: "المحتوى الحصري", free: "✗", standard: "✗", premium: "✓" },
                   { feature: "التقارير المفصلة", free: "✗", standard: "أساسية", premium: "متقدمة" },
