@@ -40,14 +40,14 @@ export default function AdminBooksPage() {
       .channel('admin-books-changes')
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'books' },
-        (payload) => {
+        (payload: any) => {
           console.log('New book submitted:', payload)
           loadPendingBooks()
         }
       )
       .on('postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'books' },
-        (payload) => {
+        (payload: any) => {
           console.log('Book updated:', payload)
           loadPendingBooks()
         }
