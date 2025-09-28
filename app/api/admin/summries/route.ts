@@ -4,7 +4,9 @@ import { createAdminClient, authServer } from "@/lib/supabase/server"
 
 export async function GET() {
   try {
+    await authServer.requireAdmin()
     const supabase = createAdminClient()
+
     const { data, error } = await supabase
       .from("summaries")
       .select("*")
@@ -15,12 +17,14 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Ensure we return an array
-    const summaries = Array.isArray(data) ? data : []
+    const summaries = (data || []).map((s) => ({
+      ...s,
+      status: s.status || (s.is_approved ? "approved" : "pending"), // fallback
+    }))
 
     return NextResponse.json(summaries)
   } catch (error: any) {
-    console.error("Unexpected error in GET /api/admin/summries:", error)
+    console.error("Unexpected error in GET /api/summaries:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

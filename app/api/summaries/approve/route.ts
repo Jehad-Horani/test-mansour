@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
       .from("summaries")
       .update({
+        status: "approved",
         is_approved: true,
         approved_at: new Date().toISOString()
       })

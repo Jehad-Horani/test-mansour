@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
       .from("summaries")
       .update({
+        status: "rejected",
         is_approved: false,
         rejection_reason: rejectionReason,
         approved_at: new Date().toISOString()
