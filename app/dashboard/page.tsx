@@ -263,7 +263,6 @@ export default function DashboardPage() {
                     الجدول الدراسي
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">نظم جدولك الدراسي</p>
-                  <div className="text-xs text-gray-500">{profile?.stats?.coursesEnrolled || 0} مقررات مسجلة</div>
                 </div>
               </RetroWindow>
             </Link>
