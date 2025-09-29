@@ -32,7 +32,6 @@ export default function HomePage() {
 
 <section className="py-12 px-4">
   <div className="max-w-full mx-auto">
-    <RetroWindow title="الكليات المتاحة">
       <div className="flex space-x-6 overflow-x-auto scrollbar-hide py-4 px-2">
         {/* كلية الحقوق */}
         <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
@@ -165,7 +164,7 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-    </RetroWindow>
+    
   </div>
 </section>
 
