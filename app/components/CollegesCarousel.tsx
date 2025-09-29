@@ -11,29 +11,33 @@ export default function Carousel() {
     if (!carouselRef.current) return;
 
     const el = carouselRef.current;
-    const cards = Array.from(el.children) as HTMLElement[];
 
-    // نسخ الكليات بالمقلوب ووضعها بعد القائمة الأصلية
-    cards.reverse().forEach(card => {
+    // احفظ الكروت الأصلية
+    const originalCards = Array.from(el.children) as HTMLElement[];
+
+    // نسخ الكروت ووضعها بعد الكروت الأصلية
+    originalCards.forEach(card => {
       const clone = card.cloneNode(true);
       el.appendChild(clone);
     });
 
+    // حساب الطول الكامل للكروت الأصلية
     let totalWidth = 0;
-    Array.from(el.children).forEach(card => {
-      totalWidth += (card as HTMLElement).offsetWidth + 16; // مع الفجوة بين الكروت
+    originalCards.forEach(card => {
+      totalWidth += (card as HTMLElement).offsetWidth + 16; // + gap
     });
 
     gsap.to(el, {
-      x: `-=${totalWidth / 2}`, // نصف الطول لأننا نسخنا القائمة
+      x: `-=${totalWidth}`,
       ease: "linear",
       duration: 30,
       repeat: -1,
       modifiers: {
-        x: gsap.utils.unitize(x => parseFloat(x) % (totalWidth / 2))
+        x: gsap.utils.unitize(x => parseFloat(x) % totalWidth)
       }
     });
   }, []);
+
   return (
     <div className="carousel-container" style={{ overflow: "hidden" }}>
       <div
