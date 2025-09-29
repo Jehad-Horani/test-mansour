@@ -32,10 +32,11 @@ export default function Carousel() {
   return (
     <div className="carousel-container" style={{ overflow: "hidden" }}>
       <div
-        ref={carouselRef}
+        ref={carouselRef} 
         className="carousel-track flex gap-4"
         style={{ display: "flex" }}
       >
+        
                     {/* كلية الحقوق */}
                     <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
                       <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4" />
