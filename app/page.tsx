@@ -5,8 +5,23 @@ import { RetroWindow } from "@/app/components/retro-window"
 import PixelIcon from "@/app/components/pixel-icon"
 import { AuthDebug } from "@/app/components/auth-debug"
 import Link from "next/link"
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
 
-export default function HomePage() {
+  
+  export default function HomePage() {
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (carouselRef.current) {
+      gsap.to(carouselRef.current, {
+        xPercent: -50,
+        repeat: -1,
+        duration: 20,
+        ease: "linear",
+      });
+    }
+  }, []);
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
     
@@ -30,41 +45,46 @@ export default function HomePage() {
         </div>
       </section>
 
-<section className="py-12 px-4">
-  <div className="max-w-full mx-auto">
-      <div className="flex space-x-6 overflow-x-auto scrollbar-hide py-4 px-2">
-        {/* كلية الحقوق */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
-          <div className="p-6 text-center">
-            <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4" />
-            <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-              كلية الحقوق
-            </h3>
-            <p className="text-sm text-gray-600">القانون والشريعة والعدالة</p>
-          </div>
-        </div>
+    <section className="py-12 px-4">
+      <div className="max-w-full mx-auto">
+        <RetroWindow title="الكليات المتاحة">
+          <div
+            ref={carouselRef}
+            className="flex space-x-6 whitespace-nowrap"
+            style={{ display: "flex" }}
+          >
+            {/* كلية الحقوق */}
+            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
+              <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4" />
+              <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                كلية الحقوق
+              </h3>
+              <p className="text-sm text-gray-600">
+                القانون والشريعة والعدالة
+              </p>
+            </div>
 
-        {/* كلية تكنولوجيا المعلومات */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
-          <div className="p-6 text-center">
-            <PixelIcon type="code" className="w-12 h-12 mx-auto mb-4" />
-            <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-              كلية تكنولوجيا المعلومات
-            </h3>
-            <p className="text-sm text-gray-600">البرمجة والشبكات والأمن السيبراني</p>
-          </div>
-        </div>
+            {/* كلية تكنولوجيا المعلومات */}
+            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
+              <PixelIcon type="code" className="w-12 h-12 mx-auto mb-4" />
+              <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                كلية تكنولوجيا المعلومات
+              </h3>
+              <p className="text-sm text-gray-600">
+                البرمجة والشبكات والأمن السيبراني
+              </p>
+            </div>
 
-        {/* كلية إدارة الأعمال */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
-          <div className="p-6 text-center">
-            <PixelIcon type="briefcase" className="w-12 h-12 mx-auto mb-4" />
-            <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-              كلية إدارة الأعمال
-            </h3>
-            <p className="text-sm text-gray-600">الإدارة والتسويق والمحاسبة</p>
-          </div>
-        </div>
+            {/* كلية إدارة الأعمال */}
+            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
+              <PixelIcon type="briefcase" className="w-12 h-12 mx-auto mb-4" />
+              <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                كلية إدارة الأعمال
+              </h3>
+              <p className="text-sm text-gray-600">
+                الإدارة والتسويق والمحاسبة
+              </p>
+            </div>
         {/* Science College */}
         <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
@@ -164,7 +184,7 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-    
+    </RetroWindow>
   </div>
 </section>
 
