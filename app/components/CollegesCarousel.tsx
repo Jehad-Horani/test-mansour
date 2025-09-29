@@ -2,60 +2,172 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
-import { RetroWindow } from "@/app/components/retro-window";
-import PixelIcon from "@/app/components/pixel-icon";
+import PixelIcon from "./pixel-icon";
 
-export default function CollegesCarousel() {
+export default function Carousel() {
   const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (carouselRef.current) {
-      const el = carouselRef.current;
+    if (!carouselRef.current) return;
 
-      // نسخ العناصر عشان الحركة تكون سلسة بدون توقف
-      const clone = el.innerHTML;
-      el.innerHTML += clone;
+    const el = carouselRef.current;
+    const cards = Array.from(el.children) as HTMLElement[];
 
-      const totalWidth = el.scrollWidth / 2;
+    let totalWidth = 0;
+    cards.forEach(card => {
+      totalWidth += card.offsetWidth;
+    });
 
-      gsap.to(el, {
-        x: -totalWidth,
-        duration: 30,
-        ease: "linear",
-        repeat: -1,
-      });
-    }
+    gsap.to(el, {
+      x: `-=${totalWidth}`, // الحركة الأفقية
+      ease: "linear",
+      duration: 30, // طول الحركة
+      repeat: -1,
+      modifiers: {
+        x: gsap.utils.unitize(x => parseFloat(x) % totalWidth) // تكرار سلس
+      }
+    });
   }, []);
 
   return (
-    <section className="py-12 px-4">
-      <div className="max-w-full mx-auto overflow-hidden">
-        <RetroWindow title="الكليات المتاحة">
-          <div
-            ref={carouselRef}
-            className="flex space-x-6 whitespace-nowrap"
-            style={{ display: "flex" }}
-          >
-            {/* هنا نضيف كل الكليات */}
-            {[
-              { type: "gavel", name: "كلية الحقوق", desc: "القانون والشريعة والعدالة" },
-              { type: "code", name: "كلية تكنولوجيا المعلومات", desc: "البرمجة والشبكات والأمن السيبراني" },
-              { type: "briefcase", name: "كلية إدارة الأعمال", desc: "الإدارة والتسويق والمحاسبة" },
-              { type: "atom", name: "كلية العلوم", desc: "الفيزياء والكيمياء والأحياء والرياضيات" },
-              { type: "stethoscope", name: "كلية الطب", desc: "الطب البشري والتخصصات الطبية" },
-              { type: "capsules", name: "كلية الصيدلة", desc: "الأدوية والعلاج والعلوم الصيدلانية" },
-              { type: "cogs", name: "كلية الهندسة", desc: "الهندسة المدنية والمعمارية والكهربائية" },
-              { type: "book-open", name: "كلية الآداب", desc: "اللغة العربية، الإنجليزية، والتاريخ" },
-            ].map((college, idx) => (
-              <div key={idx} className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
-                <PixelIcon type={college.type} className="w-12 h-12 mx-auto mb-4" />
-                <h3 className="font-bold mb-2">{college.name}</h3>
-                <p className="text-sm text-gray-600">{college.desc}</p>
-              </div>
-            ))}
-          </div>
-        </RetroWindow>
+    <div className="carousel-container" style={{ overflow: "hidden" }}>
+      <div
+        ref={carouselRef}
+        className="carousel-track flex gap-4"
+        style={{ display: "flex" }}
+      >
+                    {/* كلية الحقوق */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4" />
+                      <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                        كلية الحقوق
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        القانون والشريعة والعدالة
+                      </p>
+                    </div>
+      
+                    {/* كلية تكنولوجيا المعلومات */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <PixelIcon type="code" className="w-12 h-12 mx-auto mb-4" />
+                      <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                        كلية تكنولوجيا المعلومات
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        البرمجة والشبكات والأمن السيبراني
+                      </p>
+                    </div>
+      
+                    {/* كلية إدارة الأعمال */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <PixelIcon type="briefcase" className="w-12 h-12 mx-auto mb-4" />
+                      <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                        كلية إدارة الأعمال
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        الإدارة والتسويق والمحاسبة
+                      </p>
+                    </div>
+                    {/* Science College */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <div className="p-6 text-center">
+                        <PixelIcon type="atom" className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                          كلية العلوم
+                        </h3>
+                        <p className="text-sm text-gray-600">الفيزياء والكيمياء والأحياء والرياضيات</p>
+                      </div>
+                    </div>
+      
+                    {/* Medicine College */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <div className="p-6 text-center">
+                        <PixelIcon type="stethoscope" className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                          كلية الطب
+                        </h3>
+                        <p className="text-sm text-gray-600">الطب البشري والتخصصات الطبية</p>
+                      </div>
+                    </div>
+      
+                    {/* Pharmacy College */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <div className="p-6 text-center">
+                        <PixelIcon type="capsules" className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                          كلية الصيدلة
+                        </h3>
+                        <p className="text-sm text-gray-600">الأدوية والعلاج والعلوم الصيدلانية</p>
+                      </div>
+                    </div>
+      
+                    {/* Engineering College */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <div className="p-6 text-center">
+                        <PixelIcon type="cogs" className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                          كلية الهندسة
+                        </h3>
+                        <p className="text-sm text-gray-600">الهندسة المدنية والمعمارية والكهربائية</p>
+                      </div>
+                    </div>
+      
+                    {/* Arts College */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <div className="p-6 text-center">
+                        <PixelIcon type="book-open" className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                          كلية الآداب
+                        </h3>
+                        <p className="text-sm text-gray-600">اللغة العربية، الإنجليزية، والتاريخ</p>
+                      </div>
+                    </div>
+      
+                    {/* Media College */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <div className="p-6 text-center">
+                        <PixelIcon type="mic" className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                          كلية الإعلام
+                        </h3>
+                        <p className="text-sm text-gray-600">الصحافة والإذاعة والتلفزيون</p>
+                      </div>
+                    </div>
+      
+                    {/* Arts & Design College */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <div className="p-6 text-center">
+                        <PixelIcon type="palette" className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                          كلية الفنون
+                        </h3>
+                        <p className="text-sm text-gray-600">الموسيقى، التصميم والفنون الجميلة</p>
+                      </div>
+                    </div>
+      
+                    {/* Nursing College */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <div className="p-6 text-center">
+                        <PixelIcon type="heartbeat" className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                          كلية التمريض
+                        </h3>
+                        <p className="text-sm text-gray-600">الرعاية الصحية والتمريض السريري</p>
+                      </div>
+                    </div>
+      
+                    {/* Sharia College */}
+                    <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
+                      <div className="p-6 text-center">
+                        <PixelIcon type="mosque" className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                          كلية الشريعة
+                        </h3>
+                        <p className="text-sm text-gray-600">الشريعة الإسلامية وأصول الدين</p>
+                      </div>
+                    </div>
+                
       </div>
-    </section>
+    </div>
   );
 }
