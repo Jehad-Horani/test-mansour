@@ -12,24 +12,28 @@ import gsap from "gsap";
 export default function HomePage() {
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (carouselRef.current) {
-      const el = carouselRef.current;
+useEffect(() => {
+  if (carouselRef.current) {
+    const el = carouselRef.current;
 
-      // عمل نسخة من الكروت داخل track عشان نعمل loop سلس
-      const clone = el.innerHTML;
-      el.innerHTML += clone;
+    // نسخ الكروت لضمان استمرار الحركة
+    const clone = el.innerHTML;
+    el.innerHTML += clone;
 
-      const totalWidth = el.scrollWidth / 2;
+    const totalWidth = el.scrollWidth / 2;
 
-      gsap.to(el, {
+    gsap.fromTo(el, 
+      { x: 0 }, 
+      {
         x: -totalWidth,
-        duration: 30,
         ease: "linear",
-        repeat: -1,
-      });
-    }
-  }, []);
+        duration: 30,
+        repeat: -1
+      }
+    );
+  }
+}, []);
+ 
   return (
     <div className="min-h-screen overflow-hidden" style={{ background: "var(--panel)" }}>
 
@@ -54,8 +58,7 @@ export default function HomePage() {
       </section>
 
       <section className="py-12 px-4">
-        <div className="max-w-6xl mx-auto carousel-container">
-          <RetroWindow title="الكليات المتاحة">
+          <RetroWindow className="z-10 max-w-6xl mx-auto carousel-container" title="الكليات المتاحة">
             <div
               ref={carouselRef}
               className="carousel-track"
@@ -193,7 +196,6 @@ export default function HomePage() {
               </div>
             </div>
           </RetroWindow>
-        </div>
       </section>
 
 
