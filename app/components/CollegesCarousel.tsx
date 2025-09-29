@@ -12,7 +12,7 @@ export default function CollegesCarousel() {
     if (carouselRef.current) {
       const el = carouselRef.current;
 
-      // نسخ الكروت عشان الحركة تكون loop
+      // نسخ العناصر عشان الحركة تكون سلسة بدون توقف
       const clone = el.innerHTML;
       el.innerHTML += clone;
 
@@ -36,61 +36,23 @@ export default function CollegesCarousel() {
             className="flex space-x-6 whitespace-nowrap"
             style={{ display: "flex" }}
           >
-            {/* كلية الحقوق */}
-            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
-              <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="font-bold mb-2">كلية الحقوق</h3>
-              <p className="text-sm text-gray-600">القانون والشريعة والعدالة</p>
-            </div>
-
-            {/* كلية تكنولوجيا المعلومات */}
-            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
-              <PixelIcon type="code" className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="font-bold mb-2">كلية تكنولوجيا المعلومات</h3>
-              <p className="text-sm text-gray-600">البرمجة والشبكات والأمن السيبراني</p>
-            </div>
-
-            {/* كلية إدارة الأعمال */}
-            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
-              <PixelIcon type="briefcase" className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="font-bold mb-2">كلية إدارة الأعمال</h3>
-              <p className="text-sm text-gray-600">الإدارة والتسويق والمحاسبة</p>
-            </div>
-
-            {/* كلية العلوم */}
-            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
-              <PixelIcon type="atom" className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="font-bold mb-2">كلية العلوم</h3>
-              <p className="text-sm text-gray-600">الفيزياء والكيمياء والأحياء والرياضيات</p>
-            </div>
-
-            {/* كلية الطب */}
-            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
-              <PixelIcon type="stethoscope" className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="font-bold mb-2">كلية الطب</h3>
-              <p className="text-sm text-gray-600">الطب البشري والتخصصات الطبية</p>
-            </div>
-
-            {/* كلية الصيدلة */}
-            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
-              <PixelIcon type="capsules" className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="font-bold mb-2">كلية الصيدلة</h3>
-              <p className="text-sm text-gray-600">الأدوية والعلاج والعلوم الصيدلانية</p>
-            </div>
-
-            {/* كلية الهندسة */}
-            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
-              <PixelIcon type="cogs" className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="font-bold mb-2">كلية الهندسة</h3>
-              <p className="text-sm text-gray-600">الهندسة المدنية والمعمارية والكهربائية</p>
-            </div>
-
-            {/* كلية الآداب */}
-            <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
-              <PixelIcon type="book-open" className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="font-bold mb-2">كلية الآداب</h3>
-              <p className="text-sm text-gray-600">اللغة العربية، الإنجليزية، والتاريخ</p>
-            </div>
+            {/* هنا نضيف كل الكليات */}
+            {[
+              { type: "gavel", name: "كلية الحقوق", desc: "القانون والشريعة والعدالة" },
+              { type: "code", name: "كلية تكنولوجيا المعلومات", desc: "البرمجة والشبكات والأمن السيبراني" },
+              { type: "briefcase", name: "كلية إدارة الأعمال", desc: "الإدارة والتسويق والمحاسبة" },
+              { type: "atom", name: "كلية العلوم", desc: "الفيزياء والكيمياء والأحياء والرياضيات" },
+              { type: "stethoscope", name: "كلية الطب", desc: "الطب البشري والتخصصات الطبية" },
+              { type: "capsules", name: "كلية الصيدلة", desc: "الأدوية والعلاج والعلوم الصيدلانية" },
+              { type: "cogs", name: "كلية الهندسة", desc: "الهندسة المدنية والمعمارية والكهربائية" },
+              { type: "book-open", name: "كلية الآداب", desc: "اللغة العربية، الإنجليزية، والتاريخ" },
+            ].map((college, idx) => (
+              <div key={idx} className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 p-6 text-center">
+                <PixelIcon type={college.type} className="w-12 h-12 mx-auto mb-4" />
+                <h3 className="font-bold mb-2">{college.name}</h3>
+                <p className="text-sm text-gray-600">{college.desc}</p>
+              </div>
+            ))}
           </div>
         </RetroWindow>
       </div>
