@@ -1,29 +1,38 @@
 interface PixelIconProps {
   type:
-    | "gavel"
-    | "code"
-    | "heart-beat"
-    | "calendar"
-    | "upload"
-    | "user"
-    | "book"
-    | "cog"
-    | "briefcase"
-    | "shopping-cart"
-    | "message-circle"
-    | "arrow-right"
-    | "send"
-    | "shield"
-    | "filter"
-    | "file"
-    | "building"
-    | "graduation-cap"
-    | "download"
-    | "alert"
-    | "arrow-left"
-    | "check"
-    | "info"
-    | "settings"
+  | "gavel"
+  | "code"
+  | "heart-beat"
+  | "calendar"
+  | "upload"
+  | "user"
+  | "book"
+  | "cog"
+  | "briefcase"
+  | "shopping-cart"
+  | "message-circle"
+  | "arrow-right"
+  | "send"
+  | "shield"
+  | "filter"
+  | "file"
+  | "building"
+  | "graduation-cap"
+  | "download"
+  | "alert"
+  | "arrow-left"
+  | "check"
+  | "info"
+  | "settings"
+  | "atom"
+  | "stethoscope"
+  | "capsules"
+  | "cogs"
+  | "book-open"
+  | "mic"
+  | "palette"
+  | "heartbeat"
+  | "mosque"
   className?: string
 }
 
@@ -215,14 +224,96 @@ export function PixelIcon({
       </svg>
     ),
     settings: (
-  <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
-    <rect x="6" y="2" width="4" height="2" fill="currentColor" />
-    <rect x="6" y="12" width="4" height="2" fill="currentColor" />
-    <rect x="2" y="6" width="2" height="4" fill="currentColor" />
-    <rect x="12" y="6" width="2" height="4" fill="currentColor" />
-    <rect x="7" y="7" width="2" height="2" fill="currentColor" />
-  </svg>
-),
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <rect x="6" y="2" width="4" height="2" fill="currentColor" />
+        <rect x="6" y="12" width="4" height="2" fill="currentColor" />
+        <rect x="2" y="6" width="2" height="4" fill="currentColor" />
+        <rect x="12" y="6" width="2" height="4" fill="currentColor" />
+        <rect x="7" y="7" width="2" height="2" fill="currentColor" />
+      </svg>
+    ),
+    atom: (
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <circle cx="8" cy="8" r="2" fill="currentColor" />
+        <rect x="2" y="7" width="12" height="2" fill="currentColor" />
+        <rect x="7" y="2" width="2" height="12" fill="currentColor" />
+      </svg>
+    ),
+
+    stethoscope: (
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <rect x="4" y="2" width="2" height="4" fill="currentColor" />
+        <rect x="10" y="2" width="2" height="4" fill="currentColor" />
+        <rect x="6" y="6" width="2" height="6" fill="currentColor" />
+        <rect x="8" y="10" width="4" height="2" fill="currentColor" />
+        <rect x="10" y="12" width="2" height="2" fill="currentColor" />
+      </svg>
+    ),
+
+    capsules: (
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <rect x="4" y="4" width="4" height="8" fill="currentColor" />
+        <rect x="8" y="4" width="4" height="8" fill="white" stroke="currentColor" />
+      </svg>
+    ),
+
+    cogs: (
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <rect x="6" y="2" width="4" height="2" fill="currentColor" />
+        <rect x="2" y="6" width="2" height="4" fill="currentColor" />
+        <rect x="12" y="6" width="2" height="4" fill="currentColor" />
+        <rect x="6" y="12" width="4" height="2" fill="currentColor" />
+        <rect x="7" y="7" width="2" height="2" fill="currentColor" />
+      </svg>
+    ),
+
+    "book-open": (
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <rect x="2" y="4" width="5" height="8" fill="currentColor" />
+        <rect x="9" y="4" width="5" height="8" fill="currentColor" />
+        <rect x="7" y="4" width="2" height="8" fill="white" />
+      </svg>
+    ),
+
+    mic: (
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <rect x="6" y="2" width="4" height="6" fill="currentColor" />
+        <rect x="5" y="8" width="6" height="2" fill="currentColor" />
+        <rect x="7" y="10" width="2" height="2" fill="currentColor" />
+        <rect x="6" y="12" width="4" height="2" fill="currentColor" />
+      </svg>
+    ),
+
+    palette: (
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <circle cx="8" cy="8" r="6" stroke="currentColor" fill="none" />
+        <rect x="5" y="5" width="2" height="2" fill="currentColor" />
+        <rect x="9" y="5" width="2" height="2" fill="currentColor" />
+        <rect x="6" y="9" width="2" height="2" fill="currentColor" />
+      </svg>
+    ),
+
+    heartbeat: (
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <rect x="2" y="8" width="3" height="2" fill="currentColor" />
+        <rect x="5" y="6" width="2" height="6" fill="currentColor" />
+        <rect x="7" y="6" width="2" height="2" fill="currentColor" />
+        <rect x="9" y="8" width="2" height="6" fill="currentColor" />
+        <rect x="11" y="8" width="3" height="2" fill="currentColor" />
+      </svg>
+    ),
+
+    mosque: (
+      <svg className={className} viewBox="0 0 16 16" style={{ shapeRendering: "crispEdges" }}>
+        <rect x="6" y="6" width="4" height="6" fill="currentColor" />
+        <rect x="4" y="10" width="8" height="4" fill="currentColor" />
+        <rect x="2" y="12" width="2" height="2" fill="currentColor" />
+        <rect x="12" y="12" width="2" height="2" fill="currentColor" />
+        <rect x="7" y="2" width="2" height="2" fill="currentColor" />
+        <rect x="6" y="4" width="4" height="2" fill="currentColor" />
+      </svg>
+    ),
+
 
   }
 
