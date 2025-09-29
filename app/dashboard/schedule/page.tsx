@@ -40,55 +40,55 @@ export default function SchedulePage() {
     }
   }
 
- const exportToImage = async () => {
-  const node = document.getElementById("schedule-section")
-  if (!node) return
+  const exportToImage = async () => {
+    const node = document.getElementById("schedule-section")
+    if (!node) return
 
-  const dataUrl = await toPng(node)
-  const link = document.createElement("a")
-  link.download = "جدول_الامتحانات.png"
-  link.href = dataUrl
-  link.click()
-}
-
-const handleAddCourse = async () => {
-  if (!newCourse.course || !newCourse.code || !newCourse.time || !newCourse.day) {
-    alert("يرجى ملء جميع الحقول المطلوبة")
-    return
+    const dataUrl = await toPng(node)
+    const link = document.createElement("a")
+    link.download = "جدول_الامتحانات.png"
+    link.href = dataUrl
+    link.click()
   }
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const handleAddCourse = async () => {
+    if (!newCourse.course || !newCourse.code || !newCourse.time || !newCourse.day) {
+      alert("يرجى ملء جميع الحقول المطلوبة")
+      return
+    }
 
-  const { data, error } = await supabase
-    .from("schedules")
-    .insert([
-      {
-        ...newCourse,
-        user_id: user?.id
-      }
-    ])
-    .select()
+    const { data: { user } } = await supabase.auth.getUser()
 
-  if (error) {
-    console.error(error)
-    alert("حدث خطأ أثناء إضافة المقرر")
-  } else {
-    setSchedule((prev) => [...prev, data[0]])
-    setNewCourse({
-      course: "",
-      code: "",
-      time: "",
-      day: "",
-      location: "",
-      instructor: "",
-    })
-    alert("تم إضافة المقرر بنجاح!")
+    const { data, error } = await supabase
+      .from("schedules")
+      .insert([
+        {
+          ...newCourse,
+          user_id: user?.id
+        }
+      ])
+      .select()
 
-    // Refresh البيانات مرتين
-    fetchSchedule()
-    fetchSchedule()
+    if (error) {
+      console.error(error)
+      alert("حدث خطأ أثناء إضافة المقرر")
+    } else {
+      setSchedule((prev) => [...prev, data[0]])
+      setNewCourse({
+        course: "",
+        code: "",
+        time: "",
+        day: "",
+        location: "",
+        instructor: "",
+      })
+      alert("تم إضافة المقرر بنجاح!")
+
+      // Refresh البيانات مرتين
+      fetchSchedule()
+      fetchSchedule()
+    }
   }
-}
 
   const handleEditCourse = (course: any) => {
     setEditingCourse({ ...course })
@@ -157,7 +157,7 @@ const handleAddCourse = async () => {
               جدولي الحالي
             </h2>
             <button onClick={exportToImage} className="retro-button">
-              تصدير ICS
+              تحميل جدولك الدراسي كصورة
             </button>
           </div>
 
