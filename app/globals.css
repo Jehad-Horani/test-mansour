@@ -255,10 +255,11 @@
 
 .carousel-container {
   overflow: hidden;
-  width: 100%;
+  position: relative;
 }
+
 .carousel-track {
   display: flex;
-  gap: 1.5rem;
-  white-space: nowrap;
+  gap: 16px;
 }
+
