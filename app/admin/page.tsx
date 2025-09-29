@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
     admins: 0,
     students: 0
   })
-    const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<User[]>([])
 
   const [recentActivities, setRecentActivities] = useState([])
 
@@ -242,10 +242,6 @@ export default function AdminDashboardPage() {
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <span className="text-sm">نظام المراسلة</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-sm">الإشعارات</span>
               </div>
             </div>
           </RetroWindow>

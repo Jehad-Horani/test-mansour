@@ -213,14 +213,6 @@ export default function AdminAnalyticsPage() {
               <div className="text-sm text-gray-600">إجمالي المحاضرات</div>
             </div>
           </RetroWindow>
-
-          <RetroWindow title="الرسائل">
-            <div className="p-4 text-center">
-              <MessageCircle className="w-8 h-8 mx-auto mb-2 text-red-600" />
-              <div className="text-2xl font-bold text-red-800">{analytics.overview.totalMessages}</div>
-              <div className="text-sm text-gray-600">إجمالي الرسائل</div>
-            </div>
-          </RetroWindow>
         </div>
 
         {/* Detailed Statistics */}
