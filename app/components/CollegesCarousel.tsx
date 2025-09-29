@@ -70,7 +70,6 @@ export default function HorizontalScrollingCarousel() {
         <div 
           ref={trackRef}
           className="flex gap-4"
-          style={{ willChange: 'transform' }}
         >
           {colleges.map((college, index) => (
             <div
