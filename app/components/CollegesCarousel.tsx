@@ -4,174 +4,139 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import PixelIcon from "./pixel-icon";
 
-export default function Carousel() {
-  const carouselRef = useRef<HTMLDivElement>(null);
+export default function CircularCarousel() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  
+  // Animation speed: lower = faster, higher = slower
+  const ROTATION_SPEED = 40; // seconds for one full rotation
+  
+  const colleges = [
+    { icon: "gavel" as const, title: "كلية الحقوق", desc: "القانون والشريعة والعدالة" },
+    { icon: "code" as const, title: "كلية تكنولوجيا المعلومات", desc: "البرمجة والشبكات والأمن السيبراني" },
+    { icon: "briefcase" as const, title: "كلية إدارة الأعمال", desc: "الإدارة والتسويق والمحاسبة" },
+    { icon: "atom" as const, title: "كلية العلوم", desc: "الفيزياء والكيمياء والأحياء والرياضيات" },
+    { icon: "stethoscope" as const, title: "كلية الطب", desc: "الطب البشري والتخصصات الطبية" },
+    { icon: "capsules" as const, title: "كلية الصيدلة", desc: "الأدوية والعلاج والعلوم الصيدلانية" },
+    { icon: "cogs" as const, title: "كلية الهندسة", desc: "الهندسة المدنية والمعمارية والكهربائية" },
+    { icon: "book-open" as const, title: "كلية الآداب", desc: "اللغة العربية، الإنجليزية، والتاريخ" },
+    { icon: "mic" as const, title: "كلية الإعلام", desc: "الصحافة والإذاعة والتلفزيون" },
+    { icon: "palette" as const, title: "كلية الفنون", desc: "الموسيقى، التصميم والفنون الجميلة" },
+    { icon: "heartbeat" as const, title: "كلية التمريض", desc: "الرعاية الصحية والتمريض السريري" },
+    { icon: "mosque" as const, title: "كلية الشريعة", desc: "الشريعة الإسلامية وأصول الدين" }
+  ];
 
   useEffect(() => {
-    if (!carouselRef.current) return;
+    if (!containerRef.current || cardsRef.current.length === 0) return;
 
-    const el = carouselRef.current;
-
-    const originalCards = Array.from(el.children) as HTMLElement[];
-
-    // عمل نسخة كاملة من الكروت ووضعها بعد الأصلية
-    originalCards.forEach(card => {
-      const clone = card.cloneNode(true);
-      el.appendChild(clone);
+    const cards = cardsRef.current.filter((card): card is HTMLDivElement => card !== null);
+    const totalCards = cards.length;
+    const radius = window.innerWidth < 640 ? 180 : window.innerWidth < 1024 ? 280 : 350;
+    
+    // Position cards in a circle initially
+    cards.forEach((card, i) => {
+      const angle = (i / totalCards) * Math.PI * 2;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      
+      gsap.set(card, {
+        x,
+        y,
+        rotation: 0
+      });
     });
 
-    // حساب الطول الكامل للكروت الأصلية
-    let totalWidth = 0;
-    originalCards.forEach(card => {
-      totalWidth += (card as HTMLElement).offsetWidth + 16; // + gap
-    });
-
-    gsap.to(el, {
-      x: `-=${totalWidth}`,
-      ease: "linear",
-      duration: 30,
-      repeat: -1,
+    // Create rotation animation
+    const timeline = gsap.timeline({ repeat: -1 });
+    
+    timeline.to(cards, {
+      duration: ROTATION_SPEED,
+      ease: "none",
+      rotation: 360,
+      transformOrigin: "center center",
       modifiers: {
-        x: gsap.utils.unitize(x => parseFloat(x) % totalWidth)
+        rotation: (rotation) => {
+          // Keep rotating continuously
+          return parseFloat(rotation as string) % 360;
+        }
+      },
+      onUpdate: function() {
+        // Update position of each card as container rotates
+        cards.forEach((card, i) => {
+          const currentRotation = gsap.getProperty(card, "rotation") as number;
+          const angle = ((i / totalCards) * Math.PI * 2) + (currentRotation * Math.PI / 180);
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          
+          gsap.set(card, {
+            x,
+            y,
+            rotation: currentRotation
+          });
+        });
       }
     });
+
+    // Handle window resize
+    const handleResize = () => {
+      const newRadius = window.innerWidth < 640 ? 180 : window.innerWidth < 1024 ? 280 : 350;
+      cards.forEach((card, i) => {
+        const currentRotation = (gsap.getProperty(card, "rotation") as number) || 0;
+        const angle = ((i / totalCards) * Math.PI * 2) + (currentRotation * Math.PI / 180);
+        const x = Math.cos(angle) * newRadius;
+        const y = Math.sin(angle) * newRadius;
+        
+        gsap.set(card, { x, y });
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      timeline.kill();
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   return (
-    <div className="carousel-container" style={{ overflow: "hidden" }}>
-      <div
-        ref={carouselRef}
-        className="carousel-track flex gap-4"
-        style={{ display: "flex" }}
-      >
-        {/* كلية الحقوق */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية الحقوق
-          </h3>
-          <p className="text-sm text-gray-600">القانون والشريعة والعدالة</p>
-        </div>
-
-        {/* كلية تكنولوجيا المعلومات */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="code" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية تكنولوجيا المعلومات
-          </h3>
-          <p className="text-sm text-gray-600">
-            البرمجة والشبكات والأمن السيبراني
-          </p>
-        </div>
-
-        {/* كلية إدارة الأعمال */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="briefcase" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية إدارة الأعمال
-          </h3>
-          <p className="text-sm text-gray-600">
-            الإدارة والتسويق والمحاسبة
-          </p>
-        </div>
-
-        {/* كلية العلوم */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="atom" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية العلوم
-          </h3>
-          <p className="text-sm text-gray-600">
-            الفيزياء والكيمياء والأحياء والرياضيات
-          </p>
-        </div>
-
-        {/* كلية الطب */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="stethoscope" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية الطب
-          </h3>
-          <p className="text-sm text-gray-600">
-            الطب البشري والتخصصات الطبية
-          </p>
-        </div>
-
-        {/* كلية الصيدلة */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="capsules" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية الصيدلة
-          </h3>
-          <p className="text-sm text-gray-600">
-            الأدوية والعلاج والعلوم الصيدلانية
-          </p>
-        </div>
-
-        {/* كلية الهندسة */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="cogs" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية الهندسة
-          </h3>
-          <p className="text-sm text-gray-600">
-            الهندسة المدنية والمعمارية والكهربائية
-          </p>
-        </div>
-
-        {/* كلية الآداب */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="book-open" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية الآداب
-          </h3>
-          <p className="text-sm text-gray-600">
-            اللغة العربية، الإنجليزية، والتاريخ
-          </p>
-        </div>
-
-        {/* كلية الإعلام */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="mic" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية الإعلام
-          </h3>
-          <p className="text-sm text-gray-600">
-            الصحافة والإذاعة والتلفزيون
-          </p>
-        </div>
-
-        {/* كلية الفنون */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="palette" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية الفنون
-          </h3>
-          <p className="text-sm text-gray-600">
-            الموسيقى، التصميم والفنون الجميلة
-          </p>
-        </div>
-
-        {/* كلية التمريض */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="heartbeat" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية التمريض
-          </h3>
-          <p className="text-sm text-gray-600">
-            الرعاية الصحية والتمريض السريري
-          </p>
-        </div>
-
-        {/* كلية الشريعة */}
-        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
-          <PixelIcon type="mosque" className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
-            كلية الشريعة
-          </h3>
-          <p className="text-sm text-gray-600">
-            الشريعة الإسلامية وأصول الدين
-          </p>
+    <div className="w-full min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 overflow-hidden py-20">
+      <div className="relative w-full h-full flex items-center justify-center">
+        <div 
+          ref={containerRef}
+          className="relative"
+          style={{ 
+            width: '100%',
+            height: '100%',
+            minHeight: '600px'
+          }}
+        >
+          {colleges.map((college, index) => (
+            <div
+              key={index}
+              ref={(el) => {
+                if (el) cardsRef.current[index] = el;
+              }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 sm:w-56 lg:w-64"
+              style={{ transformOrigin: 'center center' }}
+            >
+              <div className="bg-white rounded-2xl shadow-xl p-6 text-center hover:shadow-2xl transition-shadow duration-300 border-2 border-purple-100">
+                <div className="text-4xl mb-4">
+                  <PixelIcon type={college.icon} className="w-12 h-12 mx-auto" />
+                </div>
+                <h3 className="font-bold text-lg mb-2 text-gray-800">
+                  {college.title}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {college.desc}
+                </p>
+              </div>
+            </div>
+          ))}
+          
+          {/* Center decoration */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full shadow-lg flex items-center justify-center">
+            <span className="text-3xl sm:text-4xl">🎓</span>
+          </div>
         </div>
       </div>
     </div>
