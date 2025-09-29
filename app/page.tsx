@@ -30,12 +30,12 @@ export default function HomePage() {
         </div>
       </section>
 
-<section className="py-8 md:py-12 px-4">
-  <div className="max-w-6xl mx-auto">
+<section className="py-12 px-4">
+  <div className="max-w-full mx-auto">
     <RetroWindow title="الكليات المتاحة">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Law College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+      <div className="flex space-x-6 overflow-x-auto scrollbar-hide py-4 px-2">
+        {/* كلية الحقوق */}
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -45,8 +45,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* IT College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        {/* كلية تكنولوجيا المعلومات */}
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="code" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -56,8 +56,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Business College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        {/* كلية إدارة الأعمال */}
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="briefcase" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -66,9 +66,8 @@ export default function HomePage() {
             <p className="text-sm text-gray-600">الإدارة والتسويق والمحاسبة</p>
           </div>
         </div>
-
         {/* Science College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="atom" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -79,7 +78,7 @@ export default function HomePage() {
         </div>
 
         {/* Medicine College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="stethoscope" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -90,7 +89,7 @@ export default function HomePage() {
         </div>
 
         {/* Pharmacy College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="capsules" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -101,7 +100,7 @@ export default function HomePage() {
         </div>
 
         {/* Engineering College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="cogs" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -112,7 +111,7 @@ export default function HomePage() {
         </div>
 
         {/* Arts College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="book-open" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -123,7 +122,7 @@ export default function HomePage() {
         </div>
 
         {/* Media College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="mic" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -134,7 +133,7 @@ export default function HomePage() {
         </div>
 
         {/* Arts & Design College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="palette" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -145,7 +144,7 @@ export default function HomePage() {
         </div>
 
         {/* Nursing College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="heartbeat" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
@@ -156,7 +155,7 @@ export default function HomePage() {
         </div>
 
         {/* Sharia College */}
-        <div className="retro-window bg-white hover:bg-gray-50 transition-colors cursor-default">
+        <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] flex-shrink-0 hover:shadow-xl transform hover:scale-[1.05] transition-all cursor-pointer">
           <div className="p-6 text-center">
             <PixelIcon type="mosque" className="w-12 h-12 mx-auto mb-4" />
             <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
