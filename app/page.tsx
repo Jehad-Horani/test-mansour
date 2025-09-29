@@ -13,25 +13,25 @@ export default function HomePage() {
   const carouselRef = useRef<HTMLDivElement>(null);
 
 useEffect(() => {
-  if (carouselRef.current) {
-    const el = carouselRef.current;
+  if (!carouselRef.current) return;
 
-    // نسخ الكروت لضمان استمرار الحركة
-    const clone = el.innerHTML;
-    el.innerHTML += clone;
+  const el = carouselRef.current;
 
-    const totalWidth = el.scrollWidth / 2;
+  // عمل نسخة من الكروت عشان نضمن الحركة المستمرة
+  const cards = Array.from(el.children);
+  cards.forEach(card => {
+    const clone = card.cloneNode(true);
+    el.appendChild(clone);
+  });
 
-    gsap.fromTo(el, 
-      { x: 0 }, 
-      {
-        x: -totalWidth,
-        ease: "linear",
-        duration: 30,
-        repeat: -1
-      }
-    );
-  }
+  const totalWidth = el.scrollWidth / 2;
+
+  gsap.to(el, {
+    x: -totalWidth,
+    duration: 30,
+    ease: "linear",
+    repeat: -1
+  });
 }, []);
  
   return (
