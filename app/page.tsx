@@ -17,23 +17,23 @@ useEffect(() => {
 
   const el = carouselRef.current;
 
-  // عمل نسخة من الكروت عشان نضمن الحركة المستمرة
+  // نسخ كل الكروت بنفس الترتيب عشان يكون looping سلس
   const cards = Array.from(el.children);
   cards.forEach(card => {
     const clone = card.cloneNode(true);
     el.appendChild(clone);
   });
 
-  const totalWidth = el.scrollWidth / 2;
+  const totalWidth = el.scrollWidth / 2; // لأننا نسخنا العناصر
 
   gsap.to(el, {
     x: -totalWidth,
-    duration: 30,
+    duration: 30, // طول الحركة
     ease: "linear",
     repeat: -1
   });
 }, []);
- 
+
   return (
     <div className="min-h-screen overflow-hidden" style={{ background: "var(--panel)" }}>
 
@@ -58,7 +58,10 @@ useEffect(() => {
       </section>
 
       <section className="py-12 px-4">
-          <RetroWindow className="z-10 max-w-6xl mx-auto carousel-container" title="الكليات المتاحة">
+          <RetroWindow className="z-10 max-w-6xl" title="الكليات المتاحة">
+            <div className=" carousel-container">
+
+           
             <div
               ref={carouselRef}
               className="carousel-track"
@@ -195,6 +198,7 @@ useEffect(() => {
                 </div>
               </div>
             </div>
+             </div>
           </RetroWindow>
       </section>
 
