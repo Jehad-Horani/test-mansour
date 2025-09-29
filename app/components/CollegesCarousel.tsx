@@ -13,20 +13,28 @@ export default function Carousel() {
     const el = carouselRef.current;
     const cards = Array.from(el.children) as HTMLElement[];
 
+    // نسخ آخر كلية ووضعها قبل الأولى عشان الحركة تكون دائرية
+    const lastCard = cards[cards.length - 1].cloneNode(true);
+    el.insertBefore(lastCard, el.firstChild);
+
     let totalWidth = 0;
     cards.forEach(card => {
-      totalWidth += card.offsetWidth;
+      totalWidth += card.offsetWidth + 16; // 16px gap
     });
 
-    gsap.to(el, {
-      x: `-=${totalWidth}`, // الحركة الأفقية
-      ease: "linear",
-      duration: 30, // طول الحركة
-      repeat: -1,
-      modifiers: {
-        x: gsap.utils.unitize(x => parseFloat(x) % totalWidth) // تكرار سلس
+    gsap.fromTo(
+      el,
+      { x: 0 },
+      {
+        x: -totalWidth + cards[0].offsetWidth,
+        ease: "linear",
+        duration: 30,
+        repeat: -1,
+        modifiers: {
+          x: gsap.utils.unitize(x => parseFloat(x) % totalWidth)
+        }
       }
-    });
+    );
   }, []);
 
   return (
@@ -36,7 +44,7 @@ export default function Carousel() {
         className="carousel-track flex gap-4"
         style={{ display: "flex" }}
       >
-        
+
                     {/* كلية الحقوق */}
                     <div className="retro-window bg-white rounded-xl shadow-lg min-w-[250px] p-6 text-center">
                       <PixelIcon type="gavel" className="w-12 h-12 mx-auto mb-4" />
