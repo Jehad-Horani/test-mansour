@@ -252,3 +252,13 @@
     flex-direction: row-reverse;
   }
 }
+
+.carousel-container {
+  overflow: hidden;
+  width: 100%;
+}
+.carousel-track {
+  display: flex;
+  gap: 1.5rem;
+  white-space: nowrap;
+}
