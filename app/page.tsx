@@ -14,11 +14,18 @@ import gsap from "gsap";
 
   useEffect(() => {
     if (carouselRef.current) {
-      gsap.to(carouselRef.current, {
-        xPercent: -50,
-        repeat: -1,
-        duration: 20,
+      const el = carouselRef.current;
+      const cards = el.children;
+
+      // نسخ الكروت لجعل الحركة loop بدون فراغ
+      const clone = el.cloneNode(true);
+      el.parentNode?.appendChild(clone);
+
+      gsap.to(el, {
+        x: `-${el.scrollWidth}px`,
+        duration: 30,
         ease: "linear",
+        repeat: -1,
       });
     }
   }, []);
