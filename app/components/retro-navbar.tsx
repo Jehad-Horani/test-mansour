@@ -36,7 +36,7 @@ export function RetroNavbar() {
     <nav className="retro-nav">
       <div className="flex items-center justify-between max-w-7xl mx-auto px-4 h-full">
         <Link href="/" className="text-xl font-bold" style={{ color: "var(--ink)" }}>
-          تخصصكُم
+          تخصص.كُم
         </Link>
 
         {/* Desktop Navigation */}

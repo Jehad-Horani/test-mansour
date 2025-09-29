@@ -43,7 +43,7 @@ useEffect(() => {
       <section className="py-8 md:py-16">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-2xl md:text-4xl font-bold mb-4" style={{ color: "var(--ink)" }}>
-            منصة تخصصكُم الشاملة
+            منصة تخصص.كُم الشاملة
           </h1>
           <p className="text-base md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto" style={{ color: "var(--ink)" }}>
             اكتشف عالم التعلم الجامعي مع أفضل الكتب والاستشارات الأكاديمية
@@ -251,7 +251,7 @@ useEffect(() => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* About Section */}
             <div>
-              <h3 className="font-bold mb-4 text-lg text-white">عن تخصصكُم</h3>
+              <h3 className="font-bold mb-4 text-lg text-white">عن تخصص.كُم</h3>
               <p className="text-sm mb-4 text-white/90">
                 منصة شاملة للطلاب الجامعيين في الأردن لتبادل الكتب والمعرفة والحصول على الاستشارات الأكاديمية
               </p>
@@ -343,7 +343,7 @@ useEffect(() => {
 
           {/* Bottom Bar */}
           <div className="border-t border-white/20 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center text-sm">
-            <div className="text-white/90 mb-4 md:mb-0">© 2024 تخصصكُم. جميع الحقوق محفوظة.</div>
+            <div className="text-white/90 mb-4 md:mb-0">© 2024 تخصص.كُم. جميع الحقوق محفوظة.</div>
             <div className="flex gap-4">
               <Link href="/terms" className="hover:underline text-white/90 hover:text-white">
                 شروط الاستخدام

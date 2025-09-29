@@ -16,7 +16,7 @@ INSERT INTO profiles (
   stats
 ) VALUES (
   '00000000-0000-0000-0000-000000000001'::uuid, -- Replace with actual admin user UUID
-  'مدير منصة تخصصكُم',
+  'مدير منصة تخصص.كُم',
   '+962791234567',
   'جامعة الأردن',
   'it',

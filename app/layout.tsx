@@ -19,7 +19,7 @@ const cairo = Cairo({
 })
 
 export const metadata: Metadata = {
-  title: "تخصصكُم - TAKHASSUS.com",
+  title: "تخصص.كُم - TAKHASSUS.com",
   description: "منصة الطلاب متعددة التخصصات - نمط ريترو",
   generator: "v0.app",
 }

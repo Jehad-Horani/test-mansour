@@ -61,7 +61,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 SELECT create_admin_user(
   'admin@takhassus.com',
   'TakhassusAdmin2024!',
-  'مدير منصة تخصصكُم',
+  'مدير منصة تخصص.كُم',
   '+962791234567'
 );
 

@@ -26,7 +26,7 @@ export async function GET() {
     
     // Add default settings if they don't exist
     const defaultSettings = {
-      site_name: "تخصصكُم - TAKHASSUS.com",
+      site_name: "تخصص.كُم - TAKHASSUS.com",
       site_description: "منصة الطلاب متعددة التخصصات",
       max_file_size: 50, // MB
       allowed_file_types: ["pdf", "doc", "docx", "ppt", "pptx"],

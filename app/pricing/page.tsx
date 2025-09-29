@@ -213,7 +213,7 @@ export default function PricingPage() {
         <RetroWindow title="ابدأ رحلتك التعليمية اليوم">
           <div className="text-center py-8">
             <h2 className="text-2xl font-bold mb-4">جاهز للبدء؟</h2>
-            <p className="text-gray-600 mb-6">انضم إلى آلاف الطلاب الذين يحققون النجاح مع تخصصكُم</p>
+            <p className="text-gray-600 mb-6">انضم إلى آلاف الطلاب الذين يحققون النجاح مع تخصص.كُم</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild className="retro-button" style={{ background: "var(--accent)", color: "white" }}>
                 <Link href="/subscribe/standard">ابدأ بالخطة المميزة</Link>

@@ -62,7 +62,7 @@ export default function HorizontalScrollingCarousel() {
   return (
     <div className="w-full bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-16 overflow-hidden">
       <div className="mb-8 text-center">
-        <h2 className="text-4xl font-bold text-gray-800 mb-2">كليات الجامعة</h2>
+        <h2 className="text-4xl font-bold text-gray-800 mb-2">كليات تخصص.كُم</h2>
         <p className="text-gray-600">استكشف جميع الكليات المتاحة</p>
       </div>
       
