@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client"
 import { RetroWindow } from "@/app/components/retro-window"
 import { RetroToggle } from "@/app/components/retro-toggle"
 import Link from "next/link"
+import { toPng } from "html-to-image"
+
 
 export default function SchedulePage() {
   const [schedule, setSchedule] = useState<any[]>([])
@@ -38,37 +40,16 @@ export default function SchedulePage() {
     }
   }
 
-  const exportToICS = () => {
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//TAKHASSUS//Schedule//AR
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-${schedule
-        .map(
-          (item) => `BEGIN:VEVENT
-UID:${item.id}@takhassus.com
-DTSTART:20240101T${item.time.split(" - ")[0].replace(":", "")}00
-DTEND:20240101T${item.time.split(" - ")[1].replace(":", "")}00
-SUMMARY:${item.course}
-DESCRIPTION:${item.instructor} - ${item.location}
-LOCATION:${item.location}
-RRULE:FREQ=WEEKLY;BYDAY=${item.day === "الأحد" ? "SU - TU - TH" : "MO - WE"}
-END:VEVENT`,
-        )
-        .join("\n")}
-END:VCALENDAR`
+ const exportToImage = async () => {
+  const node = document.getElementById("schedule-section")
+  if (!node) return
 
-    const blob = new Blob([icsContent], { type: "text/calendar" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "جدولي_الدراسي.ics"
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
+  const dataUrl = await toPng(node)
+  const link = document.createElement("a")
+  link.download = "جدول_الامتحانات.png"
+  link.href = dataUrl
+  link.click()
+}
 
 const handleAddCourse = async () => {
   if (!newCourse.course || !newCourse.code || !newCourse.time || !newCourse.day) {
@@ -175,12 +156,12 @@ const handleAddCourse = async () => {
             <h2 className="text-2xl font-semibold" style={{ color: "var(--ink)" }}>
               جدولي الحالي
             </h2>
-            <button onClick={exportToICS} className="retro-button">
+            <button onClick={exportToImage} className="retro-button">
               تصدير ICS
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
+          <div id="schedule-section" className="grid md:grid-cols-2 gap-6 mb-12">
             {schedule.map((item) => (
               <RetroWindow key={item.id} title={item.code} className="hover:shadow-lg transition-shadow">
                 <div className="space-y-3">

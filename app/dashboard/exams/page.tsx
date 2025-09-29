@@ -5,6 +5,8 @@ import { RetroWindow } from "@/app/components/retro-window"
 import { RetroToggle } from "@/app/components/retro-toggle"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
+import { toPng } from "html-to-image"
+
 
 export default function ExamsPage() {
   const supabase = createClient()
@@ -106,40 +108,16 @@ export default function ExamsPage() {
   }
 
   // ✅ Export to ICS
-  const exportToICS = () => {
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//TAKHASSUS//Exams//AR
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-${exams
-  .map(
-    (exam) => `BEGIN:VEVENT
-UID:${exam.id}@takhassus.com
-DTSTART:${exam.date.replace(/-/g, "")}T${exam.time.replace(":", "")}00
-DTEND:${exam.date.replace(/-/g, "")}T${(
-      Number.parseInt(exam.time.split(":")[0]) + 2
-    )
-      .toString()
-      .padStart(2, "0")}${exam.time.split(":")[1]}00
-SUMMARY:امتحان ${exam.course}
-DESCRIPTION:${exam.type} - ${exam.location}
-LOCATION:${exam.location}
-END:VEVENT`
-  )
-  .join("\n")}
-END:VCALENDAR`
+ const exportToImage = async () => {
+  const node = document.getElementById("exams-section")
+  if (!node) return
 
-    const blob = new Blob([icsContent], { type: "text/calendar" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "جدول_الامتحانات.ics"
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
+  const dataUrl = await toPng(node)
+  const link = document.createElement("a")
+  link.download = "جدول_الامتحانات.png"
+  link.href = dataUrl
+  link.click()
+}
 
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
@@ -164,12 +142,12 @@ END:VCALENDAR`
             <h2 className="text-2xl font-semibold" style={{ color: "var(--ink)" }}>
               الامتحانات القادمة
             </h2>
-            <button onClick={exportToICS} className="retro-button">
-              تصدير ICS
+            <button onClick={exportToImage} className="retro-button">
+              تحميل جدول الامتحانات
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
+          <div id="exams-section" className="grid md:grid-cols-2 gap-6 mb-12">
             {exams.map((exam) => (
               <RetroWindow key={exam.id} title={exam.code}>
                 <div className="space-y-3">
