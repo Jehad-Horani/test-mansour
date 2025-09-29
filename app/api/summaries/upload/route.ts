@@ -77,7 +77,8 @@ export async function POST(req: Request) {
       file_name: file.name,
       file_size: file.size,
       user_id: user.id,
-      is_approved: false // Use is_approved instead of status (pending = false, approved = true)
+      is_approved: false, // Use is_approved instead of status (pending = false, approved = true)
+      status: formData.get("pending")
     }
 
     console.log("💾 Saving summary data:", summaryData)
