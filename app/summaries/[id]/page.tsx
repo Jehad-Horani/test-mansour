@@ -291,11 +291,13 @@ export default function SummaryDetailPage() {
                 </h3>
                 <p className="text-gray-600 mb-4">اضغط على الزر أدناه لتحميل الملخص</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
-                    <a href={summary.file_url} target="_blank" rel="noopener noreferrer">
-                      <PixelIcon type="download" className="w-4 h-4 ml-2" />
-                      تحميل الملخص
-                    </a>
+                  <Button 
+                    className="retro-button" 
+                    style={{ background: "var(--primary)", color: "white" }}
+                    onClick={() => handleSummaryDownload(summary.file_url, summary.id)}
+                  >
+                    <PixelIcon type="download" className="w-4 h-4 ml-2" />
+                    تحميل الملخص
                   </Button>
                   <Button asChild variant="outline" className="retro-button bg-transparent">
                     <Link href="/summaries">تصفح المزيد من الملخصات</Link>
