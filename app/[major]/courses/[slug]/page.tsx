@@ -7,7 +7,6 @@ import { Input } from "@/app/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { WindowCard } from "@/app/components/window-card"
 import { TabBarRetro } from "@/app/components/tab-bar-retro"
-import { RetroToggle } from "@/app/components/retro-toggle"
 import { Badge } from "@/app/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/app/components/ui/dialog"
 import { useTier } from "@/hooks/use-tier"
@@ -343,7 +342,6 @@ export default function CourseHub({ params }: CourseHubProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <RetroToggle />
 
       {/* Header */}
       <section className={`bg-gradient-to-r from-${color}-600 to-${color}-800 text-white py-12 px-4`}>

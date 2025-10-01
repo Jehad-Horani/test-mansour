@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { RetroWindow } from "@/app/components/retro-window"
-import { RetroToggle } from "@/app/components/retro-toggle"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { toPng } from "html-to-image"
@@ -121,7 +120,6 @@ export default function ExamsPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
-      <RetroToggle />
 
       {/* Header */}
       <section className="retro-window mx-4 mt-4 mb-6">

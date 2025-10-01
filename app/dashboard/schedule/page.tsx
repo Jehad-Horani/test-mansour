@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { RetroWindow } from "@/app/components/retro-window"
-import { RetroToggle } from "@/app/components/retro-toggle"
 import Link from "next/link"
 import { toPng } from "html-to-image"
 
@@ -135,7 +134,6 @@ export default function SchedulePage() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
-      <RetroToggle />
 
       {/* Header */}
       <section className="retro-window mx-4 mt-4 mb-6">
