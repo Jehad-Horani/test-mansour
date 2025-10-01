@@ -125,6 +125,26 @@ export default function AdminDailyLecturesPage() {
       setUpdating(lectureId)
       const { error } = await supabase
         .from("lectures")
+        .update({ approval_status: "rejected" })
+        .eq("id", lectureId)
+
+      if (error) throw error
+
+      setLectures(prev => prev.filter(l => l.id !== lectureId))
+      toast.success("تم رفض المحاضرة وحذفها")
+    } catch (err) {
+      console.error(err)
+      toast.error("خطأ في رفض المحاضرة")
+    } finally {
+      setUpdating(null)
+    }
+  }
+
+  const handledelete = async (lectureId: string, reason: string) => {
+    try {
+      setUpdating(lectureId)
+      const { error } = await supabase
+        .from("lectures")
         .delete()
         .eq("id", lectureId)
 
@@ -308,19 +328,19 @@ export default function AdminDailyLecturesPage() {
                             variant="outline"
                             className="retro-button bg-transparent"
                           >
-                           <a href={lecture.file_url} target="_blank" rel="noopener noreferrer">
-                                <Eye className="w-4 h-4 mr-1" />
-                           عرض التفاصيل
-                              </a>
+                            <a href={lecture.file_url} target="_blank" rel="noopener noreferrer">
+                              <Eye className="w-4 h-4 mr-1" />
+                              عرض التفاصيل
+                            </a>
                           </Button>
-                             <Button
-                                size="sm"
-                                onClick={() => setRejectionModal({ lectureId: lecture.id, title: lecture.title })}
-                                className="retro-button bg-red-500 text-white hover:bg-red-600"
-                              >
-                                <X className="w-4 h-4 mr-1" />
-                                حذف المحاضرة
-                              </Button>
+                          <Button
+                            size="sm"
+                            onClick={() =>handledelete}
+                            className="retro-button bg-red-500 text-white hover:bg-red-600"
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            حذف المحاضرة
+                          </Button>
                         </div>
                       </div>
                     </div>
