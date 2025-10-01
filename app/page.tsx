@@ -249,18 +249,18 @@ useEffect(() => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {/* About Section */}
             <div>
-              <h3 className="font-bold mb-4 text-lg text-white">عن تخصص.كُم</h3>
-              <p className="text-sm mb-4 text-white/90">
+              <h3 className="font-bold mb-3 md:mb-4 text-base md:text-lg text-white">عن تخصص.كُم</h3>
+              <p className="text-xs md:text-sm mb-3 md:mb-4 text-white/90">
                 منصة شاملة للطلاب الجامعيين في الأردن لتبادل الكتب والمعرفة والحصول على الاستشارات الأكاديمية
               </p>
               <div className="flex gap-2">
-                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                <div className="w-7 h-7 md:w-8 md:h-8 bg-white/20 rounded flex items-center justify-center">
                   <span className="text-xs">📧</span>
                 </div>
-                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                <div className="w-7 h-7 md:w-8 md:h-8 bg-white/20 rounded flex items-center justify-center">
                   <span className="text-xs">📱</span>
                 </div>
-                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                <div className="w-7 h-7 md:w-8 md:h-8 bg-white/20 rounded flex items-center justify-center">
                   <span className="text-xs">🌐</span>
                 </div>
               </div>
