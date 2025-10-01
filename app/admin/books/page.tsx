@@ -9,11 +9,10 @@ import Link from "next/link"
 import {
   CheckCircle,
   XCircle,
-  Clock,
   Eye,
   ArrowRight,
   Search,
-  Filter
+  Filter,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { marketplaceApi, type Book } from "@/lib/supabase/marketplace"
@@ -25,37 +24,28 @@ export default function AdminBooksPage() {
   const { user, isLoggedIn, isAdmin } = useAuth()
   const router = useRouter()
   const supabase = createClient()
+
   const [loading, setLoading] = useState(true)
-  const [pendingBooks, setPendingBooks] = useState<Book[]>([])
+  const [books, setBooks] = useState<Book[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [processingBookId, setProcessingBookId] = useState<string | null>(null)
-  const [books, setBooks] = useState<Book[]>([])
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending")
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
     total: 0,
-    totalPages: 1
+    totalPages: 1,
   })
-  const [updating, setUpdating] = useState<string | null>(null)
-  const [rejectionModal, setRejectionModal] = useState<{ bookId: string; title: string } | null>(null)
-  const [rejectionReason, setRejectionReason] = useState("")
 
-  useEffect(() => {
-  
-    channel()
-  }, [isLoggedIn, isAdmin, router, filter, page])
-
-
-  // Real-time updates for new book submissions
-  const channel = async () => {
+  // جلب الكتب من API
+  const fetchBooks = async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({
         status: filter,
         page: page.toString(),
-        limit: '20'
+        limit: "20",
       })
 
       const res = await fetch(`/api/admin/books?${params}`)
@@ -76,32 +66,22 @@ export default function AdminBooksPage() {
     }
   }
 
-  const loadPendingBooks = async () => {
-    try {
-      setLoading(true)
-      const { data, error } = await marketplaceApi.getPendingBooks()
-
-      if (error) throw error
-      setPendingBooks(data || [])
-    } catch (error: any) {
-      console.error("Error loading pending books:", error)
-      toast.error("حدث خطأ أثناء تحميل الكتب")
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    if (isLoggedIn && isAdmin()) {
+      fetchBooks()
+    } else if (isLoggedIn && !isAdmin) {
+      router.push("/") // إعادة توجيه إذا مش أدمن
     }
-  }
+  }, [isLoggedIn, isAdmin, filter, page])
 
   const approveBook = async (bookId: string) => {
     if (!confirm("هل أنت متأكد من قبول هذا الكتاب؟")) return
-
     try {
       setProcessingBookId(bookId)
       const { error } = await marketplaceApi.approveBook(bookId, user!.id)
-
       if (error) throw error
-
       toast.success("تم قبول الكتاب بنجاح")
-      setPendingBooks(prev => prev.filter(book => book.id !== bookId))
+      setBooks(prev => prev.filter(book => book.id !== bookId))
     } catch (error: any) {
       console.error("Error approving book:", error)
       toast.error("حدث خطأ أثناء قبول الكتاب")
@@ -113,15 +93,12 @@ export default function AdminBooksPage() {
   const rejectBook = async (bookId: string) => {
     const reason = prompt("يرجى إدخال سبب رفض الكتاب:")
     if (!reason) return
-
     try {
       setProcessingBookId(bookId)
       const { error } = await marketplaceApi.rejectBook(bookId, user!.id, reason)
-
       if (error) throw error
-
       toast.success("تم رفض الكتاب")
-      setPendingBooks(prev => prev.filter(book => book.id !== bookId))
+      setBooks(prev => prev.filter(book => book.id !== bookId))
     } catch (error: any) {
       console.error("Error rejecting book:", error)
       toast.error("حدث خطأ أثناء رفض الكتاب")
@@ -130,10 +107,11 @@ export default function AdminBooksPage() {
     }
   }
 
-  const filteredBooks = pendingBooks.filter(book =>
-    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.seller?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredBooks = books.filter(
+    book =>
+      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.seller?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const getConditionLabel = (condition: string) => {
@@ -142,7 +120,7 @@ export default function AdminBooksPage() {
       excellent: "ممتاز",
       good: "جيد",
       fair: "مقبول",
-      poor: "ضعيف"
+      poor: "ضعيف",
     }
     return labels[condition] || condition
   }
@@ -152,19 +130,17 @@ export default function AdminBooksPage() {
       law: "القانون",
       it: "تقنية المعلومات",
       medical: "الطب",
-      business: "إدارة الأعمال"
+      business: "إدارة الأعمال",
     }
     return labels[major] || major
   }
-
-
 
   if (loading) {
     return (
       <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
         <RetroWindow title="مراجعة الكتب">
           <div className="p-6 text-center">
-            <p className="text-gray-600">جاري تحميل الكتب المعلقة...</p>
+            <p className="text-gray-600">جاري تحميل الكتب...</p>
           </div>
         </RetroWindow>
       </div>
@@ -183,47 +159,45 @@ export default function AdminBooksPage() {
             </Link>
           </Button>
           <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--ink)" }}>
-            مراجعة الكتب المعلقة
+            مراجعة الكتب
           </h1>
           <p className="text-gray-600">مراجعة وقبول أو رفض الكتب المرسلة من الطلاب</p>
         </div>
 
-        {/* Search and Filters */}
+        {/* Search */}
         <RetroWindow title="البحث والفلاتر">
-          <div className="p-4">
-            <div className="flex gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="البحث في الكتب..."
-                  className="retro-button pr-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <Button variant="outline" className="retro-button bg-transparent">
-                <Filter className="w-4 h-4 ml-2" />
-                فلاتر متقدمة
-              </Button>
+          <div className="p-4 flex gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="البحث في الكتب..."
+                className="retro-button pr-10"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
             </div>
+            <Button variant="outline" className="retro-button bg-transparent">
+              <Filter className="w-4 h-4 ml-2" />
+              فلاتر متقدمة
+            </Button>
           </div>
         </RetroWindow>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 mt-6">
-          <RetroWindow title="إجمالي الكتب المعلقة">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-6">
+          <RetroWindow title="إجمالي الكتب">
             <div className="p-4 text-center">
-              <div className="text-3xl font-bold text-yellow-600">{pendingBooks.length}</div>
-              <p className="text-sm text-gray-600">كتاب في الانتظار</p>
+              <div className="text-3xl font-bold text-yellow-600">{books.length}</div>
+              <p className="text-sm text-gray-600">كتاب</p>
             </div>
           </RetroWindow>
 
-          <RetroWindow title="الكتب المفلترة">
+          <RetroWindow title="نتائج البحث">
             <div className="p-4 text-center">
               <div className="text-3xl font-bold" style={{ color: "var(--primary)" }}>
                 {filteredBooks.length}
               </div>
-              <p className="text-sm text-gray-600">نتيجة البحث</p>
+              <p className="text-sm text-gray-600">كتاب مطابق</p>
             </div>
           </RetroWindow>
 
@@ -232,7 +206,7 @@ export default function AdminBooksPage() {
               <Button
                 className="retro-button w-full mb-2"
                 style={{ background: "var(--accent)", color: "white" }}
-                onClick={loadPendingBooks}
+                onClick={fetchBooks}
               >
                 تحديث القائمة
               </Button>
@@ -241,33 +215,23 @@ export default function AdminBooksPage() {
         </div>
 
         {/* Books List */}
-        <RetroWindow title={`الكتب المعلقة (${filteredBooks.length})`}>
+        <RetroWindow title={`الكتب (${filteredBooks.length})`}>
           <div className="p-6">
             {filteredBooks.length === 0 ? (
               <div className="text-center py-12">
-                {pendingBooks.length === 0 ? (
-                  <>
-                    <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
-                    <p className="text-gray-600 text-lg">ممتاز! لا توجد كتب في الانتظار</p>
-                    <p className="text-gray-500 text-sm mt-2">جميع الكتب تمت مراجعتها</p>
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-600">لا توجد نتائج للبحث "{searchTerm}"</p>
-                    <Button
-                      variant="outline"
-                      className="retro-button bg-transparent mt-4"
-                      onClick={() => setSearchTerm("")}
-                    >
-                      مسح البحث
-                    </Button>
-                  </>
-                )}
+                <Search className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-600">لا توجد نتائج للبحث "{searchTerm}"</p>
+                <Button
+                  variant="outline"
+                  className="retro-button bg-transparent mt-4"
+                  onClick={() => setSearchTerm("")}
+                >
+                  مسح البحث
+                </Button>
               </div>
             ) : (
               <div className="space-y-6">
-                {filteredBooks.map((book) => (
+                {filteredBooks.map(book => (
                   <div key={book.id} className="retro-window bg-white">
                     <div className="p-6">
                       <div className="grid lg:grid-cols-4 gap-6">
@@ -280,7 +244,7 @@ export default function AdminBooksPage() {
                           />
                           <div className="mt-2 text-center">
                             <Badge
-                              variant={book.condition === 'new' ? 'default' : 'secondary'}
+                              variant={book.condition === "new" ? "default" : "secondary"}
                               className="text-xs"
                             >
                               {getConditionLabel(book.condition)}
@@ -302,17 +266,15 @@ export default function AdminBooksPage() {
                             )}
                           </div>
 
-                          <div className="mb-4">
-                            <div className="flex items-center gap-4">
-                              <div className="text-2xl font-bold" style={{ color: "var(--primary)" }}>
-                                {book.selling_price} {book.currency}
-                              </div>
-                              {book.original_price && (
-                                <div className="text-gray-500 line-through">
-                                  {book.original_price} {book.currency}
-                                </div>
-                              )}
+                          <div className="mb-4 flex items-center gap-4">
+                            <div className="text-2xl font-bold" style={{ color: "var(--primary)" }}>
+                              {book.selling_price} {book.currency}
                             </div>
+                            {book.original_price && (
+                              <div className="text-gray-500 line-through">
+                                {book.original_price} {book.currency}
+                              </div>
+                            )}
                           </div>
 
                           {book.description && (
@@ -323,7 +285,7 @@ export default function AdminBooksPage() {
                           )}
 
                           <div className="text-xs text-gray-500">
-                            <p>تاريخ الإرسال: {new Date(book.created_at).toLocaleDateString('ar-SA')}</p>
+                            <p>تاريخ الإرسال: {new Date(book.created_at).toLocaleDateString("ar-SA")}</p>
                           </div>
                         </div>
 
@@ -336,7 +298,7 @@ export default function AdminBooksPage() {
                           >
                             <Link href={`/market/${book.id}`} target="_blank">
                               <Eye className="w-4 h-4 ml-2" />
-                              معاينة التفاصيل
+                              معاينة
                             </Link>
                           </Button>
 
@@ -347,7 +309,7 @@ export default function AdminBooksPage() {
                             disabled={processingBookId === book.id}
                           >
                             <CheckCircle className="w-4 h-4 ml-2" />
-                            {processingBookId === book.id ? "جاري القبول..." : "قبول الكتاب"}
+                            {processingBookId === book.id ? "جاري القبول..." : "قبول"}
                           </Button>
 
                           <Button
@@ -357,7 +319,7 @@ export default function AdminBooksPage() {
                             disabled={processingBookId === book.id}
                           >
                             <XCircle className="w-4 h-4 ml-2" />
-                            {processingBookId === book.id ? "جاري الرفض..." : "رفض الكتاب"}
+                            {processingBookId === book.id ? "جاري الرفض..." : "رفض"}
                           </Button>
 
                           <div className="mt-4 p-3 bg-gray-50 rounded">
