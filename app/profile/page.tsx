@@ -96,52 +96,7 @@ export default function ProfilePage() {
           </div>
         </RetroWindow>
 
-        {/* Statistics */}
-        <div className="mt-6">
-          <RetroWindow title="الإحصائيات">
-            <div className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="retro-window bg-white p-4">
-                    <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
-                    <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {stats.coursesEnrolled || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">المقررات المسجلة</div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="retro-window bg-white p-4">
-                    <BookOpen className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
-                    <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {stats.booksOwned || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">الكتب المملوكة</div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="retro-window bg-white p-4">
-                    <Users className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--primary)" }} />
-                    <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {stats.consultations || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">الاستشارات</div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="retro-window bg-white p-4">
-                    <Award className="w-8 h-8 mx-auto mb-2" style={{ color: "var(--accent)" }} />
-                    <div className="text-2xl font-bold" style={{ color: "var(--ink)" }}>
-                      {stats.communityPoints || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">نقاط المجتمع</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </RetroWindow>
-        </div>
-
+       
         {/* Quick Actions */}
         <div className="mt-6">
           <RetroWindow title="إجراءات سريعة">
