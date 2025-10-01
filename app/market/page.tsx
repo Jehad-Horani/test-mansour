@@ -272,7 +272,7 @@ export default function MarketPage() {
                       </div>
 
                       <div className="flex gap-2 mt-4">
-                        {book.seller?.role !== "admin" && book.seller?.phone ? (
+                        {book.seller?.role !== "admin" ? (
                           <Button
                             asChild
                             className="retro-button flex-1"
