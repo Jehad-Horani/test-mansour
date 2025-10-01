@@ -71,20 +71,20 @@ useEffect(() => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 p-4">
               {/* Market Feature */}
               <div className="retro-window bg-white">
-                <div className="p-6 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">📚</span>
+                <div className="p-4 md:p-6 text-center">
+                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <span className="text-xl md:text-2xl">📚</span>
                   </div>
-                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
                     سوق الكتب
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">
                     اشتري وبيع الكتب الجامعية المستعملة والجديدة بأفضل الأسعار
                   </p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button"
+                    className="retro-button w-full sm:w-auto"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/market">تصفح السوق</Link>
