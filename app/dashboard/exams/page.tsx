@@ -24,11 +24,13 @@ export default function ExamsPage() {
   })
   const [editingExam, setEditingExam] = useState<any>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
-    const { profile , ispremium } = useAuth()
+  const { profile, ispremium } = useAuth()
   const router = useRouter();
 
   useEffect(() => {
-    if (!ispremium) {
+    if (profile?.subscription_tier === "premium") {
+      router.push("/dashboard/exams"); // يعيد التوجيه للصفحة الرئيسية
+    } else {
       router.push("/"); // يعيد التوجيه للصفحة الرئيسية
     }
   }, [ispremium, router]);
@@ -120,16 +122,16 @@ export default function ExamsPage() {
   }
 
   // ✅ Export to ICS
- const exportToImage = async () => {
-  const node = document.getElementById("exams-section")
-  if (!node) return
+  const exportToImage = async () => {
+    const node = document.getElementById("exams-section")
+    if (!node) return
 
-  const dataUrl = await toPng(node)
-  const link = document.createElement("a")
-  link.download = "جدول_الامتحانات.png"
-  link.href = dataUrl
-  link.click()
-}
+    const dataUrl = await toPng(node)
+    const link = document.createElement("a")
+    link.download = "جدول_الامتحانات.png"
+    link.href = dataUrl
+    link.click()
+  }
 
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
