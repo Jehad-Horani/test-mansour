@@ -1,33 +1,19 @@
-import { updateSession } from "@/lib/supabase/middleware";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/client";
-import { useAuth } from "./hooks/use-auth";
+import { updateSession } from "@/lib/supabase/middleware"
+import type { NextRequest } from "next/server"
 
 export async function middleware(request: NextRequest) {
-  // أولاً حدث الجلسة
-  const res = await updateSession(request);
-  const supabase = createClient();
-
-const {profile , user , error} = useAuth()
-
-
-  if (!user) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-
-  if (error || profile?.subscription_tier !== "premium") {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  return res; // ترجع نتيجة updateSession بعد التحقق
+  return await updateSession(request)
 }
-// تحدد الصفحات اللي بدك تحميها
+
 export const config = {
   matcher: [
-    "/dashboard/exams",
-    "/dashboard/schedule",
-    "/summaries/:path*"
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
-};
+}

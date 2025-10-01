@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function PremiumCard({
   href,
@@ -13,19 +14,12 @@ export default function PremiumCard({
 }) {
   const [isPremium, setIsPremium] = useState(false);
   const supabase = createClient();
+  const {profile} = useAuth()
 
   useEffect(() => {
     const checkPremium = async () => {
-      const user = supabase.auth.user();
-      if (!user) return;
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("subscription_tier")
-        .eq("id", user.id)
-        .single();
-
-      setIsPremium(data?.subscription_tier === "premium");
+    
+      setIsPremium(profile?.subscription_tier === "premium");
     };
     checkPremium();
   }, []);

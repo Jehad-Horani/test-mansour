@@ -21,6 +21,7 @@ import {
   Bell,
   TrendingUp,
 } from "lucide-react"
+import PremiumCard from "../components/PremiumCard"
 
 const getMajorLabelSafe = (major: string | null | undefined) => {
   switch (major) {
@@ -193,7 +194,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-    
+
 
       {/* Main Dashboard Grid */}
       <section className="py-4 px-4">
@@ -251,8 +252,7 @@ export default function DashboardPage() {
               </RetroWindow>
             </Link>
 
-            {/* Schedule */}
-            <Link href="/dashboard/schedule" className="block">
+            <PremiumCard href="/dashboard/schedule">
               <RetroWindow
                 title="الجدول الدراسي"
                 className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
@@ -265,20 +265,28 @@ export default function DashboardPage() {
                   <p className="text-gray-600 text-sm mb-4">نظم جدولك الدراسي</p>
                 </div>
               </RetroWindow>
-            </Link>
+            </PremiumCard>
 
-            {/* Exams */}
-            <Link href="/dashboard/exams" className="block">
-              <RetroWindow title="الامتحانات" className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
+            <PremiumCard href="/dashboard/exams">
+              <RetroWindow
+                title="الامتحانات"
+                className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
+              >
                 <div className="text-center py-8">
-                  <GraduationCap className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
+                  <GraduationCap
+                    className="w-12 h-12 mx-auto mb-4"
+                    style={{ color: "var(--primary)" }}
+                  />
                   <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
                     الامتحانات
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4">جدولة ومتابعة الامتحانات</p>
+                  <p className="text-gray-600 text-sm mb-4">
+                    جدولة ومتابعة الامتحانات
+                  </p>
                 </div>
               </RetroWindow>
-            </Link>
+            </PremiumCard>
+
 
             {/* Ambassadors */}
             <Link href="/ambassadors" className="block">
