@@ -9,6 +9,8 @@ import PixelIcon from "@/app/components/pixel-icon"
 import Link from "next/link"
 import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 import { useUserContext } from "@/contexts/user-context"
+import { useAuth } from "@/hooks/use-auth"
+import { toast } from "sonner"
 
 interface Summary {
   id: string
