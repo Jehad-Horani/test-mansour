@@ -68,7 +68,7 @@ useEffect(() => {
       <section className="py-8 md:py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <RetroWindow title="المميزات الأساسية">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 p-4">
               {/* Market Feature */}
               <div className="retro-window bg-white">
                 <div className="p-6 text-center">
