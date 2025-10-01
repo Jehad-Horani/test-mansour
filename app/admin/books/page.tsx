@@ -6,11 +6,11 @@ import { Input } from "@/app/components/ui/input"
 import { RetroWindow } from "@/app/components/retro-window"
 import { Badge } from "@/app/components/ui/badge"
 import Link from "next/link"
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Eye, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Eye,
   ArrowRight,
   Search,
   Filter
@@ -29,41 +29,61 @@ export default function AdminBooksPage() {
   const [pendingBooks, setPendingBooks] = useState<Book[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [processingBookId, setProcessingBookId] = useState<string | null>(null)
+  const [books, setBooks] = useState<Book[]>([])
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 1
+  })
+  const [updating, setUpdating] = useState<string | null>(null)
+  const [rejectionModal, setRejectionModal] = useState<{ bookId: string; title: string } | null>(null)
+  const [rejectionReason, setRejectionReason] = useState("")
 
   useEffect(() => {
-   
-
-    loadPendingBooks()
-
-    // Real-time updates for new book submissions
-    const channel = supabase
-      .channel('admin-books-changes')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'books' },
-        (payload: any) => {
-          console.log('New book submitted:', payload)
-          loadPendingBooks()
-        }
-      )
-      .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'books' },
-        (payload: any) => {
-          console.log('Book updated:', payload)
-          loadPendingBooks()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
+    if (!isLoggedIn || !isAdmin()) {
+      router.push('/')
+      return
     }
-  }, [ user])
+    channel()
+  }, [isLoggedIn, isAdmin, router, filter, page])
+
+
+  // Real-time updates for new book submissions
+  const channel = async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        status: filter,
+        page: page.toString(),
+        limit: '20'
+      })
+
+      const res = await fetch(`/api/admin/books?${params}`)
+      const data = await res.json()
+
+      if (res.ok) {
+        setBooks(data.books || [])
+        setPagination(data.pagination)
+      } else {
+        console.error("Error fetching books:", data.error)
+        toast.error("خطأ في جلب الكتب")
+      }
+    } catch (error) {
+      console.error("Error fetching books:", error)
+      toast.error("خطأ في الاتصال")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const loadPendingBooks = async () => {
     try {
       setLoading(true)
       const { data, error } = await marketplaceApi.getPendingBooks()
-      
+
       if (error) throw error
       setPendingBooks(data || [])
     } catch (error: any) {
@@ -80,9 +100,9 @@ export default function AdminBooksPage() {
     try {
       setProcessingBookId(bookId)
       const { error } = await marketplaceApi.approveBook(bookId, user!.id)
-      
+
       if (error) throw error
-      
+
       toast.success("تم قبول الكتاب بنجاح")
       setPendingBooks(prev => prev.filter(book => book.id !== bookId))
     } catch (error: any) {
@@ -100,9 +120,9 @@ export default function AdminBooksPage() {
     try {
       setProcessingBookId(bookId)
       const { error } = await marketplaceApi.rejectBook(bookId, user!.id, reason)
-      
+
       if (error) throw error
-      
+
       toast.success("تم رفض الكتاب")
       setPendingBooks(prev => prev.filter(book => book.id !== bookId))
     } catch (error: any) {
@@ -122,7 +142,7 @@ export default function AdminBooksPage() {
   const getConditionLabel = (condition: string) => {
     const labels: Record<string, string> = {
       new: "جديد",
-      excellent: "ممتاز", 
+      excellent: "ممتاز",
       good: "جيد",
       fair: "مقبول",
       poor: "ضعيف"
@@ -134,13 +154,13 @@ export default function AdminBooksPage() {
     const labels: Record<string, string> = {
       law: "القانون",
       it: "تقنية المعلومات",
-      medical: "الطب", 
+      medical: "الطب",
       business: "إدارة الأعمال"
     }
     return labels[major] || major
   }
 
- 
+
 
   if (loading) {
     return (
@@ -177,8 +197,8 @@ export default function AdminBooksPage() {
             <div className="flex gap-4">
               <div className="relative flex-1">
                 <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input 
-                  placeholder="البحث في الكتب..." 
+                <Input
+                  placeholder="البحث في الكتب..."
                   className="retro-button pr-10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -200,7 +220,7 @@ export default function AdminBooksPage() {
               <p className="text-sm text-gray-600">كتاب في الانتظار</p>
             </div>
           </RetroWindow>
-          
+
           <RetroWindow title="الكتب المفلترة">
             <div className="p-4 text-center">
               <div className="text-3xl font-bold" style={{ color: "var(--primary)" }}>
@@ -212,8 +232,8 @@ export default function AdminBooksPage() {
 
           <RetroWindow title="الإجراءات السريعة">
             <div className="p-4">
-              <Button 
-                className="retro-button w-full mb-2" 
+              <Button
+                className="retro-button w-full mb-2"
                 style={{ background: "var(--accent)", color: "white" }}
                 onClick={loadPendingBooks}
               >
@@ -238,8 +258,8 @@ export default function AdminBooksPage() {
                   <>
                     <Search className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                     <p className="text-gray-600">لا توجد نتائج للبحث "{searchTerm}"</p>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="retro-button bg-transparent mt-4"
                       onClick={() => setSearchTerm("")}
                     >
@@ -262,7 +282,7 @@ export default function AdminBooksPage() {
                             className="w-full h-48 object-cover bg-gray-200 rounded"
                           />
                           <div className="mt-2 text-center">
-                            <Badge 
+                            <Badge
                               variant={book.condition === 'new' ? 'default' : 'secondary'}
                               className="text-xs"
                             >
