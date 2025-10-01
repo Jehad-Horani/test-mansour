@@ -50,8 +50,9 @@ export default function MarketPage() {
       const data = await res.json()
 
       if (res.ok) {
-        setBooks(data)
-      } else {
+        setBooks(data.books || data) // بتغطي الحالتين
+      }
+      else {
         console.error("Error fetching books:", data.error)
         toast.error("حدث خطأ أثناء تحميل الكتب")
       }
@@ -299,10 +300,10 @@ export default function MarketPage() {
                             {adding === book.id
                               ? "جاري الإضافة..."
                               : book.seller_id === user?.id
-                              ? "كتابك"
-                              : !isLoggedIn
-                              ? "سجل دخولك"
-                              : "أضف للسلة"}
+                                ? "كتابك"
+                                : !isLoggedIn
+                                  ? "سجل دخولك"
+                                  : "أضف للسلة"}
                           </Button>
                         )}
 
