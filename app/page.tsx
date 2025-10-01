@@ -96,18 +96,18 @@ useEffect(() => {
 
               {/* Ambassadors Feature */}
               <div className="retro-window bg-white">
-                <div className="p-6 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">🎓</span>
+                <div className="p-4 md:p-6 text-center">
+                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <span className="text-xl md:text-2xl">🎓</span>
                   </div>
-                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
                     السفراء الأكاديميون
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">احصل على استشارات أكاديمية من طلاب متفوقين في تخصصك</p>
+                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">احصل على استشارات أكاديمية من طلاب متفوقين في تخصصك</p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button"
+                    className="retro-button w-full sm:w-auto"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/ambassadors">السفراء</Link>
@@ -117,18 +117,18 @@ useEffect(() => {
 
               {/* Dashboard Feature */}
               <div className="retro-window bg-white">
-                <div className="p-6 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">📊</span>
+                <div className="p-4 md:p-6 text-center">
+                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <span className="text-xl md:text-2xl">📊</span>
                   </div>
-                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
                     لوحة التحكم
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">تتبع جدولك الدراسي وامتحاناتك وخطط الدراسة الشخصية</p>
+                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">تتبع جدولك الدراسي وامتحاناتك وخطط الدراسة الشخصية</p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button"
+                    className="retro-button w-full sm:w-auto"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/dashboard">افتح لوحة التحكم</Link>
@@ -138,18 +138,18 @@ useEffect(() => {
 
               {/* Notebooks Feature */}
               <div className="retro-window bg-white">
-                <div className="p-6 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">📝</span>
+                <div className="p-4 md:p-6 text-center">
+                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-red-100 rounded-lg flex items-center justify-center">
+                    <span className="text-xl md:text-2xl">📝</span>
                   </div>
-                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
                     المحاضرات
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">ارفع وشارك محاضراتك الدراسية مع الطلاب الآخرين</p>
+                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">ارفع وشارك محاضراتك الدراسية مع الطلاب الآخرين</p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button"
+                    className="retro-button w-full sm:w-auto"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/dashboard/notebooks">تصفح المحاضرات</Link>
@@ -159,18 +159,18 @@ useEffect(() => {
 
               {/* Summaries Feature */}
               <div className="retro-window bg-white">
-                <div className="p-6 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">📄</span>
+                <div className="p-4 md:p-6 text-center">
+                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <span className="text-xl md:text-2xl">📄</span>
                   </div>
-                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
                     الملخصات الدراسية
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">تصفح وشارك الملخصات الدراسية مع زملائك الطلاب</p>
+                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">تصفح وشارك الملخصات الدراسية مع زملائك الطلاب</p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button"
+                    className="retro-button w-full sm:w-auto"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/summaries">تصفح الملخصات</Link>
@@ -180,18 +180,18 @@ useEffect(() => {
 
               {/* Pricing Feature */}
               <div className="retro-window bg-white">
-                <div className="p-6 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">💎</span>
+                <div className="p-4 md:p-6 text-center">
+                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <span className="text-xl md:text-2xl">💎</span>
                   </div>
-                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
                     خطط الاشتراك
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">اختر الخطة المناسبة لك واحصل على مميزات إضافية</p>
+                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">اختر الخطة المناسبة لك واحصل على مميزات إضافية</p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button"
+                    className="retro-button w-full sm:w-auto"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/pricing">اختر خطتك</Link>
