@@ -340,9 +340,9 @@ useEffect(() => {
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-white/20 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center text-sm">
-            <div className="text-white/90 mb-4 md:mb-0">© 2024 تخصص.كُم. جميع الحقوق محفوظة.</div>
-            <div className="flex gap-4">
+          <div className="border-t border-white/20 mt-6 md:mt-8 pt-4 md:pt-6 flex flex-col md:flex-row justify-between items-center text-xs md:text-sm">
+            <div className="text-white/90 mb-3 md:mb-0 text-center md:text-right">© 2024 تخصص.كُم. جميع الحقوق محفوظة.</div>
+            <div className="flex flex-wrap gap-3 md:gap-4 justify-center">
               <Link href="/terms" className="hover:underline text-white/90 hover:text-white">
                 شروط الاستخدام
               </Link>
