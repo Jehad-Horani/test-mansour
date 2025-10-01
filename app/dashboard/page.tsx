@@ -254,9 +254,7 @@ export default function DashboardPage() {
             {/* Schedule */}
             <Link
               href={profile?.subscription_tier === "premium" ? `/dashboard/schedule` : "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex items-center justify-center w-full ${profile?.subscription_tier !== "premium" ? "pointer-events-none" : ""}`}
+              className={`${profile?.subscription_tier !== "premium" ? "pointer-events-none" : ""}`}
             >
               <RetroWindow
                 title="الجدول الدراسي"
@@ -275,9 +273,7 @@ export default function DashboardPage() {
             {/* Exams */}
             <Link
               href={profile?.subscription_tier === "premium" ? `/dashboard/exams` : "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex items-center justify-center w-full ${profile?.subscription_tier !== "premium" ? "pointer-events-none" : ""}`}
+              className={`${profile?.subscription_tier !== "premium" ? "pointer-events-none" : ""}`}
             >
               <RetroWindow title="الامتحانات" className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
                 <h5 className="text-sm text-black border-2 border-amber-300 border-solid">مميز</h5>
