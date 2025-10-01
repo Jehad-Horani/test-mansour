@@ -101,7 +101,6 @@ export default function SchedulePage() {
 
       // Refresh البيانات مرتين
       fetchSchedule()
-      fetchSchedule()
     }
   }
 
@@ -147,6 +146,8 @@ export default function SchedulePage() {
       }
     }
   }
+      fetchSchedule()
+      fetchSchedule()
 
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
