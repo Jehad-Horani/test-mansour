@@ -82,6 +82,38 @@ export default function SummaryDetailPage() {
     })
   }
 
+  const handleSummaryDownload = async (summaryUrl: string, summaryId: string) => {
+    // Check usage limit for free users
+    if (profile?.subscription_tier === 'free') {
+      try {
+        const usageCheckRes = await fetch('/api/usage/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resourceType: 'summary_view' })
+        })
+        
+        const usageCheck = await usageCheckRes.json()
+        
+        if (!usageCheck.allowed) {
+          toast.error(`لقد وصلت إلى الحد الأقصى لعرض/تحميل الملخصات هذا الشهر (${usageCheck.limit} ملخص). يرجى الترقية إلى خطة مميزة للمزيد.`)
+          return
+        }
+
+        // Log usage
+        await fetch('/api/usage/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resourceType: 'summary_view', resourceId: summaryId })
+        })
+      } catch (error) {
+        console.error('Error checking usage:', error)
+      }
+    }
+
+    // Open/download summary
+    window.open(summaryUrl, '_blank')
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen" style={{ background: "var(--panel)" }}>
