@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
 import { toPng } from "html-to-image"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth"
 
 
@@ -21,10 +21,8 @@ export default function SchedulePage() {
   })
   const [editingCourse, setEditingCourse] = useState<any>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
-
   const supabase = createClient()
-
-   const { profile, ispremium } = useAuth()
+  const { profile, ispremium } = useAuth()
   const router = useRouter();
 
   useEffect(() => {
@@ -58,7 +56,7 @@ export default function SchedulePage() {
 
     const dataUrl = await toPng(node)
     const link = document.createElement("a")
-    link.download = "جدول_الامتحانات.png"
+    link.download = "الجدول الدراسي.png"
     link.href = dataUrl
     link.click()
   }
