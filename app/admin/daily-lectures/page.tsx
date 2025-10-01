@@ -140,7 +140,7 @@ export default function AdminDailyLecturesPage() {
     }
   }
 
-  const handledelete = async (lectureId: string, reason: string) => {
+  const handledelete = async (lectureId: string) => {
     try {
       setUpdating(lectureId)
       const { error } = await supabase
@@ -151,10 +151,10 @@ export default function AdminDailyLecturesPage() {
       if (error) throw error
 
       setLectures(prev => prev.filter(l => l.id !== lectureId))
-      toast.success("تم رفض المحاضرة وحذفها")
+      toast.success("تم حذفها")
     } catch (err) {
       console.error(err)
-      toast.error("خطأ في رفض المحاضرة")
+      toast.error("خطأ في حذف المحاضرة")
     } finally {
       setUpdating(null)
     }
@@ -335,7 +335,7 @@ export default function AdminDailyLecturesPage() {
                           </Button>
                           <Button
                             size="sm"
-                            onClick={() =>handledelete}
+                            onClick={() =>handledelete(lecture.id)}
                             className="retro-button bg-red-500 text-white hover:bg-red-600"
                           >
                             <X className="w-4 h-4 mr-1" />
