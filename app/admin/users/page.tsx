@@ -308,7 +308,7 @@ export default function AdminUsersPage() {
                                   : 'طالب'}
                               </Badge>
                               <Badge className={getTierColor(user.subscription_tier)}>
-                                {user.subscription_tier === 'premium' ? 'مميز' : 'عادي'}
+                                {user.subscription_tier === 'premium' ? 'مميز' : 'مجاني'}
                               </Badge>
                             </div>
 
@@ -354,7 +354,7 @@ export default function AdminUsersPage() {
                             disabled={updating === user.id}
                             className="px-2 py-1 text-xs border border-gray-300 rounded"
                           >
-                            <option value="basic">عادي</option>
+                            <option value="free">مجاني</option>
                             <option value="premium">مميز</option>
                           </select>
 
