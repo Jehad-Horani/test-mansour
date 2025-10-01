@@ -46,7 +46,7 @@ export default function MarketPage() {
   const loadBooks = async () => {
     try {
       setLoading(true)
-      const res = await fetch(`/api/books?search=${searchTerm}&sort=${sortBy}`)
+      const res = await fetch(`/api/books`)
       const data = await res.json()
 
       if (res.ok) {
