@@ -301,8 +301,8 @@ useEffect(() => {
 
             {/* Colleges */}
             <div>
-              <h3 className="font-bold mb-4 text-lg text-white">الكليات</h3>
-              <ul className="space-y-2 text-sm">
+              <h3 className="font-bold mb-3 md:mb-4 text-base md:text-lg text-white">الكليات</h3>
+              <ul className="space-y-2 text-xs md:text-sm">
                 <li>
                   <span className="text-white/90">كلية الحقوق</span>
                 </li>
