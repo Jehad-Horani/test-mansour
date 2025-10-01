@@ -287,10 +287,13 @@ export default function SummariesPage() {
                             <Link href={`/summaries/${summary.id}`}>عرض التفاصيل</Link>
                           </Button>
                           {summary.file_url && (
-                            <Button asChild size="sm" variant="outline" className="retro-button bg-transparent">
-                              <a href={summary.file_url} target="_blank" rel="noopener noreferrer">
-                                <PixelIcon type="download" className="w-3 h-3" />
-                              </a>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="retro-button bg-transparent"
+                              onClick={() => handleSummaryDownload(summary.file_url, summary.id)}
+                            >
+                              <PixelIcon type="download" className="w-3 h-3" />
                             </Button>
                           )}
                         </div>
