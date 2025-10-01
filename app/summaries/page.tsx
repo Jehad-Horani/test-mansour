@@ -54,6 +54,7 @@ export default function SummariesPage() {
   const [selectedMajor, setSelectedMajor] = useState<string>("all")
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false)
   const { isLoggedIn } = useUserContext()
+  const { profile } = useAuth()
 
   const { data, loading1, error1 } = useSupabaseClient()
 
