@@ -43,7 +43,7 @@ export default function HorizontalScrollingCarousel() {
     // Create infinite scrolling animation from left to right
     gsap.to(track, {
       x: totalWidth,
-      duration: 30, // Adjust speed here (lower = faster)
+      duration: 50, // Adjust speed here (lower = faster)
       ease: "none",
       repeat: -1,
       modifiers: {
