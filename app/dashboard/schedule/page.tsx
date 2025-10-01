@@ -54,6 +54,9 @@ export default function SchedulePage() {
       setSchedule(data)
     }
   }
+ useEffect(() => {
+    fetchSchedule()
+  }, [])
 
   const exportToImage = async () => {
     const node = document.getElementById("schedule-section")
@@ -146,8 +149,7 @@ export default function SchedulePage() {
       }
     }
   }
-      fetchSchedule()
-      fetchSchedule()
+     
 
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
