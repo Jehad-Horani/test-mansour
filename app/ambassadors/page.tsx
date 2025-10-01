@@ -14,6 +14,7 @@ import {
 import { ArrowRight, MessageCircle } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function AmbassadorsPage() {
   const supabase = createClient()
@@ -23,6 +24,7 @@ export default function AmbassadorsPage() {
   const [majorFilter, setMajorFilter] = useState("all")
   const [universityFilter, setUniversityFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
+  const { profile } = useAuth()
 
   // fetch ambassadors
   useEffect(() => {
@@ -42,31 +44,31 @@ export default function AmbassadorsPage() {
     fetchAmbassadors()
   }, [supabase])
 
- // filters
-const filteredAmbassadors = ambassadors.filter((amb) => {
-  const name = amb.name?.toLowerCase() || ""
-  const major = amb.major?.toLowerCase() || ""
-  const university = amb.university?.toLowerCase() || ""
+  // filters
+  const filteredAmbassadors = ambassadors.filter((amb) => {
+    const name = amb.name?.toLowerCase() || ""
+    const major = amb.major?.toLowerCase() || ""
+    const university = amb.university?.toLowerCase() || ""
 
-  const matchesSearch =
-    name.includes(search.toLowerCase()) ||
-    major.includes(search.toLowerCase()) ||
-    university.includes(search.toLowerCase())
+    const matchesSearch =
+      name.includes(search.toLowerCase()) ||
+      major.includes(search.toLowerCase()) ||
+      university.includes(search.toLowerCase())
 
-  const matchesMajor =
-    majorFilter === "all" || major === majorFilter.toLowerCase()
+    const matchesMajor =
+      majorFilter === "all" || major === majorFilter.toLowerCase()
 
-  const matchesUniversity =
-    universityFilter === "all" ||
-    university === universityFilter.toLowerCase()
+    const matchesUniversity =
+      universityFilter === "all" ||
+      university === universityFilter.toLowerCase()
 
-  const matchesStatus =
-    statusFilter === "all" ||
-    (statusFilter === "available" && amb.available === true) ||
-    (statusFilter === "busy" && amb.available === false)
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "available" && amb.available === true) ||
+      (statusFilter === "busy" && amb.available === false)
 
-  return matchesSearch && matchesMajor && matchesUniversity && matchesStatus
-})
+    return matchesSearch && matchesMajor && matchesUniversity && matchesStatus
+  })
 
 
   return (
@@ -98,7 +100,7 @@ const filteredAmbassadors = ambassadors.filter((amb) => {
                     onChange={(e) => setSearch(e.target.value)}
                   />
 
-              
+
 
                 </div>
               </div>
@@ -129,18 +131,20 @@ const filteredAmbassadors = ambassadors.filter((amb) => {
                     <div className="space-y-3">
                       <Button
                         asChild
-                        className="retro-button w-full bg-green-600 hover:bg-green-700 text-white"
+                        className={`retro-button w-full text-white ${profile?.subscription_tier === "premium" ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"}`}
+                        disabled={profile?.subscription_tier !== "premium"}
                       >
                         <Link
                           href={`https://wa.me/${amb.phone}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center"
+                          className={`flex items-center ${profile?.subscription_tier !== "premium" ? "pointer-events-none" : ""}`}
                         >
                           <MessageCircle className="w-4 h-4 ml-2" />
                           بدء محادثة
                         </Link>
                       </Button>
+
                     </div>
                   </div>
                 </div>
