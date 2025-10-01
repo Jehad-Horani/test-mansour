@@ -21,7 +21,6 @@ import {
   Bell,
   TrendingUp,
 } from "lucide-react"
-import PremiumCard from "../components/PremiumCard"
 
 const getMajorLabelSafe = (major: string | null | undefined) => {
   switch (major) {
@@ -252,7 +251,13 @@ export default function DashboardPage() {
               </RetroWindow>
             </Link>
 
-            <PremiumCard href="/dashboard/schedule">
+            {/* Schedule */}
+            <Link
+              href={profile?.subscription_tier === "premium" ? `/dashboard/schedule` : "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center justify-center w-full ${profile?.subscription_tier !== "premium" ? "pointer-events-none" : ""}`}
+            >
               <RetroWindow
                 title="الجدول الدراسي"
                 className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
@@ -265,28 +270,26 @@ export default function DashboardPage() {
                   <p className="text-gray-600 text-sm mb-4">نظم جدولك الدراسي</p>
                 </div>
               </RetroWindow>
-            </PremiumCard>
+            </Link>
 
-            <PremiumCard href="/dashboard/exams">
-              <RetroWindow
-                title="الامتحانات"
-                className="hover:shadow-lg transition-shadow cursor-pointer group h-full"
-              >
+            {/* Exams */}
+            <Link
+              href={profile?.subscription_tier === "premium" ? `/dashboard/exams` : "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center justify-center w-full ${profile?.subscription_tier !== "premium" ? "pointer-events-none" : ""}`}
+            >
+              <RetroWindow title="الامتحانات" className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
+                <h5 className="text-sm text-black border-2 border-amber-300 border-solid">مميز</h5>
                 <div className="text-center py-8">
-                  <GraduationCap
-                    className="w-12 h-12 mx-auto mb-4"
-                    style={{ color: "var(--primary)" }}
-                  />
+                  <GraduationCap className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
                   <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
                     الامتحانات
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    جدولة ومتابعة الامتحانات
-                  </p>
+                  <p className="text-gray-600 text-sm mb-4">جدولة ومتابعة الامتحانات</p>
                 </div>
               </RetroWindow>
-            </PremiumCard>
-
+            </Link>
 
             {/* Ambassadors */}
             <Link href="/ambassadors" className="block">
