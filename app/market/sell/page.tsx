@@ -110,6 +110,24 @@ export default function SellBookPage() {
     setUploading(true)
 
     try {
+      // Check usage limit for free users
+      if (profile?.subscription_tier === 'free') {
+        const usageCheckRes = await fetch('/api/usage/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resourceType: 'book_upload' })
+        })
+        
+        const usageCheck = await usageCheckRes.json()
+        
+        if (!usageCheck.allowed) {
+          toast.error(`لقد وصلت إلى الحد الأقصى لرفع الكتب هذا الشهر (${usageCheck.limit} كتاب). يرجى الترقية إلى خطة مميزة للمزيد.`)
+          setLoading(false)
+          setUploading(false)
+          return
+        }
+      }
+
       const bookData = {
         ...form,
         publication_year: form.publication_year ? parseInt(form.publication_year) : undefined,
@@ -126,6 +144,15 @@ export default function SellBookPage() {
       
       // Upload images
       const uploadedImages = await uploadBookImages(book.id)
+      
+      // Log usage for free users
+      if (profile?.subscription_tier === 'free') {
+        await fetch('/api/usage/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resourceType: 'book_upload', resourceId: book.id })
+        })
+      }
       
       toast.success(`تم إرسال الكتاب للمراجعة! سيظهر في السوق بعد موافقة الإدارة. تم رفع ${uploadedImages.length} صورة.`)
       router.push("/market")
