@@ -207,19 +207,17 @@ useEffect(() => {
       <section className="py-8 md:py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <RetroWindow title="خطط الاشتراك">
-            {/* Standard Plan */}
-
             {/* Premium Plan */}
-            <div className="retro-window bg-white">
+            <div className="retro-window bg-white mx-4 md:mx-0">
               <div className="retro-window-title">
-                <span>الخطة المميزة</span>
+                <span className="text-sm md:text-base">الخطة المميزة</span>
               </div>
-              <div className="p-6 text-center">
-                <div className="text-3xl font-bold mb-2" style={{ color: "var(--accent)" }}>
+              <div className="p-4 md:p-6 text-center">
+                <div className="text-2xl md:text-3xl font-bold mb-2" style={{ color: "var(--accent)" }}>
                   15 دينار
                 </div>
-                <p className="text-gray-600 mb-6">شهرياً</p>
-                <ul className="space-y-2 text-sm text-right mb-6">
+                <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">شهرياً</p>
+                <ul className="space-y-2 text-xs md:text-sm text-right mb-4 md:mb-6 px-2">
                   <li className="flex items-center gap-2">
                     <span className="text-green-600">✓</span>
                     جميع مميزات القياسية
