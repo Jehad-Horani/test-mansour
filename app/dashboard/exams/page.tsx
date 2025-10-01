@@ -5,6 +5,8 @@ import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { toPng } from "html-to-image"
+import { useAuth } from "@/hooks/use-auth"
+
 
 
 export default function ExamsPage() {
@@ -20,6 +22,8 @@ export default function ExamsPage() {
   })
   const [editingExam, setEditingExam] = useState<any>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
+    const { profile } = useAuth()
+
 
   // ✅ جلب الامتحانات للمستخدم الحالي فقط
   const fetchExams = async () => {
