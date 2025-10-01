@@ -131,7 +131,7 @@ export default function AdminDailyLecturesPage() {
       if (error) throw error
 
       setLectures(prev => prev.filter(l => l.id !== lectureId))
-      toast.success("تم رفض المحاضرة وحذفها")
+      toast.success("تم رفض المحاضرة ")
     } catch (err) {
       console.error(err)
       toast.error("خطأ في رفض المحاضرة")
