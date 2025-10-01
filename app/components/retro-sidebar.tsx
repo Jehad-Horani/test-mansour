@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/app/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
 import { useTier } from "@/hooks/use-tier"
@@ -80,7 +80,7 @@ export function RetroSidebar() {
 
    
 
-    if (tier === "free") {
+    if (profile?.subscription_tier === "free") {
       notifications.push({
         title: "ترقية للباقة المميزة",
         href: "/pricing",
@@ -91,9 +91,16 @@ export function RetroSidebar() {
     return notifications.length > 0 ? { title: "تنبيهات", items: notifications } : null
   }
 
+  useEffect(() => {
+
+  getQuickActions()
+  getContextualContent()
+  getNotifications()
+  }, [])
   const quickActions = getQuickActions()
   const contextualContent = getContextualContent()
   const notifications = getNotifications()
+
 
   return (
     <div className="overflow-hidden">
