@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
 import { toPng } from "html-to-image"
-import { useRouter } from "next/router"
+import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 
 
@@ -24,20 +24,22 @@ export default function SchedulePage() {
   const supabase = createClient()
   const { profile, ispremium } = useAuth()
   const router = useRouter();
+    const pathname = usePathname();
+
 
   useEffect(() => {
   if (!profile) return;
 
   if (profile.subscription_tier === "premium") {
-    if (router.pathname !== "/dashboard/schedule") {
+    if (pathname !== "/dashboard/schedule") {
       router.push("/dashboard/schedule");
     }
   } else {
-    if (router.pathname !== "/") {
+    if (pathname !== "/") {
       router.push("/");
     }
   }
-}, [profile, router]);
+}, [profile, pathname, router]);
 
 
   const fetchSchedule = async () => {

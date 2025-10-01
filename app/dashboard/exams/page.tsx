@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client"
 import { toPng } from "html-to-image"
 import { useAuth } from "@/hooks/use-auth"
 import { Router } from "lucide-react"
-import { useRouter } from "next/router"
+import { useRouter , usePathname  } from "next/navigation"
 
 
 
@@ -26,20 +26,22 @@ export default function ExamsPage() {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const { profile, ispremium } = useAuth()
   const router = useRouter();
+  const pathname = usePathname();
+
 
 useEffect(() => {
   if (!profile) return;
 
   if (profile.subscription_tier === "premium") {
-    if (router.pathname !== "/dashboard/schedule") {
-      router.push("/dashboard/schedule");
+    if (pathname !== "/dashboard/exams") {
+      router.push("/dashboard/exams");
     }
   } else {
-    if (router.pathname !== "/") {
+    if (pathname !== "/") {
       router.push("/");
     }
   }
-}, [profile, router]);
+}, [profile, pathname, router]);
 
 
 
