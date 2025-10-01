@@ -252,14 +252,14 @@ export default function DashboardPage() {
             </Link>
 
             {/* Schedule */}
-              <Link
+            <Link
               href={profile?.subscription_tier === "premium" ? `/dashboard/schedule` : "#"}
               className={`group h-full ${profile?.subscription_tier !== "premium" ? "pointer-events-none cursor-not-allowed opacity-70" : ""}`}
             >
               <RetroWindow title="الامتحانات" className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-<h5 className="inline-block px-3 py-1 text-sm font-semibold text-white bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full shadow-md border border-amber-300">
-  مميز
-</h5>
+                <h5 className="inline-block px-3 py-1 text-sm font-semibold text-white bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full shadow-md border border-amber-300">
+                  مميز
+                </h5>
                 <div className="text-center py-8">
                   <Calendar className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--accent)" }} />
                   <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>
@@ -276,9 +276,9 @@ export default function DashboardPage() {
               className={`group h-full ${profile?.subscription_tier !== "premium" ? "pointer-events-none cursor-not-allowed opacity-70" : ""}`}
             >
               <RetroWindow title="الامتحانات" className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-<h5 className="inline-block px-3 py-1 text-sm font-semibold text-white bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full shadow-md border border-amber-300">
-  مميز
-</h5>
+                <h5 className="inline-block px-3 py-1 text-sm font-semibold text-white bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full shadow-md border border-amber-300">
+                  مميز
+                </h5>
                 <div className="text-center py-8">
                   <GraduationCap className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
                   <h3 className="font-semibold mb-2" style={{ color: "var(--ink)" }}>

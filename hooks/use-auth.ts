@@ -57,7 +57,7 @@ export function useAuth() {
             password: "",
             name: currentUser.user_metadata?.name ?? currentUser.email ?? "",
             year: currentUser.user_metadata?.year ?? currentUser.email ?? "",
-            university:  currentUser.user_metadata?.university ?? currentUser.email ?? "",
+            university: currentUser.user_metadata?.university ?? currentUser.email ?? "",
             major: currentUser.user_metadata?.major ?? currentUser.email ?? "",
             subscription_tier: currentUser.user_metadata?.subscription_tier ?? "",
             avatar_url: currentUser.user_metadata?.avatar_url ?? currentUser.email ?? "",
@@ -84,49 +84,49 @@ export function useAuth() {
   }, [])
 
   // Sign Up
-const signUp = async (data: Profile & { password: string }) => {
-  setLoading(true);
-  setError(null);
+  const signUp = async (data: Profile & { password: string }) => {
+    setLoading(true);
+    setError(null);
 
-  try {
-    console.log("[v0] Starting signUp process...");
+    try {
+      console.log("[v0] Starting signUp process...");
 
-    const { data: signUpData, error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        data: {
-          role: data.role,
-          name: data.name,
-          year: data.year,
-          university: data.university,
-          major: data.major,
-          subscription_tier: data.subscription_tier,
-          avatar_url: data.avatar_url,
-          bio: data.bio,
+      const { data: signUpData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            role: data.role,
+            name: data.name,
+            year: data.year,
+            university: data.university,
+            major: data.major,
+            subscription_tier: data.subscription_tier,
+            avatar_url: data.avatar_url,
+            bio: data.bio,
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
-      throw error;
+      if (error) {
+        throw error;
+      }
+
+      console.log("[v0] SignUp completed, waiting for session...");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await fetchSession();
+
+      console.log("[v0] SignUp process completed");
+      return { user: signUpData.user };
+
+    } catch (err: any) {
+      console.error("[v0] SignUp error:", err);
+      setError(err.message || "حدث خطأ أثناء إنشاء الحساب");
+      throw err;
+    } finally {
+      setLoading(false);
     }
-
-    console.log("[v0] SignUp completed, waiting for session...");
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    await fetchSession();
-
-    console.log("[v0] SignUp process completed");
-    return { user: signUpData.user };
-
-  } catch (err: any) {
-    console.error("[v0] SignUp error:", err);
-    setError(err.message || "حدث خطأ أثناء إنشاء الحساب");
-    throw err;
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
 
@@ -205,6 +205,8 @@ const signUp = async (data: Profile & { password: string }) => {
 
   // Helper functions
   const isAdmin = () => profile?.role === "admin"
+  const ispremium = () => profile?.subscription_tier === "premium"
+
   const isLoggedIn = !!user
 
   const getMajorLabel = (major?: "law" | "it" | "medical" | "business" | "") => {
@@ -243,5 +245,6 @@ const signUp = async (data: Profile & { password: string }) => {
     getMajorLabel,
     getTierLabel,
     clearError: () => setError(null),
+    ispremium,
   }
 }

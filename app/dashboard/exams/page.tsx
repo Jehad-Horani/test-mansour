@@ -6,6 +6,8 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { toPng } from "html-to-image"
 import { useAuth } from "@/hooks/use-auth"
+import { Router } from "lucide-react"
+import { useRouter } from "next/navigation";
 
 
 
@@ -22,7 +24,14 @@ export default function ExamsPage() {
   })
   const [editingExam, setEditingExam] = useState<any>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
-    const { profile } = useAuth()
+    const { profile , ispremium } = useAuth()
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!ispremium) {
+      router.push("/"); // يعيد التوجيه للصفحة الرئيسية
+    }
+  }, [ispremium, router]);
 
 
   // ✅ جلب الامتحانات للمستخدم الحالي فقط
