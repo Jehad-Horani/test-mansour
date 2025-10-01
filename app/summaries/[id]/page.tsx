@@ -33,7 +33,8 @@ export default function SummaryDetailPage() {
 
   const params = useParams()
   const router = useRouter()
-  const supabase = useSupabaseClient() // ✅ التصحيح هون
+  const supabase = useSupabaseClient()
+  const { profile } = useAuth()
 
   useEffect(() => {
     if (params.id) {
