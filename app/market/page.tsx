@@ -5,75 +5,67 @@ import { Input } from "@/app/components/ui/input"
 import { RetroWindow } from "@/app/components/retro-window"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
 import { Badge } from "@/app/components/ui/badge"
-import { ShoppingCart, Search, Filter, Star, ArrowRight, BookOpen, Users, Eye, Plus, MessageCircle } from "lucide-react"
+import { ShoppingCart, Search, ArrowRight, BookOpen, Eye, Plus, MessageCircle } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
-import { marketplaceApi, type Book } from "@/lib/supabase/marketplace"
 import { toast } from "sonner"
-import { createClient } from "@/lib/supabase/client"
+
+interface Book {
+  id: string
+  title: string
+  author: string
+  university_name: string
+  major: string
+  condition: "new" | "excellent" | "good" | "fair" | "poor"
+  original_price?: number
+  selling_price: number
+  currency: string
+  seller_id: string
+  book_images: Array<{
+    id: string
+    image_url: string
+    is_primary: boolean
+  }>
+  seller: {
+    name: string
+    phone?: string
+    role?: string
+  }
+}
 
 export default function MarketPage() {
   const { user, isLoggedIn } = useAuth()
-  const supabase = createClient()
-  const [activeTab, setActiveTab] = useState("books")
   const [sortBy, setSortBy] = useState("newest")
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState<string | null>(null)
 
-  // Load books from Supabase
+  // Fetch books from API
   const loadBooks = async () => {
     try {
       setLoading(true)
-      const { data, error } = await marketplaceApi.getBooks({
-        search: searchTerm || undefined,
-        category: selectedCategory !== "all" ? selectedCategory : undefined,
-        sortBy: sortBy as any,
-        limit: 20
-      })
+      const res = await fetch(`/api/books?search=${searchTerm}&sort=${sortBy}`)
+      const data = await res.json()
 
-      if (error) throw error
-      setBooks(data || [])
-    } catch (error: any) {
-      console.error("Error loading books:", error)
-      toast.error("حدث خطأ أثناء تحميل الكتب")
+      if (res.ok) {
+        setBooks(data)
+      } else {
+        console.error("Error fetching books:", data.error)
+        toast.error("حدث خطأ أثناء تحميل الكتب")
+      }
+    } catch (error) {
+      console.error("Error fetching books:", error)
+      toast.error("خطأ في الاتصال")
     } finally {
       setLoading(false)
     }
   }
 
-  // Load books on component mount and filter changes
   useEffect(() => {
     loadBooks()
-  }, [searchTerm, selectedCategory, sortBy])
-
-  // Real-time updates for new books
-  useEffect(() => {
-    const channel = supabase
-      .channel('books-changes')
-      .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'books' },
-        (payload: any) => {
-          console.log('New book added:', payload)
-          loadBooks() // Reload books when new ones are added
-        }
-      )
-      .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'books' },
-        (payload: any) => {
-          console.log('Book updated:', payload)
-          loadBooks() // Reload books when updated
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
+  }, [searchTerm, sortBy])
 
   const handleAddToCart = async (book: Book) => {
     if (!user) {
@@ -88,26 +80,25 @@ export default function MarketPage() {
 
     try {
       setAdding(book.id)
-      const { error } = await marketplaceApi.addToCart(user.id, book.id, 1)
+      const res = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookId: book.id, quantity: 1 })
+      })
 
-      if (error) throw error
-
-      toast.success("تم إضافة الكتاب للسلة بنجاح")
-    } catch (error: any) {
+      const data = await res.json()
+      if (res.ok) {
+        toast.success("تم إضافة الكتاب للسلة بنجاح")
+      } else {
+        toast.error(data.error || "خطأ أثناء إضافة الكتاب للسلة")
+      }
+    } catch (error) {
       console.error("Error adding to cart:", error)
-      toast.error("حدث خطأ أثناء إضافة الكتاب للسلة")
+      toast.error("خطأ في الاتصال")
     } finally {
       setAdding(null)
     }
   }
-
-  const categories = [
-    { value: "all", label: "الكل" },
-    { value: "law", label: "القانون" },
-    { value: "it", label: "تقنية المعلومات" },
-    { value: "medical", label: "الطب" },
-    { value: "business", label: "إدارة الأعمال" },
-  ]
 
   const sortOptions = [
     { value: "newest", label: "الأحدث" },
@@ -234,9 +225,7 @@ export default function MarketPage() {
           {!loading && books.length > 0 && (
             <>
               <div className="mb-4">
-                <p className="text-sm text-gray-600">
-                  عرض {books.length} كتاب
-                </p>
+                <p className="text-sm text-gray-600">عرض {books.length} كتاب</p>
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -245,13 +234,13 @@ export default function MarketPage() {
                     <div className="p-4">
                       <div className="relative mb-4">
                         <img
-                          src={book.images?.[0]?.image_url || "/placeholder.svg"}
+                          src={book.book_images?.[0]?.image_url || "/placeholder.svg"}
                           alt={book.title}
                           className="w-full h-48 object-cover bg-gray-200"
                         />
                         <Badge
                           className="absolute top-2 right-2 text-xs"
-                          variant={book.condition === 'new' ? 'default' : 'secondary'}
+                          variant={book.condition === "new" ? "default" : "secondary"}
                         >
                           {getConditionLabel(book.condition)}
                         </Badge>
@@ -277,12 +266,8 @@ export default function MarketPage() {
                           )}
                         </div>
 
-                        <p className="text-xs text-gray-600">
-                          البائع: {book.seller?.name}
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          الجامعة: {book.university_name}
-                        </p>
+                        <p className="text-xs text-gray-600">البائع: {book.seller?.name}</p>
+                        <p className="text-xs text-gray-600">الجامعة: {book.university_name}</p>
                       </div>
 
                       <div className="flex gap-2 mt-4">
@@ -293,7 +278,9 @@ export default function MarketPage() {
                             style={{ background: "var(--primary)", color: "white" }}
                           >
                             <a
-                              href={`https://wa.me/${book.seller.phone}?text=مرحبًا%20أنا%20مهتم%20بالكتاب%20${encodeURIComponent(book.title)}`}
+                              href={`https://wa.me/${book.seller.phone}?text=مرحبًا%20أنا%20مهتم%20بالكتاب%20${encodeURIComponent(
+                                book.title
+                              )}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
@@ -309,12 +296,15 @@ export default function MarketPage() {
                             onClick={() => handleAddToCart(book)}
                           >
                             <ShoppingCart className="w-4 h-4 ml-1" />
-                            {adding === book.id ? "جاري الإضافة..." :
-                              book.seller_id === user?.id ? "كتابك" :
-                                !isLoggedIn ? "سجل دخولك" : "أضف للسلة"}
+                            {adding === book.id
+                              ? "جاري الإضافة..."
+                              : book.seller_id === user?.id
+                              ? "كتابك"
+                              : !isLoggedIn
+                              ? "سجل دخولك"
+                              : "أضف للسلة"}
                           </Button>
                         )}
-
 
                         <Button asChild variant="outline" className="retro-button bg-transparent">
                           <Link href={`/market/${book.id}`}>
@@ -327,7 +317,6 @@ export default function MarketPage() {
                 ))}
               </div>
 
-              {/* Load More Button - Future Enhancement */}
               <div className="text-center mt-8">
                 <Button variant="outline" className="retro-button bg-transparent">
                   تحميل المزيد
