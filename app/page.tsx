@@ -40,17 +40,17 @@ useEffect(() => {
 
 
       {/* Hero Section */}
-      <section className="py-8 md:py-16">
+      <section className="py-8 md:py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-2xl md:text-4xl font-bold mb-4" style={{ color: "var(--ink)" }}>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 px-2" style={{ color: "var(--ink)" }}>
             منصة تخصص.كُم الشاملة
           </h1>
-          <p className="text-base md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto" style={{ color: "var(--ink)" }}>
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 md:mb-8 max-w-2xl mx-auto px-4" style={{ color: "var(--ink)" }}>
             اكتشف عالم التعلم الجامعي مع أفضل الكتب والاستشارات الأكاديمية
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 md:mb-12">
-            <Button asChild className="retro-button text-white" style={{ background: "var(--primary)" }}>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 md:mb-12 px-4">
+            <Button asChild className="retro-button text-white w-full sm:w-auto" style={{ background: "var(--primary)" }}>
               <Link href="/market">ادخل السوق</Link>
             </Button>
 
