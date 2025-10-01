@@ -129,27 +129,27 @@ export default function AmbassadorsPage() {
 
                     {/* Action Buttons */}
                     <div className="space-y-3">
-                      <div className="relative group w-full">
+                      <div className="w-full flex flex-col items-center">
                         <Button
                           asChild
                           className={`retro-button w-full text-white ${profile?.subscription_tier === "premium" ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"}`}
                           disabled={profile?.subscription_tier !== "premium"}
                         >
                           <Link
-                            href={`https://wa.me/${amb.phone}`}
+                            href={profile?.subscription_tier === "premium" ? `https://wa.me/${amb.phone}` : "#"}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={`flex items-center justify-center w-full ${profile?.subscription_tier !== "premium" ? "pointer-events-none" : ""}`}
                           >
                             <MessageCircle className="w-4 h-4 ml-2" />
-                            بدء محادثة
+                            {profile?.subscription_tier === "premium" ? "بدء محادثة" : "اشتراك بريميوم مطلوب"}
                           </Link>
                         </Button>
 
                         {profile?.subscription_tier !== "premium" && (
-                          <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-max px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                            يجب أن تكون لديك اشتراك بريميوم للتواصل مع السفير
-                          </div>
+                          <p className="mt-2 text-sm text-red-500 text-center">
+                            🚫 يجب أن تكون لديك اشتراك بريميوم للتواصل مع السفير
+                          </p>
                         )}
                       </div>
 
