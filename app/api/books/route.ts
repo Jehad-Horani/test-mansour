@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       .select(`
         *,
         book_images(*),
-        seller:profiles!books_seller_id_fkey(name, avatar_url, university)
+        seller:profiles!books_seller_id_fkey(name, avatar_url, university, role)
       `, { count: 'exact' })
       .eq('is_available', true)
       .eq('approval_status', 'approved')
