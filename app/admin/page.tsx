@@ -36,7 +36,7 @@ interface User {
 
 
 export default function AdminDashboardPage() {
-  const { user, isLoggedIn, isAdmin } = useUserContext()
+  const { user, isLoggedIn, isAdmin } = useAuth()
   const { profile } = useAuth()
 
 

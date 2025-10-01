@@ -7,7 +7,7 @@ import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, signOut } = useAuth()
+  const { user, loading, signOut, profile} = useAuth()
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
 
@@ -16,7 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       console.log("[v0] Admin layout checking auth:", { user, loading })
 
       if (!loading) {
-        if (!user || user.role !== "admin") {
+        if (!user || profile?.role !== "admin") {
           console.log("[v0] Admin access denied, redirecting to login")
           router.replace("/auth/login")
         } else {
