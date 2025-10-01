@@ -29,7 +29,7 @@ export default function SchedulePage() {
 
   useEffect(() => {
     if (profile?.subscription_tier === "premium") {
-      router.push("/dashboard/exams"); // يعيد التوجيه للصفحة الرئيسية
+      router.push("/dashboard/schedule"); // يعيد التوجيه للصفحة الرئيسية
     } else {
       router.push("/"); // يعيد التوجيه للصفحة الرئيسية
     }
