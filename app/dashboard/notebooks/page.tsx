@@ -42,7 +42,7 @@ interface Lecture {
 }
 
 export default function NotebooksPage() {
-  const { user, isLoggedIn } = useAuth()
+  const { user, isLoggedIn, profile } = useAuth()
   const router = useRouter()
   const [lectures, setLectures] = useState<Lecture[]>([])
   const [approvedLectures, setApprovedLectures] = useState<Lecture[]>([])
