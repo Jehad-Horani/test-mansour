@@ -43,10 +43,7 @@ export default function AdminBooksPage() {
   const [rejectionReason, setRejectionReason] = useState("")
 
   useEffect(() => {
-    if (!isLoggedIn || !isAdmin()) {
-      router.push('/')
-      return
-    }
+  
     channel()
   }, [isLoggedIn, isAdmin, router, filter, page])
 
