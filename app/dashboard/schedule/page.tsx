@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client"
 import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
 import { toPng } from "html-to-image"
+import { useRouter } from "next/router"
+import { useAuth } from "@/hooks/use-auth"
 
 
 export default function SchedulePage() {
@@ -21,6 +23,17 @@ export default function SchedulePage() {
   const [editModalOpen, setEditModalOpen] = useState(false)
 
   const supabase = createClient()
+
+   const { profile, ispremium } = useAuth()
+  const router = useRouter();
+
+  useEffect(() => {
+    if (profile?.subscription_tier === "premium") {
+      router.push("/dashboard/exams"); // يعيد التوجيه للصفحة الرئيسية
+    } else {
+      router.push("/"); // يعيد التوجيه للصفحة الرئيسية
+    }
+  }, [ispremium, router]);
 
   useEffect(() => {
     fetchSchedule()
