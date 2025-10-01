@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client"
 import { toPng } from "html-to-image"
 import { useAuth } from "@/hooks/use-auth"
 import { Router } from "lucide-react"
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router"
 
 
 
@@ -27,13 +27,20 @@ export default function ExamsPage() {
   const { profile, ispremium } = useAuth()
   const router = useRouter();
 
-  useEffect(() => {
-    if (profile?.subscription_tier === "premium") {
-      router.push("/dashboard/exams"); // يعيد التوجيه للصفحة الرئيسية
-    } else {
-      router.push("/"); // يعيد التوجيه للصفحة الرئيسية
+useEffect(() => {
+  if (!profile) return;
+
+  if (profile.subscription_tier === "premium") {
+    if (router.pathname !== "/dashboard/schedule") {
+      router.push("/dashboard/schedule");
     }
-  }, [ispremium, router]);
+  } else {
+    if (router.pathname !== "/") {
+      router.push("/");
+    }
+  }
+}, [profile, router]);
+
 
 
   // ✅ جلب الامتحانات للمستخدم الحالي فقط

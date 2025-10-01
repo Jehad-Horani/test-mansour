@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
 import { toPng } from "html-to-image"
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router"
 import { useAuth } from "@/hooks/use-auth"
 
 
@@ -26,16 +26,19 @@ export default function SchedulePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (profile?.subscription_tier === "premium") {
-      router.push("/dashboard/schedule"); // يعيد التوجيه للصفحة الرئيسية
-    } else {
-      router.push("/"); // يعيد التوجيه للصفحة الرئيسية
-    }
-  }, [ispremium, router]);
+  if (!profile) return;
 
-  useEffect(() => {
-    fetchSchedule()
-  }, [])
+  if (profile.subscription_tier === "premium") {
+    if (router.pathname !== "/dashboard/schedule") {
+      router.push("/dashboard/schedule");
+    }
+  } else {
+    if (router.pathname !== "/") {
+      router.push("/");
+    }
+  }
+}, [profile, router]);
+
 
   const fetchSchedule = async () => {
     const { data, error } = await supabase
