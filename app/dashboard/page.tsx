@@ -273,9 +273,9 @@ export default function DashboardPage() {
             {/* Exams */}
             <Link
               href={profile?.subscription_tier === "premium" ? `/dashboard/exams` : "#"}
-              className={`${profile?.subscription_tier !== "premium" ? "pointer-events-none" : ""}`}
+              className={`group h-full ${profile?.subscription_tier !== "premium" ? "pointer-events-none cursor-not-allowed opacity-70" : ""}`}
             >
-              <RetroWindow title="الامتحانات" className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
+              <RetroWindow title="الامتحانات" className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <h5 className="text-sm text-black border-2 border-amber-300 border-solid">مميز</h5>
                 <div className="text-center py-8">
                   <GraduationCap className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--primary)" }} />
@@ -286,6 +286,7 @@ export default function DashboardPage() {
                 </div>
               </RetroWindow>
             </Link>
+
 
             {/* Ambassadors */}
             <Link href="/ambassadors" className="block">
