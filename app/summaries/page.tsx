@@ -166,9 +166,9 @@ export default function SummariesPage() {
             {/* Search and Filters */}
             <div className="space-y-4">
               {/* Search Bar */}
-              <div className="flex gap-2">
+              <div className=" gap-2">
                 <label className="font-bold text-lg mb-1">ابحث عن اسم المادة\الجامعة او اسم الملخص :</label>
-
+<br/>
                 <Input
                   placeholder="ابحث في الملخصات..."
                   value={searchTerm}

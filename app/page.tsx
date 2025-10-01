@@ -36,7 +36,7 @@ useEffect(() => {
 }, []);
 
   return (
-    <div className="min-h-screen overflow-hidden" style={{ background: "var(--panel)" }}>
+    <div className="min-h-screen" style={{ background: "var(--panel)" }}>
 
 
       {/* Hero Section */}

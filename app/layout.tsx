@@ -31,6 +31,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" className={cairo.variable}>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
       <body className="font-sans antialiased overflow-x-hidden">
         <UserProvider>
           <MessagesProvider>
