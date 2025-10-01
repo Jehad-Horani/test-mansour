@@ -244,9 +244,9 @@ useEffect(() => {
         </div>
       </section>
 
-      <footer className="mt-16 py-8 px-4" style={{ background: "var(--bg)", color: "white" }}>
+      <footer className="mt-8 md:mt-16 py-6 md:py-8 px-4" style={{ background: "var(--bg)", color: "white" }}>
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {/* About Section */}
             <div>
               <h3 className="font-bold mb-4 text-lg text-white">عن تخصص.كُم</h3>
