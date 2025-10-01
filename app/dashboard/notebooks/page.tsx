@@ -192,6 +192,38 @@ export default function NotebooksPage() {
     }
   }
 
+  const handleLectureView = async (lectureUrl: string, lectureId: string) => {
+    // Check usage limit for free users
+    if (profile?.subscription_tier === 'free') {
+      try {
+        const usageCheckRes = await fetch('/api/usage/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resourceType: 'lecture_view' })
+        })
+        
+        const usageCheck = await usageCheckRes.json()
+        
+        if (!usageCheck.allowed) {
+          toast.error(`لقد وصلت إلى الحد الأقصى لعرض المحاضرات هذا الشهر (${usageCheck.limit} محاضرة). يرجى الترقية إلى خطة مميزة للمزيد.`)
+          return
+        }
+
+        // Log usage
+        await fetch('/api/usage/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resourceType: 'lecture_view', resourceId: lectureId })
+        })
+      } catch (error) {
+        console.error('Error checking usage:', error)
+      }
+    }
+
+    // Open lecture
+    window.open(lectureUrl, '_blank')
+  }
+
   const filteredApprovedLectures = approvedLectures.filter((lecture) => {
     const query = approvedSearch.toLowerCase()
     return (
