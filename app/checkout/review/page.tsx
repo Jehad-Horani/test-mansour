@@ -70,7 +70,7 @@ export default function ReviewPage() {
                       <h3 className="font-medium">{item.title}</h3>
                       <p className="text-sm text-gray-600">الكمية: {item.quantity}</p>
                     </div>
-                    <span className="font-bold">{item.price * item.quantity} ريال</span>
+                    <span className="font-bold">{item.price * item.quantity} دينار</span>
                   </div>
                 ))}
               </div>
@@ -119,19 +119,19 @@ export default function ReviewPage() {
               <div className="p-4 space-y-2">
                 <div className="flex justify-between">
                   <span>المجموع الفرعي:</span>
-                  <span>{orderDetails.totals.subtotal} ريال</span>
+                  <span>{orderDetails.totals.subtotal} دينار</span>
                 </div>
                 <div className="flex justify-between">
                   <span>الشحن:</span>
-                  <span>{orderDetails.totals.shipping} ريال</span>
+                  <span>{orderDetails.totals.shipping} دينار</span>
                 </div>
                 <div className="flex justify-between">
                   <span>الضريبة (15%):</span>
-                  <span>{orderDetails.totals.tax} ريال</span>
+                  <span>{orderDetails.totals.tax} دينار</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-300">
                   <span>المجموع الكلي:</span>
-                  <span style={{ color: "var(--primary)" }}>{orderDetails.totals.total} ريال</span>
+                  <span style={{ color: "var(--primary)" }}>{orderDetails.totals.total} دينار</span>
                 </div>
               </div>
             </div>

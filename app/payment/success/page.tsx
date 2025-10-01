@@ -35,7 +35,7 @@ export default function PaymentSuccessPage() {
                 <div className="flex justify-between">
                   <span>المبلغ المدفوع:</span>
                   <span className="font-bold" style={{ color: "var(--primary)" }}>
-                    170 ريال
+                    170 دينار
                   </span>
                 </div>
                 <div className="flex justify-between">

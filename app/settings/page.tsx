@@ -410,7 +410,7 @@ export default function SettingsPage() {
                         )}
                       </ul>
                       <p className="text-2xl font-bold" style={{ color: "var(--accent)" }}>
-                        {profile?.subscription_tier === 'free' ? 'مجاني' : '20 ريال/شهر'}
+                        {profile?.subscription_tier === 'free' ? 'مجاني' : '15 دينار/شهر'}
                       </p>
                     </div>
 

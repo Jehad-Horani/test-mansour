@@ -137,19 +137,19 @@ export default function PaymentPage() {
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span>المجموع الفرعي:</span>
-                  <span>155 ريال</span>
+                  <span>155 دينار</span>
                 </div>
                 <div className="flex justify-between">
                   <span>الشحن:</span>
-                  <span>15 ريال</span>
+                  <span>15 دينار</span>
                 </div>
                 <div className="flex justify-between">
                   <span>الضريبة (15%):</span>
-                  <span>23 ريال</span>
+                  <span>23 دينار</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-300">
                   <span>المجموع الكلي:</span>
-                  <span style={{ color: "var(--primary)" }}>{total} ريال</span>
+                  <span style={{ color: "var(--primary)" }}>{total} دينار</span>
                 </div>
               </div>
             </RetroWindow>
