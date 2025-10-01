@@ -495,11 +495,12 @@ export default function NotebooksPage() {
                           </p>
                           <p className="text-sm text-gray-500">{lecture.major}</p>
                         </div>
-                        <Button className="retro-button bg-green-600 text-white hover:bg-green-700">
-                          <Link href={`${lecture.file_url}`} target="_blank" rel="noopener noreferrer">
-                            <FileText className="w-3 h-3 mr-1" />
-                            عرض ملف المحاضرة
-                          </Link>
+                        <Button 
+                          className="retro-button bg-green-600 text-white hover:bg-green-700"
+                          onClick={() => handleLectureView(lecture.file_url, lecture.id)}
+                        >
+                          <FileText className="w-3 h-3 mr-1" />
+                          عرض ملف المحاضرة
                         </Button>
                       </div>
                     </div>
