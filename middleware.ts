@@ -2,29 +2,20 @@ import { updateSession } from "@/lib/supabase/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "./hooks/use-auth";
 
 export async function middleware(request: NextRequest) {
   // أولاً حدث الجلسة
   const res = await updateSession(request);
   const supabase = createClient();
 
-  const token = request.cookies.get("sb-access-token")?.value;
+const {profile , user , error} = useAuth()
 
-  if (!token) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  const { data: { user } } = await supabase.auth.getUser(token);
 
   if (!user) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("subscription_tier")
-    .eq("id", user.id)
-    .single();
 
   if (error || profile?.subscription_tier !== "premium") {
     return NextResponse.redirect(new URL("/", request.url));
