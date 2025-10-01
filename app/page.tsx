@@ -317,8 +317,8 @@ useEffect(() => {
 
             {/* Contact Info */}
             <div>
-              <h3 className="font-bold mb-4 text-lg text-white">تواصل معنا</h3>
-              <div className="space-y-3 text-sm">
+              <h3 className="font-bold mb-3 md:mb-4 text-base md:text-lg text-white">تواصل معنا</h3>
+              <div className="space-y-2 md:space-y-3 text-xs md:text-sm">
                 <div className="flex items-center gap-2">
                   <span>📞</span>
                   <span className="text-white/90">+962 6 123 4567</span>
