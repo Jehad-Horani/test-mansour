@@ -8,8 +8,7 @@ import { RetroWindow } from "@/app/components/retro-window"
 import PixelIcon from "@/app/components/pixel-icon"
 import Link from "next/link"
 import { useUserContext } from "@/contexts/user-context"
-import { createClient } from "@/lib/supabase/client";
-
+import { createClient } from "@/lib/supabase/client"
 
 interface Summary {
   id: string
@@ -26,6 +25,12 @@ interface Summary {
   user_id: string
   is_approved: boolean
   created_at: string
+}
+
+interface DownloadStatus {
+  canDownload: boolean
+  subscriptionTier: string | null
+  downloadsThisMonth: number
 }
 
 const colleges = [
@@ -57,46 +62,78 @@ export default function SummariesPage() {
   const [selectedMajor, setSelectedMajor] = useState<string>("all")
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false)
   const { isLoggedIn } = useUserContext()
-  const [canDownload, setCanDownload] = useState(false);
-  const [subscriptionTier, setSubscriptionTier] = useState(null);
+  const [downloadStatus, setDownloadStatus] = useState<DownloadStatus>({
+    canDownload: false,
+    subscriptionTier: null,
+    downloadsThisMonth: 0,
+  })
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
+  // Check download limit on mount and whenever needed
+  const checkDownloadLimit = async (): Promise<DownloadStatus> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        return { canDownload: false, subscriptionTier: null, downloadsThisMonth: 0 }
+      }
 
-  useEffect(() => {
-    async function checkDownloadLimit() {
-      const user = supabase.auth.user();
-      if (!user) return;
-
-      // جلب profile
-      const { data: profile } = await supabase
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("subscription_tier")
         .eq("id", user.id)
-        .single();
+        .single()
 
-      setSubscriptionTier(profile?.subscription_tier);
-
-      if (profile?.subscription_tier !== "free") {
-        setCanDownload(true); // بدون حد للتحميل
-        return;
+      if (profileError) {
+        console.error("Error fetching profile:", profileError)
+        return { canDownload: false, subscriptionTier: null, downloadsThisMonth: 0 }
       }
 
-      // التحقق إذا المستخدم حمل أي ملف هذا الشهر
-      const { data } = await supabase
+      const tier = profile?.subscription_tier || "free"
+
+      // Premium users have unlimited downloads
+      if (tier !== "free") {
+        return { canDownload: true, subscriptionTier: tier, downloadsThisMonth: 0 }
+      }
+
+      // For free users, check monthly download count
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+
+      const { data: downloads, error: downloadsError } = await supabase
         .from("downloads")
-        .select("*")
+        .select("id")
         .eq("user_id", user.id)
-        .gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1)); // بداية الشهر
+        .gte("created_at", startOfMonth.toISOString())
 
-      setCanDownload(data.length === 0);
+      if (downloadsError) {
+        console.error("Error fetching downloads:", downloadsError)
+        return { canDownload: false, subscriptionTier: tier, downloadsThisMonth: 0 }
+      }
+
+      const downloadCount = downloads?.length || 0
+      const canDownload = downloadCount < 1
+
+      return { canDownload, subscriptionTier: tier, downloadsThisMonth: downloadCount }
+    } catch (error) {
+      console.error("Error checking download limit:", error)
+      return { canDownload: false, subscriptionTier: null, downloadsThisMonth: 0 }
     }
+  }
 
-    checkDownloadLimit();
-  }, []);
+  useEffect(() => {
+    const initializeDownloadStatus = async () => {
+      const status = await checkDownloadLimit()
+      setDownloadStatus(status)
+    }
+    initializeDownloadStatus()
+  }, [])
 
   useEffect(() => {
     fetchSummaries()
   }, [])
-
 
   useEffect(() => {
     filterSummaries()
@@ -105,10 +142,8 @@ export default function SummariesPage() {
   const fetchSummaries = async () => {
     try {
       setLoading(true)
-
-      const res = await fetch("/api/summaries") // نعمل كول على API route
+      const res = await fetch("/api/summaries")
       if (!res.ok) throw new Error("فشل في جلب الملخصات")
-
       const data = await res.json()
       setSummaries(data || [])
     } catch (error) {
@@ -118,11 +153,9 @@ export default function SummariesPage() {
     }
   }
 
-
   const filterSummaries = () => {
     let filtered = summaries
 
-    // Search filter
     if (searchTerm) {
       filtered = filtered.filter(
         (summary) =>
@@ -132,12 +165,10 @@ export default function SummariesPage() {
       )
     }
 
-    // College filter
     if (selectedCollege !== "all") {
       filtered = filtered.filter((summary) => summary.college === selectedCollege)
     }
 
-    // Major filter (advanced)
     if (selectedMajor !== "all") {
       filtered = filtered.filter((summary) => summary.major === selectedMajor)
     }
@@ -145,39 +176,72 @@ export default function SummariesPage() {
     setFilteredSummaries(filtered)
   }
 
-
   const handleDownload = async (summary: Summary) => {
-    if (!canDownload) {
-      alert("لقد وصلت لحد التحميل لهذا الشهر.");
-      return;
-    }
-
-    const user = supabase.auth.user();
-    if (!user) {
-      alert("يجب تسجيل الدخول لتحميل الملخص.");
-      return;
+    // Prevent multiple simultaneous downloads
+    if (downloadingId) {
+      return
     }
 
     try {
-      // تسجيل عملية التحميل
-      await supabase.from("downloads").insert({
-        user_id: user.id,
-        file_id: summary.id,
-      });
+      setDownloadingId(summary.id)
 
-      // فتح رابط الملف
-      window.open(summary.file_url, "_blank");
-
-      // إذا المستخدم مجاني، نمنع التحميل مرة ثانية هذا الشهر
-      if (subscriptionTier === "free") {
-        setCanDownload(false);
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        alert("يجب تسجيل الدخول لتحميل الملخص.")
+        return
       }
+
+      // Re-check download limit right before downloading
+      const currentStatus = await checkDownloadLimit()
+
+      if (!currentStatus.canDownload) {
+        if (currentStatus.subscriptionTier === "free") {
+          alert(
+            `لقد وصلت لحد التحميل لهذا الشهر. قمت بتحميل ${currentStatus.downloadsThisMonth} ملف. ` +
+            "يمكنك الترقية للاشتراك المميز للحصول على تحميلات غير محدودة."
+          )
+        } else {
+          alert("حدث خطأ في التحقق من حالة الاشتراك. يرجى المحاولة مرة أخرى.")
+        }
+        return
+      }
+
+      // Record the download FIRST (before opening file)
+      const { error: insertError } = await supabase
+        .from("downloads")
+        .insert({
+          user_id: user.id,
+          file_id: summary.id,
+          created_at: new Date().toISOString(),
+        })
+
+      if (insertError) {
+        console.error("Error recording download:", insertError)
+        alert("حدث خطأ أثناء تسجيل التحميل. يرجى المحاولة مرة أخرى.")
+        return
+      }
+
+      // Open the file URL
+      window.open(summary.file_url, "_blank")
+
+      // Update download status after successful download
+      const updatedStatus = await checkDownloadLimit()
+      setDownloadStatus(updatedStatus)
+
+      // Show success message for free users
+      if (currentStatus.subscriptionTier === "free") {
+        alert("تم التحميل بنجاح! لقد استخدمت تحميلك المجاني لهذا الشهر.")
+      }
+
     } catch (error) {
-      console.error("خطأ أثناء التحميل:", error);
+      console.error("Error during download:", error)
+      alert("حدث خطأ أثناء التحميل. يرجى المحاولة مرة أخرى.")
+    } finally {
+      setDownloadingId(null)
     }
-  };
-
-
+  }
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
@@ -216,6 +280,15 @@ export default function SummariesPage() {
                   الملخصات الدراسية
                 </h1>
                 <p className="text-gray-600">تصفح وشارك الملخصات الدراسية مع زملائك الطلاب</p>
+                {/* Show download status for free users */}
+                {downloadStatus.subscriptionTier === "free" && (
+                  <p className="text-sm text-orange-600 mt-2">
+                    {downloadStatus.canDownload 
+                      ? "✓ يمكنك تحميل ملف واحد هذا الشهر"
+                      : `⚠️ لقد استخدمت تحميلك المجاني لهذا الشهر (${downloadStatus.downloadsThisMonth}/1)`
+                    }
+                  </p>
+                )}
               </div>
               {isLoggedIn && (
                 <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
@@ -229,8 +302,7 @@ export default function SummariesPage() {
 
             {/* Search and Filters */}
             <div className="space-y-4">
-              {/* Search Bar */}
-              <div className=" gap-2">
+              <div className="gap-2">
                 <label className="font-bold text-lg mb-1">ابحث عن اسم المادة\الجامعة او اسم الملخص :</label>
                 <br />
                 <Input
@@ -240,7 +312,6 @@ export default function SummariesPage() {
                   className="retro-input flex-1"
                 />
               </div>
-
             </div>
           </div>
         </RetroWindow>
@@ -264,74 +335,91 @@ export default function SummariesPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredSummaries.map((summary) => (
-                    <div key={summary.id} className="retro-window bg-white">
-                      <div className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <h3 className="font-bold text-sm mb-1" style={{ color: "var(--ink)" }}>
-                              {summary.title}
-                            </h3>
-                            <p className="text-xs text-gray-600 mb-2">{summary.subject_name}</p>
-                          </div>
-                          <PixelIcon type="file" className="w-6 h-6 text-gray-400" />
-                        </div>
+                  {filteredSummaries.map((summary) => {
+                    const isDownloading = downloadingId === summary.id
+                    const isDisabled = !downloadStatus.canDownload || isDownloading
 
-                        <div className="space-y-1 text-xs text-gray-600 mb-4">
-                          <div className="flex items-center gap-2">
-                            <PixelIcon type="building" className="w-3 h-3" />
-                            <span>{summary.university_name}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <PixelIcon type="graduation-cap" className="w-3 h-3" />
-                            <span>{summary.college}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <PixelIcon type="book" className="w-3 h-3" />
-                            <span>{summary.major}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <PixelIcon type="calendar" className="w-3 h-3" />
-                            <span>{summary.semester}</span>
-                          </div>
-                          {summary.file_size && (
-                            <div className="flex items-center gap-2">
-                              <PixelIcon type="download" className="w-3 h-3" />
-                              <span>{formatFileSize(summary.file_size)}</span>
+                    return (
+                      <div key={summary.id} className="retro-window bg-white">
+                        <div className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h3 className="font-bold text-sm mb-1" style={{ color: "var(--ink)" }}>
+                                {summary.title}
+                              </h3>
+                              <p className="text-xs text-gray-600 mb-2">{summary.subject_name}</p>
                             </div>
+                            <PixelIcon type="file" className="w-6 h-6 text-gray-400" />
+                          </div>
+
+                          <div className="space-y-1 text-xs text-gray-600 mb-4">
+                            <div className="flex items-center gap-2">
+                              <PixelIcon type="building" className="w-3 h-3" />
+                              <span>{summary.university_name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <PixelIcon type="graduation-cap" className="w-3 h-3" />
+                              <span>{summary.college}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <PixelIcon type="book" className="w-3 h-3" />
+                              <span>{summary.major}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <PixelIcon type="calendar" className="w-3 h-3" />
+                              <span>{summary.semester}</span>
+                            </div>
+                            {summary.file_size && (
+                              <div className="flex items-center gap-2">
+                                <PixelIcon type="download" className="w-3 h-3" />
+                                <span>{formatFileSize(summary.file_size)}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {summary.description && (
+                            <p className="text-xs text-gray-700 mb-4 line-clamp-2">{summary.description}</p>
                           )}
-                        </div>
 
-                        {summary.description && (
-                          <p className="text-xs text-gray-700 mb-4 line-clamp-2">{summary.description}</p>
-                        )}
-
-                        <div className="flex gap-2">
-                          <Button
-                            asChild
-                            size="sm"
-                            className="retro-button flex-1"
-                            style={{ background: "var(--primary)", color: "white" }}
-                          >
-                            <Link href={`/summaries/${summary.id}`}>عرض التفاصيل</Link>
-                          </Button>
-                          {summary.file_url && (
+                          <div className="flex gap-2">
                             <Button
                               asChild
                               size="sm"
-                              variant="outline"
-                              className={`retro-button bg-transparent ${!canDownload ? "opacity-50 cursor-not-allowed" : ""}`}
-                              onClick={() => handleDownload(summary)}
+                              className="retro-button flex-1"
+                              style={{ background: "var(--primary)", color: "white" }}
                             >
-                              <a>
-                                <PixelIcon type="download" className="w-3 h-3" />
-                              </a>
+                              <Link href={`/summaries/${summary.id}`}>عرض التفاصيل</Link>
                             </Button>
-                          )}
+                            {summary.file_url && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="retro-button bg-transparent"
+                                onClick={() => handleDownload(summary)}
+                                disabled={isDisabled}
+                                style={{
+                                  opacity: isDisabled ? 0.5 : 1,
+                                  cursor: isDisabled ? "not-allowed" : "pointer"
+                                }}
+                                title={
+                                  !downloadStatus.canDownload 
+                                    ? "لقد وصلت لحد التحميل لهذا الشهر" 
+                                    : isDownloading 
+                                    ? "جاري التحميل..." 
+                                    : "تحميل الملف"
+                                }
+                              >
+                                <PixelIcon 
+                                  type="download" 
+                                  className={`w-3 h-3 ${isDownloading ? "animate-bounce" : ""}`} 
+                                />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
