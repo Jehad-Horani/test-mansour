@@ -59,11 +59,11 @@ useEffect(() => {
         </div>
       </section>
 
-      <section className="py-12 px-4">
+      {/* <section className="py-12 px-4">
           <RetroWindow className="z-10 max-w-6xl mx-auto" title="الكليات المتاحة">
           <HorizontalScrollingCarousel/>
           </RetroWindow>
-      </section>
+      </section> */}
 
 
       <section className="py-8 md:py-12 px-4">
