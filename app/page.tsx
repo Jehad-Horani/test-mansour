@@ -8,6 +8,7 @@ import Link from "next/link"
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import Carousel from "./components/CollegesCarousel"
+import HorizontalScrollingCarousel from "./components/CollegesCarousel"
 
 
 export default function HomePage() {
@@ -60,7 +61,7 @@ useEffect(() => {
 
       <section className="py-12 px-4">
           <RetroWindow className="z-10 max-w-6xl mx-auto" title="الكليات المتاحة">
-          <Carousel/>
+          <HorizontalScrollingCarousel/>
           </RetroWindow>
       </section>
 
