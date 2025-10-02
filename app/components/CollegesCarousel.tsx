@@ -1,6 +1,7 @@
 "use client";
 
 import PixelIcon from "./pixel-icon";
+import { RetroWindow } from "./retro-window";
 
 export default function HorizontalScrollingCarousel() {
   const colleges = [
@@ -19,6 +20,8 @@ export default function HorizontalScrollingCarousel() {
   ];
 
   return (
+              <RetroWindow  title="الكليات المتاحة">
+    
     <div className="w-full bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12 md:py-16">
       {/* العنوان */}
       <div className="mb-6 md:mb-8 text-center px-4">
@@ -61,5 +64,7 @@ export default function HorizontalScrollingCarousel() {
         </div>
       </div>
     </div>
+              </RetroWindow>
+
   );
 }

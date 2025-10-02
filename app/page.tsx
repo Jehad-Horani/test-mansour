@@ -61,9 +61,7 @@ useEffect(() => {
 
        <section className="py-12 px-4 ">
         <div className="max-w-6xl mx-auto">
-          <RetroWindow  title="الكليات المتاحة">
           <HorizontalScrollingCarousel/>
-          </RetroWindow>
           </div>
       </section> 
 
