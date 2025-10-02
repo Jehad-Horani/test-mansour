@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RetroWindow } from "@/app/components/retro-window"
 import PixelIcon from "@/app/components/pixel-icon"
 import Link from "next/link"
-import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 import { useUserContext } from "@/contexts/user-context"
+import { createClient } from "@/lib/supabase/client";
+
 
 interface Summary {
   id: string
@@ -45,6 +46,8 @@ const majorsByCollege: Record<string, string[]> = {
   "كلية الصيدلة": ["الصيدلة", "العلوم الطبية"],
 }
 
+const supabase = createClient()
+
 export default function SummariesPage() {
   const [summaries, setSummaries] = useState<Summary[]>([])
   const [filteredSummaries, setFilteredSummaries] = useState<Summary[]>([])
@@ -54,12 +57,46 @@ export default function SummariesPage() {
   const [selectedMajor, setSelectedMajor] = useState<string>("all")
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false)
   const { isLoggedIn } = useUserContext()
+  const [canDownload, setCanDownload] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState(null);
 
-  const { data, loading1, error1 } = useSupabaseClient()
+
+  useEffect(() => {
+    async function checkDownloadLimit() {
+      const user = supabase.auth.user();
+      if (!user) return;
+
+      // جلب profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("subscription_tier")
+        .eq("id", user.id)
+        .single();
+
+      setSubscriptionTier(profile?.subscription_tier);
+
+      if (profile?.subscription_tier !== "free") {
+        setCanDownload(true); // بدون حد للتحميل
+        return;
+      }
+
+      // التحقق إذا المستخدم حمل أي ملف هذا الشهر
+      const { data } = await supabase
+        .from("downloads")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1)); // بداية الشهر
+
+      setCanDownload(data.length === 0);
+    }
+
+    checkDownloadLimit();
+  }, []);
 
   useEffect(() => {
     fetchSummaries()
   }, [])
+
 
   useEffect(() => {
     filterSummaries()
@@ -108,12 +145,39 @@ export default function SummariesPage() {
     setFilteredSummaries(filtered)
   }
 
-  const resetFilters = () => {
-    setSearchTerm("")
-    setSelectedCollege("all")
-    setSelectedMajor("all")
-    setShowAdvancedFilter(false)
-  }
+
+  const handleDownload = async (summary: Summary) => {
+    if (!canDownload) {
+      alert("لقد وصلت لحد التحميل لهذا الشهر.");
+      return;
+    }
+
+    const user = supabase.auth.user();
+    if (!user) {
+      alert("يجب تسجيل الدخول لتحميل الملخص.");
+      return;
+    }
+
+    try {
+      // تسجيل عملية التحميل
+      await supabase.from("downloads").insert({
+        user_id: user.id,
+        file_id: summary.id,
+      });
+
+      // فتح رابط الملف
+      window.open(summary.file_url, "_blank");
+
+      // إذا المستخدم مجاني، نمنع التحميل مرة ثانية هذا الشهر
+      if (subscriptionTier === "free") {
+        setCanDownload(false);
+      }
+    } catch (error) {
+      console.error("خطأ أثناء التحميل:", error);
+    }
+  };
+
+
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
@@ -168,7 +232,7 @@ export default function SummariesPage() {
               {/* Search Bar */}
               <div className=" gap-2">
                 <label className="font-bold text-lg mb-1">ابحث عن اسم المادة\الجامعة او اسم الملخص :</label>
-<br/>
+                <br />
                 <Input
                   placeholder="ابحث في الملخصات..."
                   value={searchTerm}
@@ -252,8 +316,14 @@ export default function SummariesPage() {
                             <Link href={`/summaries/${summary.id}`}>عرض التفاصيل</Link>
                           </Button>
                           {summary.file_url && (
-                            <Button asChild size="sm" variant="outline" className="retro-button bg-transparent">
-                              <a href={summary.file_url} target="_blank" rel="noopener noreferrer">
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="outline"
+                              className={`retro-button bg-transparent ${!canDownload ? "opacity-50 cursor-not-allowed" : ""}`}
+                              onClick={() => handleDownload(summary)}
+                            >
+                              <a>
                                 <PixelIcon type="download" className="w-3 h-3" />
                               </a>
                             </Button>
