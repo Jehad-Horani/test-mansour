@@ -6,8 +6,6 @@ import { RetroWindow } from "@/app/components/retro-window"
 import PixelIcon from "@/app/components/pixel-icon"
 import { useParams, useRouter } from "next/navigation"
 import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
-import { useAuth } from "@/hooks/use-auth"
-import { toast } from "sonner"
 import Link from "next/link"
 
 interface Summary {
@@ -33,8 +31,7 @@ export default function SummaryDetailPage() {
 
   const params = useParams()
   const router = useRouter()
-  const supabase = useSupabaseClient()
-  const { profile } = useAuth()
+  const supabase = useSupabaseClient() // ✅ التصحيح هون
 
   useEffect(() => {
     if (params.id) {
@@ -80,38 +77,6 @@ export default function SummaryDetailPage() {
       month: "long",
       day: "numeric",
     })
-  }
-
-  const handleSummaryDownload = async (summaryUrl: string, summaryId: string) => {
-    // Check usage limit for free users
-    if (profile?.subscription_tier === 'free') {
-      try {
-        const usageCheckRes = await fetch('/api/usage/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ resourceType: 'summary_view' })
-        })
-        
-        const usageCheck = await usageCheckRes.json()
-        
-        if (!usageCheck.allowed) {
-          toast.error(`لقد وصلت إلى الحد الأقصى لعرض/تحميل الملخصات هذا الشهر (${usageCheck.limit} ملخص). يرجى الترقية إلى خطة مميزة للمزيد.`)
-          return
-        }
-
-        // Log usage
-        await fetch('/api/usage/log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ resourceType: 'summary_view', resourceId: summaryId })
-        })
-      } catch (error) {
-        console.error('Error checking usage:', error)
-      }
-    }
-
-    // Open/download summary
-    window.open(summaryUrl, '_blank')
   }
 
   if (loading) {
@@ -291,13 +256,11 @@ export default function SummaryDetailPage() {
                 </h3>
                 <p className="text-gray-600 mb-4">اضغط على الزر أدناه لتحميل الملخص</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button 
-                    className="retro-button" 
-                    style={{ background: "var(--primary)", color: "white" }}
-                    onClick={() => handleSummaryDownload(summary.file_url, summary.id)}
-                  >
-                    <PixelIcon type="download" className="w-4 h-4 ml-2" />
-                    تحميل الملخص
+                  <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
+                    <a href={summary.file_url} target="_blank" rel="noopener noreferrer">
+                      <PixelIcon type="download" className="w-4 h-4 ml-2" />
+                      تحميل الملخص
+                    </a>
                   </Button>
                   <Button asChild variant="outline" className="retro-button bg-transparent">
                     <Link href="/summaries">تصفح المزيد من الملخصات</Link>

@@ -42,7 +42,7 @@ interface Lecture {
 }
 
 export default function NotebooksPage() {
-  const { user, isLoggedIn, profile } = useAuth()
+  const { user, isLoggedIn } = useAuth()
   const router = useRouter()
   const [lectures, setLectures] = useState<Lecture[]>([])
   const [approvedLectures, setApprovedLectures] = useState<Lecture[]>([])
@@ -190,38 +190,6 @@ export default function NotebooksPage() {
       case 'rejected': return 'bg-red-100 text-red-800'
       default: return 'bg-yellow-100 text-yellow-800'
     }
-  }
-
-  const handleLectureView = async (lectureUrl: string, lectureId: string) => {
-    // Check usage limit for free users
-    if (profile?.subscription_tier === 'free') {
-      try {
-        const usageCheckRes = await fetch('/api/usage/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ resourceType: 'lecture_view' })
-        })
-        
-        const usageCheck = await usageCheckRes.json()
-        
-        if (!usageCheck.allowed) {
-          toast.error(`لقد وصلت إلى الحد الأقصى لعرض المحاضرات هذا الشهر (${usageCheck.limit} محاضرة). يرجى الترقية إلى خطة مميزة للمزيد.`)
-          return
-        }
-
-        // Log usage
-        await fetch('/api/usage/log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ resourceType: 'lecture_view', resourceId: lectureId })
-        })
-      } catch (error) {
-        console.error('Error checking usage:', error)
-      }
-    }
-
-    // Open lecture
-    window.open(lectureUrl, '_blank')
   }
 
   const filteredApprovedLectures = approvedLectures.filter((lecture) => {
@@ -495,12 +463,11 @@ export default function NotebooksPage() {
                           </p>
                           <p className="text-sm text-gray-500">{lecture.major}</p>
                         </div>
-                        <Button 
-                          className="retro-button bg-green-600 text-white hover:bg-green-700"
-                          onClick={() => handleLectureView(lecture.file_url, lecture.id)}
-                        >
-                          <FileText className="w-3 h-3 mr-1" />
-                          عرض ملف المحاضرة
+                        <Button className="retro-button bg-green-600 text-white hover:bg-green-700">
+                          <Link href={`${lecture.file_url}`} target="_blank" rel="noopener noreferrer">
+                            <FileText className="w-3 h-3 mr-1" />
+                            عرض ملف المحاضرة
+                          </Link>
                         </Button>
                       </div>
                     </div>

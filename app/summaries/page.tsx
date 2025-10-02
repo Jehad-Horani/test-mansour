@@ -9,8 +9,6 @@ import PixelIcon from "@/app/components/pixel-icon"
 import Link from "next/link"
 import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 import { useUserContext } from "@/contexts/user-context"
-import { useAuth } from "@/hooks/use-auth"
-import { toast } from "sonner"
 
 interface Summary {
   id: string
@@ -56,7 +54,6 @@ export default function SummariesPage() {
   const [selectedMajor, setSelectedMajor] = useState<string>("all")
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false)
   const { isLoggedIn } = useUserContext()
-  const { profile } = useAuth()
 
   const { data, loading1, error1 } = useSupabaseClient()
 
@@ -124,38 +121,6 @@ export default function SummariesPage() {
     const sizes = ["Bytes", "KB", "MB", "GB"]
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  }
-
-  const handleSummaryDownload = async (summaryUrl: string, summaryId: string) => {
-    // Check usage limit for free users
-    if (profile?.subscription_tier === 'free') {
-      try {
-        const usageCheckRes = await fetch('/api/usage/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ resourceType: 'summary_view' })
-        })
-        
-        const usageCheck = await usageCheckRes.json()
-        
-        if (!usageCheck.allowed) {
-          toast.error(`لقد وصلت إلى الحد الأقصى لعرض/تحميل الملخصات هذا الشهر (${usageCheck.limit} ملخص). يرجى الترقية إلى خطة مميزة للمزيد.`)
-          return
-        }
-
-        // Log usage
-        await fetch('/api/usage/log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ resourceType: 'summary_view', resourceId: summaryId })
-        })
-      } catch (error) {
-        console.error('Error checking usage:', error)
-      }
-    }
-
-    // Open/download summary
-    window.open(summaryUrl, '_blank')
   }
 
   if (loading) {
@@ -287,13 +252,10 @@ export default function SummariesPage() {
                             <Link href={`/summaries/${summary.id}`}>عرض التفاصيل</Link>
                           </Button>
                           {summary.file_url && (
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="retro-button bg-transparent"
-                              onClick={() => handleSummaryDownload(summary.file_url, summary.id)}
-                            >
-                              <PixelIcon type="download" className="w-3 h-3" />
+                            <Button asChild size="sm" variant="outline" className="retro-button bg-transparent">
+                              <a href={summary.file_url} target="_blank" rel="noopener noreferrer">
+                                <PixelIcon type="download" className="w-3 h-3" />
+                              </a>
                             </Button>
                           )}
                         </div>

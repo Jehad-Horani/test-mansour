@@ -40,17 +40,17 @@ useEffect(() => {
 
 
       {/* Hero Section */}
-      <section className="py-8 md:py-16 px-4">
+      <section className="py-8 md:py-16">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 px-2" style={{ color: "var(--ink)" }}>
+          <h1 className="text-2xl md:text-4xl font-bold mb-4" style={{ color: "var(--ink)" }}>
             منصة تخصص.كُم الشاملة
           </h1>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 md:mb-8 max-w-2xl mx-auto px-4" style={{ color: "var(--ink)" }}>
+          <p className="text-base md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto" style={{ color: "var(--ink)" }}>
             اكتشف عالم التعلم الجامعي مع أفضل الكتب والاستشارات الأكاديمية
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 md:mb-12 px-4">
-            <Button asChild className="retro-button text-white w-full sm:w-auto" style={{ background: "var(--primary)" }}>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 md:mb-12">
+            <Button asChild className="retro-button text-white" style={{ background: "var(--primary)" }}>
               <Link href="/market">ادخل السوق</Link>
             </Button>
 
@@ -68,23 +68,23 @@ useEffect(() => {
       <section className="py-8 md:py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <RetroWindow title="المميزات الأساسية">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Market Feature */}
               <div className="retro-window bg-white">
-                <div className="p-4 md:p-6 text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <span className="text-xl md:text-2xl">📚</span>
+                <div className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">📚</span>
                   </div>
-                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     سوق الكتب
                   </h3>
-                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">
+                  <p className="text-sm text-gray-600 mb-4">
                     اشتري وبيع الكتب الجامعية المستعملة والجديدة بأفضل الأسعار
                   </p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button w-full sm:w-auto"
+                    className="retro-button"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/market">تصفح السوق</Link>
@@ -96,18 +96,18 @@ useEffect(() => {
 
               {/* Ambassadors Feature */}
               <div className="retro-window bg-white">
-                <div className="p-4 md:p-6 text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <span className="text-xl md:text-2xl">🎓</span>
+                <div className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">🎓</span>
                   </div>
-                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     السفراء الأكاديميون
                   </h3>
-                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">احصل على استشارات أكاديمية من طلاب متفوقين في تخصصك</p>
+                  <p className="text-sm text-gray-600 mb-4">احصل على استشارات أكاديمية من طلاب متفوقين في تخصصك</p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button w-full sm:w-auto"
+                    className="retro-button"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/ambassadors">السفراء</Link>
@@ -117,18 +117,18 @@ useEffect(() => {
 
               {/* Dashboard Feature */}
               <div className="retro-window bg-white">
-                <div className="p-4 md:p-6 text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <span className="text-xl md:text-2xl">📊</span>
+                <div className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">📊</span>
                   </div>
-                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     لوحة التحكم
                   </h3>
-                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">تتبع جدولك الدراسي وامتحاناتك وخطط الدراسة الشخصية</p>
+                  <p className="text-sm text-gray-600 mb-4">تتبع جدولك الدراسي وامتحاناتك وخطط الدراسة الشخصية</p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button w-full sm:w-auto"
+                    className="retro-button"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/dashboard">افتح لوحة التحكم</Link>
@@ -138,18 +138,18 @@ useEffect(() => {
 
               {/* Notebooks Feature */}
               <div className="retro-window bg-white">
-                <div className="p-4 md:p-6 text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-red-100 rounded-lg flex items-center justify-center">
-                    <span className="text-xl md:text-2xl">📝</span>
+                <div className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">📝</span>
                   </div>
-                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     المحاضرات
                   </h3>
-                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">ارفع وشارك محاضراتك الدراسية مع الطلاب الآخرين</p>
+                  <p className="text-sm text-gray-600 mb-4">ارفع وشارك محاضراتك الدراسية مع الطلاب الآخرين</p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button w-full sm:w-auto"
+                    className="retro-button"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/dashboard/notebooks">تصفح المحاضرات</Link>
@@ -159,18 +159,18 @@ useEffect(() => {
 
               {/* Summaries Feature */}
               <div className="retro-window bg-white">
-                <div className="p-4 md:p-6 text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <span className="text-xl md:text-2xl">📄</span>
+                <div className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">📄</span>
                   </div>
-                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     الملخصات الدراسية
                   </h3>
-                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">تصفح وشارك الملخصات الدراسية مع زملائك الطلاب</p>
+                  <p className="text-sm text-gray-600 mb-4">تصفح وشارك الملخصات الدراسية مع زملائك الطلاب</p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button w-full sm:w-auto"
+                    className="retro-button"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/summaries">تصفح الملخصات</Link>
@@ -180,18 +180,18 @@ useEffect(() => {
 
               {/* Pricing Feature */}
               <div className="retro-window bg-white">
-                <div className="p-4 md:p-6 text-center">
-                  <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <span className="text-xl md:text-2xl">💎</span>
+                <div className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">💎</span>
                   </div>
-                  <h3 className="font-bold mb-2 text-sm md:text-base" style={{ color: "var(--ink)" }}>
+                  <h3 className="font-bold mb-2" style={{ color: "var(--ink)" }}>
                     خطط الاشتراك
                   </h3>
-                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">اختر الخطة المناسبة لك واحصل على مميزات إضافية</p>
+                  <p className="text-sm text-gray-600 mb-4">اختر الخطة المناسبة لك واحصل على مميزات إضافية</p>
                   <Button
                     asChild
                     size="sm"
-                    className="retro-button w-full sm:w-auto"
+                    className="retro-button"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Link href="/pricing">اختر خطتك</Link>
@@ -207,17 +207,19 @@ useEffect(() => {
       <section className="py-8 md:py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <RetroWindow title="خطط الاشتراك">
+            {/* Standard Plan */}
+
             {/* Premium Plan */}
-            <div className="retro-window bg-white mx-4 md:mx-0">
+            <div className="retro-window bg-white">
               <div className="retro-window-title">
-                <span className="text-sm md:text-base">الخطة المميزة</span>
+                <span>الخطة المميزة</span>
               </div>
-              <div className="p-4 md:p-6 text-center">
-                <div className="text-2xl md:text-3xl font-bold mb-2" style={{ color: "var(--accent)" }}>
+              <div className="p-6 text-center">
+                <div className="text-3xl font-bold mb-2" style={{ color: "var(--accent)" }}>
                   15 دينار
                 </div>
-                <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">شهرياً</p>
-                <ul className="space-y-2 text-xs md:text-sm text-right mb-4 md:mb-6 px-2">
+                <p className="text-gray-600 mb-6">شهرياً</p>
+                <ul className="space-y-2 text-sm text-right mb-6">
                   <li className="flex items-center gap-2">
                     <span className="text-green-600">✓</span>
                     جميع مميزات القياسية
@@ -244,23 +246,23 @@ useEffect(() => {
         </div>
       </section>
 
-      <footer className="mt-8 md:mt-16 py-6 md:py-8 px-4" style={{ background: "var(--bg)", color: "white" }}>
+      <footer className="mt-16 py-8 px-4" style={{ background: "var(--bg)", color: "white" }}>
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* About Section */}
             <div>
-              <h3 className="font-bold mb-3 md:mb-4 text-base md:text-lg text-white">عن تخصص.كُم</h3>
-              <p className="text-xs md:text-sm mb-3 md:mb-4 text-white/90">
+              <h3 className="font-bold mb-4 text-lg text-white">عن تخصص.كُم</h3>
+              <p className="text-sm mb-4 text-white/90">
                 منصة شاملة للطلاب الجامعيين في الأردن لتبادل الكتب والمعرفة والحصول على الاستشارات الأكاديمية
               </p>
               <div className="flex gap-2">
-                <div className="w-7 h-7 md:w-8 md:h-8 bg-white/20 rounded flex items-center justify-center">
+                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
                   <span className="text-xs">📧</span>
                 </div>
-                <div className="w-7 h-7 md:w-8 md:h-8 bg-white/20 rounded flex items-center justify-center">
+                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
                   <span className="text-xs">📱</span>
                 </div>
-                <div className="w-7 h-7 md:w-8 md:h-8 bg-white/20 rounded flex items-center justify-center">
+                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
                   <span className="text-xs">🌐</span>
                 </div>
               </div>
@@ -268,8 +270,8 @@ useEffect(() => {
 
             {/* Quick Links */}
             <div>
-              <h3 className="font-bold mb-3 md:mb-4 text-base md:text-lg text-white">روابط سريعة</h3>
-              <ul className="space-y-2 text-xs md:text-sm">
+              <h3 className="font-bold mb-4 text-lg text-white">روابط سريعة</h3>
+              <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="/market" className="hover:underline text-white/90 hover:text-white">
                     سوق الكتب
@@ -301,8 +303,8 @@ useEffect(() => {
 
             {/* Colleges */}
             <div>
-              <h3 className="font-bold mb-3 md:mb-4 text-base md:text-lg text-white">الكليات</h3>
-              <ul className="space-y-2 text-xs md:text-sm">
+              <h3 className="font-bold mb-4 text-lg text-white">الكليات</h3>
+              <ul className="space-y-2 text-sm">
                 <li>
                   <span className="text-white/90">كلية الحقوق</span>
                 </li>
@@ -317,8 +319,8 @@ useEffect(() => {
 
             {/* Contact Info */}
             <div>
-              <h3 className="font-bold mb-3 md:mb-4 text-base md:text-lg text-white">تواصل معنا</h3>
-              <div className="space-y-2 md:space-y-3 text-xs md:text-sm">
+              <h3 className="font-bold mb-4 text-lg text-white">تواصل معنا</h3>
+              <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-2">
                   <span>📞</span>
                   <span className="text-white/90">+962 6 123 4567</span>
@@ -340,9 +342,9 @@ useEffect(() => {
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-white/20 mt-6 md:mt-8 pt-4 md:pt-6 flex flex-col md:flex-row justify-between items-center text-xs md:text-sm">
-            <div className="text-white/90 mb-3 md:mb-0 text-center md:text-right">© 2024 تخصص.كُم. جميع الحقوق محفوظة.</div>
-            <div className="flex flex-wrap gap-3 md:gap-4 justify-center">
+          <div className="border-t border-white/20 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center text-sm">
+            <div className="text-white/90 mb-4 md:mb-0">© 2024 تخصص.كُم. جميع الحقوق محفوظة.</div>
+            <div className="flex gap-4">
               <Link href="/terms" className="hover:underline text-white/90 hover:text-white">
                 شروط الاستخدام
               </Link>
