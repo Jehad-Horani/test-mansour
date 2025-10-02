@@ -6,6 +6,7 @@ import PixelIcon from "./pixel-icon";
 
 export default function HorizontalScrollingCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<gsap.core.Tween | null>(null);
 
   const colleges = [
     { icon: "gavel" as const, title: "كلية الحقوق", desc: "القانون والشريعة والعدالة" },
@@ -22,23 +23,36 @@ export default function HorizontalScrollingCarousel() {
     { icon: "mosque" as const, title: "كلية الشريعة", desc: "الشريعة الإسلامية وأصول الدين" }
   ];
 
-  useEffect(() => {
+  const initAnimation = () => {
     if (!trackRef.current) return;
 
     const track = trackRef.current;
     const cards = Array.from(track.children) as HTMLElement[];
 
+    // احذف أي نسخة مكررة قديمة
+    while (track.children.length > colleges.length) {
+      track.removeChild(track.lastChild!);
+    }
+
+    // حساب العرض
     let totalWidth = 0;
     cards.forEach(card => {
       totalWidth += card.offsetWidth + 16; // 16px gap
     });
 
+    // نسخ الكروت عشان اللوب
     cards.forEach(card => {
       const clone = card.cloneNode(true) as HTMLElement;
       track.appendChild(clone);
     });
 
-    gsap.to(track, {
+    // Kill old animation
+    if (animationRef.current) {
+      animationRef.current.kill();
+    }
+
+    // Animation جديد
+    animationRef.current = gsap.to(track, {
       x: totalWidth,
       duration: 70,
       ease: "none",
@@ -50,9 +64,16 @@ export default function HorizontalScrollingCarousel() {
         }
       }
     });
+  };
 
+  useEffect(() => {
+    initAnimation();
+
+    // إعادة حساب عند تغيير حجم الشاشة
+    window.addEventListener("resize", initAnimation);
     return () => {
-      gsap.killTweensOf(track);
+      window.removeEventListener("resize", initAnimation);
+      if (animationRef.current) animationRef.current.kill();
     };
   }, []);
 
@@ -74,10 +95,17 @@ export default function HorizontalScrollingCarousel() {
           {colleges.map((college, index) => (
             <div
               key={index}
-              className="flex-shrink-0 w-56 sm:w-64 md:w-72 lg:w-80 bg-white rounded-2xl shadow-lg p-4 sm:p-6 text-center hover:shadow-xl transition-shadow duration-300 border-2 border-purple-100"
+              className="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 
+                         bg-white rounded-2xl shadow-lg 
+                         p-4 sm:p-6 text-center 
+                         hover:shadow-xl transition-shadow duration-300 
+                         border-2 border-purple-100"
             >
               <div className="mb-3 md:mb-4">
-                <PixelIcon type={college.icon} className="w-10 h-10 sm:w-12 sm:h-12 mx-auto" />
+                <PixelIcon
+                  type={college.icon}
+                  className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto"
+                />
               </div>
               <h3 className="font-bold text-base sm:text-lg md:text-xl mb-1 md:mb-2 text-gray-800">
                 {college.title}
