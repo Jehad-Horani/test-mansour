@@ -68,7 +68,9 @@ useEffect(() => {
           </div>
 
            <div className="max-w-6xl mx-auto md:hidden">
+          <RetroWindow  title="الكليات المتاحة">
           <MobileCarousel/>
+          </RetroWindow>
           </div>
       </section> 
 
