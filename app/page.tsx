@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import Carousel from "./components/CollegesCarousel"
 import HorizontalScrollingCarousel from "./components/CollegesCarousel"
+import MobileCarousel from "./components/mocarousel"
 
 
 export default function HomePage() {
@@ -63,6 +64,12 @@ useEffect(() => {
         <div className="max-w-6xl mx-auto max-md:hidden">
           <RetroWindow  title="الكليات المتاحة">
           <HorizontalScrollingCarousel/>
+          </RetroWindow>
+          </div>
+
+           <div className="max-w-6xl mx-auto md:hidden">
+          <RetroWindow  title="الكليات المتاحة">
+          <MobileCarousel/>
           </RetroWindow>
           </div>
       </section> 
