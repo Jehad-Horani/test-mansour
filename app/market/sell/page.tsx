@@ -113,7 +113,7 @@ export default function SellBookPage() {
       startOfMonth.setHours(0, 0, 0, 0)
 
       const { data: uploads, error: uploadsError } = await supabase
-        .from("booksUpload")
+        .from("booksupload")
         .select("id")
         .eq("user_id", currentUser.id)
         .gte("created_at", startOfMonth.toISOString())
@@ -259,9 +259,9 @@ export default function SellBookPage() {
       // Upload images
       const uploadedImages = await uploadBookImages(book.id)
       
-      // CRITICAL: Record the upload in booksUpload table for tracking
+      // CRITICAL: Record the upload in booksupload table for tracking
       const { error: uploadTrackError } = await supabase
-        .from("booksUpload")
+        .from("booksupload")
         .insert({
           user_id: user.id,
           book_id: book.id,

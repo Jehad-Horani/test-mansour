@@ -117,7 +117,7 @@ export default function MarketPage() {
       startOfMonth.setHours(0, 0, 0, 0)
 
       const { data: uploads, error: uploadsError } = await supabase
-        .from("booksUpload")
+        .from("booksupload")
         .select("id")
         .eq("user_id", currentUser.id)
         .gte("created_at", startOfMonth.toISOString())
@@ -307,7 +307,7 @@ export default function MarketPage() {
                   onClick={handleSellClick}
                   className="retro-button" 
                   style={{ 
-                    background: uploadStatus.canUpload ? "var(--accent)" : "var(--gray-400)", 
+                    background: uploadStatus.canUpload ? "var(--accent)" : "var(--gray-900)", 
                     color: "white",
                     opacity: uploadStatus.canUpload ? 1 : 0.6,
                     cursor: uploadStatus.canUpload ? "pointer" : "not-allowed"
