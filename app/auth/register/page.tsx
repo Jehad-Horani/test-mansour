@@ -282,6 +282,7 @@ export default function RegisterPage() {
                   الاسم الكامل *
                 </label>
                 <Input
+                name="userName"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder="أحمد محمد السالم"
