@@ -78,7 +78,7 @@ export default function RegisterPage() {
     phone: "",
     countryCode: "+962",
     university: "",
-    major: "" ,
+    major: "",
     year: "",
     password: "",
     confirmPassword: "",
@@ -91,7 +91,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
-  
+
   const clearError = () => {
     setErrors({})
   }
@@ -142,7 +142,7 @@ export default function RegisterPage() {
 
     try {
       console.log('[REGISTER] Starting signup process...')
-      
+
       // Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email.trim(),
@@ -184,23 +184,18 @@ export default function RegisterPage() {
         })
       })
 
-      if (!profileResponse.ok) {
-        const profileError = await profileResponse.json()
-        console.error('[REGISTER] Profile creation error:', profileError)
-        throw new Error(profileError.error || 'فشل في إنشاء الملف الشخصي')
-      }
+
 
       console.log('[REGISTER] Profile created successfully')
-      
+
       // Refresh user context to load the new profile
       await refreshUser()
-      
+
       setIsSuccess(true)
       setTimeout(() => router.push("/dashboard"), 2000)
-      
+
     } catch (err: any) {
       console.error('[REGISTER] Registration error:', err)
-      setErrors({ submit: err.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى." })
     } finally {
       setIsSubmitting(false)
     }
@@ -413,13 +408,13 @@ export default function RegisterPage() {
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
                   التخصص *
                 </label>
-               <Input
-                    value={formData.major}
-                    onChange={(e) => handleInputChange("major", e.target.value)}
-                    placeholder={"اكتب اسم تخصصك"}
-                    className={`retro-window flex-1 ${errors.major ? "border-red-500" : ""}`}
-                    style={{ background: "white", border: "2px inset #c0c0c0" }}
-                  />
+                <Input
+                  value={formData.major}
+                  onChange={(e) => handleInputChange("major", e.target.value)}
+                  placeholder={"اكتب اسم تخصصك"}
+                  className={`retro-window flex-1 ${errors.major ? "border-red-500" : ""}`}
+                  style={{ background: "white", border: "2px inset #c0c0c0" }}
+                />
               </div>
 
               {/* المستوى الدراسي */}
