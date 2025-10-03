@@ -25,7 +25,7 @@ export function Breadcrumbs() {
       pricing: "الأسعار",
       profile: "الملف الشخصي",
       settings: "الإعدادات",
-      auth: "المصادقة",
+      auth: "",
       login: "تسجيل الدخول",
       register: "إنشاء حساب",
       cart: "السلة",

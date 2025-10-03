@@ -8,7 +8,6 @@ import { Input } from "@/app/components/ui/input"
 import Link from "next/link"
 import { ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("")
@@ -17,34 +16,43 @@ export default function ResetPasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isVerifying, setIsVerifying] = useState(true)
   const [error, setError] = useState("")
 
   const router = useRouter()
   const searchParams = useSearchParams()
-const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
-  const handleAuthCallback = async () => {
-    try {
-      const access_token = searchParams.get("access_token")
-      if (!access_token) throw new Error("رابط غير صالح")
+    const handleAuthCallback = async () => {
+      try {
+        const access_token = searchParams.get("access_token")
+        
+        if (!access_token) {
+          throw new Error("رابط غير صالح أو منتهي الصلاحية")
+        }
 
-      const res = await fetch("/api/auth/verify-reset", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ access_token }),
-      })
+        const res = await fetch("/api/auth/verify-reset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ access_token }),
+        })
 
-      const data = await res.json()
+        const data = await res.json()
 
-      if (!res.ok) throw new Error(data.error || "رابط غير صالح")
-    } catch (err: any) {
-      setError(err.message)
+        if (!res.ok) {
+          throw new Error(data.error || "رابط غير صالح أو منتهي الصلاحية")
+        }
+
+        // Verification successful
+        setIsVerifying(false)
+      } catch (err: any) {
+        setError(err.message || "حدث خطأ في التحقق من الرابط")
+        setIsVerifying(false)
+      }
     }
-  }
 
-  handleAuthCallback()
-}, [searchParams])
+    handleAuthCallback()
+  }, [searchParams])
 
   const validateForm = () => {
     if (!password) {
@@ -66,37 +74,62 @@ const { data, loading1, error1 } = useSupabaseClient()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  setError("")
+    e.preventDefault()
+    setError("")
 
-  if (!validateForm()) {
-    return
-  }
-
-  setIsLoading(true)
-
-  try {
-    const res = await fetch("/api/auth/update-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    })
-
-    const data = await res.json()
-
-    if (res.ok) {
-      setIsSuccess(true)
-    } else {
-      setError(data.error || "حدث خطأ أثناء تحديث كلمة المرور")
+    if (!validateForm()) {
+      return
     }
-  } catch (err: any) {
-    setError(err.message || "حدث خطأ أثناء تحديث كلمة المرور")
-  } finally {
-    setIsLoading(false)
+
+    setIsLoading(true)
+
+    try {
+      const access_token = searchParams.get("access_token")
+
+      const res = await fetch("/api/auth/update-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          password,
+          access_token 
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setIsSuccess(true)
+        // Redirect after 2 seconds
+        setTimeout(() => {
+          router.push("/auth/login")
+        }, 2000)
+      } else {
+        setError(data.error || "حدث خطأ أثناء تحديث كلمة المرور")
+      }
+    } catch (err: any) {
+      setError(err.message || "حدث خطأ أثناء تحديث كلمة المرور")
+    } finally {
+      setIsLoading(false)
+    }
   }
-}
 
+  // Show loading state while verifying token
+  if (isVerifying) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--panel)" }}>
+        <div className="w-full max-w-md">
+          <RetroWindow title="جاري التحقق...">
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">جاري التحقق من الرابط...</p>
+            </div>
+          </RetroWindow>
+        </div>
+      </div>
+    )
+  }
 
+  // Show success state
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--panel)" }}>
@@ -118,6 +151,29 @@ const { data, loading1, error1 } = useSupabaseClient()
     )
   }
 
+  // Show error state if verification failed
+  if (error && !password && !confirmPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--panel)" }}>
+        <div className="w-full max-w-md">
+          <RetroWindow title="خطأ">
+            <div className="p-6 text-center">
+              <AlertCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+              <h2 className="text-xl font-bold mb-4" style={{ color: "var(--ink)" }}>
+                رابط غير صالح
+              </h2>
+              <p className="text-gray-600 mb-6">{error}</p>
+              <Button asChild className="retro-button w-full" style={{ background: "var(--primary)", color: "white" }}>
+                <Link href="/auth/forgot-password">طلب رابط جديد</Link>
+              </Button>
+            </div>
+          </RetroWindow>
+        </div>
+      </div>
+    )
+  }
+
+  // Show reset password form
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--panel)" }}>
       <div className="w-full max-w-md">
