@@ -5,7 +5,7 @@ import { Button } from "@/app/components/ui/button"
 import { RetroWindow } from "@/app/components/retro-window"
 import PixelIcon from "@/app/components/pixel-icon"
 import { useParams, useRouter } from "next/navigation"
-import { useSupabaseClient } from "@/lib/supabase/client-wrapper"
+import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 
 interface Summary {
@@ -24,44 +24,235 @@ interface Summary {
   created_at: string
 }
 
+interface DownloadStatus {
+  canDownload: boolean
+  subscriptionTier: string | null
+  downloadsThisMonth: number
+  isLoggedIn: boolean
+}
+
+const supabase = createClient()
+
 export default function SummaryDetailPage() {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [downloadStatus, setDownloadStatus] = useState<DownloadStatus>({
+    canDownload: false,
+    subscriptionTier: null,
+    downloadsThisMonth: 0,
+    isLoggedIn: false,
+  })
+  const [isDownloading, setIsDownloading] = useState(false)
 
   const params = useParams()
   const router = useRouter()
-  const supabase = useSupabaseClient() // ✅ التصحيح هون
 
   useEffect(() => {
-    if (params.id) {
-      fetchSummary(params.id as string)
+    const initialize = async () => {
+      if (params.id) {
+        await Promise.all([
+          fetchSummary(params.id as string),
+          checkDownloadLimit()
+        ])
+      }
     }
+    initialize()
   }, [params.id])
 
+  const checkDownloadLimit = async (): Promise<DownloadStatus> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        return { 
+          canDownload: false, 
+          subscriptionTier: null, 
+          downloadsThisMonth: 0,
+          isLoggedIn: false 
+        }
+      }
+
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("subscription_tier")
+        .eq("id", user.id)
+        .single()
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError)
+        return { 
+          canDownload: false, 
+          subscriptionTier: null, 
+          downloadsThisMonth: 0,
+          isLoggedIn: true 
+        }
+      }
+
+      const tier = profile?.subscription_tier || "free"
+
+      // Premium users have unlimited downloads
+      if (tier !== "free") {
+        const status = { 
+          canDownload: true, 
+          subscriptionTier: tier, 
+          downloadsThisMonth: 0,
+          isLoggedIn: true 
+        }
+        setDownloadStatus(status)
+        return status
+      }
+
+      // For free users, check monthly download count
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+
+      const { data: downloads, error: downloadsError } = await supabase
+        .from("downloads")
+        .select("id")
+        .eq("user_id", user.id)
+        .gte("created_at", startOfMonth.toISOString())
+
+      if (downloadsError) {
+        console.error("Error fetching downloads:", downloadsError)
+        const status = { 
+          canDownload: false, 
+          subscriptionTier: tier, 
+          downloadsThisMonth: 0,
+          isLoggedIn: true 
+        }
+        setDownloadStatus(status)
+        return status
+      }
+
+      const downloadCount = downloads?.length || 0
+      const canDownload = downloadCount < 1
+
+      const status = { 
+        canDownload, 
+        subscriptionTier: tier, 
+        downloadsThisMonth: downloadCount,
+        isLoggedIn: true 
+      }
+      setDownloadStatus(status)
+      return status
+    } catch (error) {
+      console.error("Error checking download limit:", error)
+      const status = { 
+        canDownload: false, 
+        subscriptionTier: null, 
+        downloadsThisMonth: 0,
+        isLoggedIn: false 
+      }
+      setDownloadStatus(status)
+      return status
+    }
+  }
+
   const fetchSummary = async (id: string) => {
-  try {
-    setLoading(true)
+    try {
+      setLoading(true)
 
-    const res = await fetch(`/api/summaries/${id}`)
-    if (!res.ok) throw new Error("فشل في جلب الملخص")
+      const res = await fetch(`/api/summaries/${id}`)
+      if (!res.ok) throw new Error("فشل في جلب الملخص")
 
-    const data = await res.json()
+      const data = await res.json()
 
-    if (!data.is_approved) {
-      setError("هذا الملخص غير متاح حالياً")
+      if (!data.is_approved) {
+        setError("هذا الملخص غير متاح حالياً")
+        return
+      }
+
+      setSummary(data)
+    } catch (err: any) {
+      console.error("Error fetching summary:", err)
+      setError("حدث خطأ في تحميل الملخص")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDownload = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+
+    // Prevent multiple simultaneous downloads
+    if (isDownloading) {
       return
     }
 
-    setSummary(data)
-  } catch (err: any) {
-    console.error("Error fetching summary:", err)
-    setError("حدث خطأ في تحميل الملخص")
-  } finally {
-    setLoading(false)
-  }
-}
+    // Check if user is logged in
+    if (!downloadStatus.isLoggedIn) {
+      alert("يجب تسجيل الدخول لتحميل الملخص.")
+      router.push("/login")
+      return
+    }
 
+    if (!summary) {
+      return
+    }
+
+    try {
+      setIsDownloading(true)
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        alert("يجب تسجيل الدخول لتحميل الملخص.")
+        router.push("/login")
+        return
+      }
+
+      // Re-check download limit right before downloading
+      const currentStatus = await checkDownloadLimit()
+
+      if (!currentStatus.canDownload) {
+        if (currentStatus.subscriptionTier === "free") {
+          alert(
+            `لقد وصلت لحد التحميل لهذا الشهر. قمت بتحميل ${currentStatus.downloadsThisMonth} ملف. ` +
+            "يمكنك الترقية للاشتراك المميز للحصول على تحميلات غير محدودة."
+          )
+        } else {
+          alert("حدث خطأ في التحقق من حالة الاشتراك. يرجى المحاولة مرة أخرى.")
+        }
+        return
+      }
+
+      // Record the download FIRST (before opening file)
+      const { error: insertError } = await supabase
+        .from("downloads")
+        .insert({
+          user_id: user.id,
+          file_id: summary.id,
+          created_at: new Date().toISOString(),
+        })
+
+      if (insertError) {
+        console.error("Error recording download:", insertError)
+        alert("حدث خطأ أثناء تسجيل التحميل. يرجى المحاولة مرة أخرى.")
+        return
+      }
+
+      // Open the file URL
+      window.open(summary.file_url, "_blank")
+
+      // Update download status after successful download
+      await checkDownloadLimit()
+
+      // Show success message for free users
+      if (currentStatus.subscriptionTier === "free") {
+        alert("تم التحميل بنجاح! لقد استخدمت تحميلك المجاني لهذا الشهر.")
+      }
+
+    } catch (error) {
+      console.error("Error during download:", error)
+      alert("حدث خطأ أثناء التحميل. يرجى المحاولة مرة أخرى.")
+    } finally {
+      setIsDownloading(false)
+    }
+  }
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
@@ -77,6 +268,56 @@ export default function SummaryDetailPage() {
       month: "long",
       day: "numeric",
     })
+  }
+
+  const getDownloadButtonText = () => {
+    if (!downloadStatus.isLoggedIn) {
+      return "سجل الدخول للتحميل"
+    }
+    if (isDownloading) {
+      return "جاري التحميل..."
+    }
+    if (!downloadStatus.canDownload && downloadStatus.subscriptionTier === "free") {
+      return "تم استخدام التحميل المجاني"
+    }
+    return "تحميل الملخص"
+  }
+
+  const getDownloadStatusMessage = () => {
+    if (!downloadStatus.isLoggedIn) {
+      return (
+        <div className="bg-yellow-50 border-2 border-yellow-400 p-4 mb-4 text-center">
+          <p className="text-yellow-800">
+            يجب تسجيل الدخول لتحميل الملخصات
+          </p>
+        </div>
+      )
+    }
+
+    if (downloadStatus.subscriptionTier === "free") {
+      if (downloadStatus.canDownload) {
+        return (
+          <div className="bg-green-50 border-2 border-green-400 p-4 mb-4 text-center">
+            <p className="text-green-800">
+              ✓ يمكنك تحميل ملف واحد هذا الشهر
+            </p>
+          </div>
+        )
+      } else {
+        return (
+          <div className="bg-orange-50 border-2 border-orange-400 p-4 mb-4 text-center">
+            <p className="text-orange-800 mb-2">
+              ⚠️ لقد استخدمت تحميلك المجاني لهذا الشهر ({downloadStatus.downloadsThisMonth}/1)
+            </p>
+            <p className="text-sm text-orange-700">
+              قم بالترقية للاشتراك المميز للحصول على تحميلات غير محدودة
+            </p>
+          </div>
+        )
+      }
+    }
+
+    return null
   }
 
   if (loading) {
@@ -119,6 +360,8 @@ export default function SummaryDetailPage() {
       </div>
     )
   }
+
+  const isDownloadDisabled = !downloadStatus.isLoggedIn || (!downloadStatus.canDownload && downloadStatus.subscriptionTier === "free") || isDownloading
 
   return (
     <div className="min-h-screen" style={{ background: "var(--panel)" }}>
@@ -249,22 +492,88 @@ export default function SummaryDetailPage() {
               <div className="retro-window-title">
                 <span>تحميل الملخص</span>
               </div>
-              <div className="p-6 text-center">
-                <PixelIcon type="download" className="w-12 h-12 mx-auto mb-4"  />
-                <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--ink)" }}>
-                  جاهز للتحميل
-                </h3>
-                <p className="text-gray-600 mb-4">اضغط على الزر أدناه لتحميل الملخص</p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
-                    <a href={summary.file_url} target="_blank" rel="noopener noreferrer">
-                      <PixelIcon type="download" className="w-4 h-4 ml-2" />
-                      تحميل الملخص
-                    </a>
-                  </Button>
-                  <Button asChild variant="outline" className="retro-button bg-transparent">
-                    <Link href="/summaries">تصفح المزيد من الملخصات</Link>
-                  </Button>
+              <div className="p-6">
+                {/* Download Status Message */}
+                {getDownloadStatusMessage()}
+
+                <div className="text-center">
+                  <PixelIcon 
+                    type="download" 
+                    className={`w-12 h-12 mx-auto mb-4 ${isDownloading ? "animate-bounce" : ""}`}
+                  />
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--ink)" }}>
+                    {downloadStatus.isLoggedIn ? "جاهز للتحميل" : "يتطلب تسجيل الدخول"}
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    {downloadStatus.isLoggedIn 
+                      ? "اضغط على الزر أدناه لتحميل الملخص"
+                      : "سجل الدخول أولاً لتتمكن من تحميل الملخص"
+                    }
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    {downloadStatus.isLoggedIn ? (
+                      <Button 
+                        asChild={!isDownloadDisabled}
+                        className="retro-button" 
+                        style={{ 
+                          background: isDownloadDisabled ? "var(--gray-400)" : "var(--primary)", 
+                          color: "white",
+                          opacity: isDownloadDisabled ? 0.5 : 1,
+                          cursor: isDownloadDisabled ? "not-allowed" : "pointer"
+                        }}
+                        disabled={isDownloadDisabled}
+                      >
+                        {isDownloadDisabled ? (
+                          <span>
+                            <PixelIcon type="download" className="w-4 h-4 ml-2" />
+                            {getDownloadButtonText()}
+                          </span>
+                        ) : (
+                          <a 
+                            href={summary.file_url} 
+                            onClick={handleDownload}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                          >
+                            <PixelIcon type="download" className="w-4 h-4 ml-2" />
+                            {getDownloadButtonText()}
+                          </a>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button 
+                        asChild
+                        className="retro-button" 
+                        style={{ background: "var(--primary)", color: "white" }}
+                      >
+                        <Link href="/login">
+                          <PixelIcon type="user" className="w-4 h-4 ml-2" />
+                          تسجيل الدخول
+                        </Link>
+                      </Button>
+                    )}
+                    <Button asChild variant="outline" className="retro-button bg-transparent">
+                      <Link href="/summaries">تصفح المزيد من الملخصات</Link>
+                    </Button>
+                  </div>
+
+                  {/* Upgrade prompt for free users who hit the limit */}
+                  {downloadStatus.subscriptionTier === "free" && !downloadStatus.canDownload && (
+                    <div className="mt-6 pt-6 border-t-2 border-orange-200">
+                      <p className="text-sm text-gray-700 mb-3">
+                        هل تريد المزيد من التحميلات؟
+                      </p>
+                      <Button 
+                        asChild
+                        className="retro-button"
+                        style={{ background: "var(--accent)", color: "white" }}
+                      >
+                        <Link href="/pricing">
+                          ترقية الاشتراك
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
