@@ -14,6 +14,13 @@ export function RetroSidebar() {
   const { user, profile, loading, error, signOut , isAdmin , isLoggedIn } = useAuth()
   const { tier } = useTier()
 
+    useEffect(() => {
+
+  getQuickActions()
+  getContextualContent()
+  getNotifications()
+  }, [])
+
   const getQuickActions = () => {
     if (!profile) {
       return [
@@ -204,21 +211,6 @@ export function RetroSidebar() {
             </div>
           )}
 
-          {isLoggedIn && profile?.stats && (
-            <div className="mt-4 pt-4 border-t border-gray-600">
-              <div className="text-xs text-gray-300 mb-2 font-semibold">إحصائياتي</div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-gray-800/90 rounded p-2 text-center border border-gray-600">
-                  <div className="text-white font-semibold">{profile?.stats?.coursesEnrolled || 0}</div>
-                  <div className="text-gray-300">المقررات</div>
-                </div>
-                <div className="bg-gray-800/90 rounded p-2 text-center border border-gray-600">
-                  <div className="text-white font-semibold">{profile?.stats?.booksOwned || 0}</div>
-                  <div className="text-gray-300">الكتب</div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
