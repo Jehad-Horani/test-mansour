@@ -19,7 +19,8 @@ import {
   Eye,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Download
 } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
@@ -41,6 +42,13 @@ interface Lecture {
   created_at: string
 }
 
+interface DownloadStatus {
+  canDownload: boolean
+  subscriptionTier: string | null
+  downloadsThisMonth: number
+  maxDownloads: number
+}
+
 export default function NotebooksPage() {
   const { user, isLoggedIn } = useAuth()
   const router = useRouter()
@@ -50,6 +58,13 @@ export default function NotebooksPage() {
   const [uploading, setUploading] = useState(false)
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [approvedSearch, setApprovedSearch] = useState("")
+  const [downloadStatus, setDownloadStatus] = useState<DownloadStatus>({
+    canDownload: false,
+    subscriptionTier: null,
+    downloadsThisMonth: 0,
+    maxDownloads: 2,
+  })
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
   const supabase = createClient()
 
@@ -69,7 +84,97 @@ export default function NotebooksPage() {
   useEffect(() => {
     fetchLectures()
     fetchApprovedLectures()
+    checkDownloadLimit()
   }, [isLoggedIn, router])
+
+  const checkDownloadLimit = async (): Promise<DownloadStatus> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        return { 
+          canDownload: false, 
+          subscriptionTier: null, 
+          downloadsThisMonth: 0,
+          maxDownloads: 2 
+        }
+      }
+
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("subscription_tier")
+        .eq("id", user.id)
+        .single()
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError)
+        return { 
+          canDownload: false, 
+          subscriptionTier: null, 
+          downloadsThisMonth: 0,
+          maxDownloads: 2 
+        }
+      }
+
+      const tier = profile?.subscription_tier || "free"
+
+      // Premium users have unlimited downloads
+      if (tier !== "free") {
+        const status = { 
+          canDownload: true, 
+          subscriptionTier: tier, 
+          downloadsThisMonth: 0,
+          maxDownloads: 999 // Unlimited for premium
+        }
+        setDownloadStatus(status)
+        return status
+      }
+
+      // For free users, check monthly download count (MAX 2 per month)
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+
+      const { data: downloads, error: downloadsError } = await supabase
+        .from("lecturedownloads")
+        .select("id")
+        .eq("user_id", user.id)
+        .gte("created_at", startOfMonth.toISOString())
+
+      if (downloadsError) {
+        console.error("Error fetching downloads:", downloadsError)
+        return { 
+          canDownload: false, 
+          subscriptionTier: tier, 
+          downloadsThisMonth: 0,
+          maxDownloads: 2 
+        }
+      }
+
+      const downloadCount = downloads?.length || 0
+      const canDownload = downloadCount < 2
+
+      const status = { 
+        canDownload, 
+        subscriptionTier: tier, 
+        downloadsThisMonth: downloadCount,
+        maxDownloads: 2 
+      }
+      setDownloadStatus(status)
+      return status
+    } catch (error) {
+      console.error("Error checking download limit:", error)
+      const status = { 
+        canDownload: false, 
+        subscriptionTier: null, 
+        downloadsThisMonth: 0,
+        maxDownloads: 2 
+      }
+      setDownloadStatus(status)
+      return status
+    }
+  }
 
   const fetchLectures = async () => {
     try {
@@ -101,6 +206,79 @@ export default function NotebooksPage() {
       setApprovedLectures(data || [])
     } catch (error) {
       console.error("Error fetching approved lectures:", error)
+    }
+  }
+
+  const handleLectureDownload = async (lecture: Lecture) => {
+    // Prevent multiple simultaneous downloads
+    if (downloadingId) {
+      return
+    }
+
+    try {
+      setDownloadingId(lecture.id)
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        toast.error("يجب تسجيل الدخول لعرض المحاضرة")
+        return
+      }
+
+      // Re-check download limit right before downloading
+      const currentStatus = await checkDownloadLimit()
+
+      if (!currentStatus.canDownload) {
+        if (currentStatus.subscriptionTier === "free") {
+          toast.error(
+            `لقد وصلت لحد العرض لهذا الشهر (${currentStatus.downloadsThisMonth}/${currentStatus.maxDownloads}). ` +
+            "يمكنك الترقية للاشتراك المميز للحصول على عرض غير محدود."
+          )
+        } else {
+          toast.error("حدث خطأ في التحقق من حالة الاشتراك. يرجى المحاولة مرة أخرى.")
+        }
+        return
+      }
+
+      // Record the download FIRST (before opening file)
+      const { error: insertError } = await supabase
+        .from("lecturedownloads")
+        .insert({
+          user_id: user.id,
+          lecture_id: lecture.id,
+          created_at: new Date().toISOString(),
+        })
+
+      if (insertError) {
+        console.error("Error recording download:", insertError)
+        toast.error("حدث خطأ أثناء تسجيل العرض. يرجى المحاولة مرة أخرى.")
+        return
+      }
+
+      // Open the file URL
+      window.open(lecture.file_url, "_blank")
+
+      // Update download status after successful download
+      await checkDownloadLimit()
+
+      // Show success message for free users
+      if (currentStatus.subscriptionTier === "free") {
+        const remaining = currentStatus.maxDownloads - currentStatus.downloadsThisMonth - 1
+        if (remaining > 0) {
+          toast.success(`تم عرض المحاضرة بنجاح! يتبقى لك ${remaining} عرض هذا الشهر.`)
+        } else {
+          toast.warning("تم عرض المحاضرة بنجاح! لقد استخدمت جميع مرات العرض المجانية لهذا الشهر.")
+        }
+      } else {
+        toast.success("تم عرض المحاضرة بنجاح!")
+      }
+
+    } catch (error) {
+      console.error("Error during download:", error)
+      toast.error("حدث خطأ أثناء عرض المحاضرة. يرجى المحاولة مرة أخرى.")
+    } finally {
+      setDownloadingId(null)
     }
   }
 
@@ -202,8 +380,9 @@ export default function NotebooksPage() {
     )
   })
 
-
   if (!isLoggedIn) return null
+
+  const isDownloadDisabled = !downloadStatus.canDownload
 
   return (
     <div className="min-h-screen bg-retro-bg p-4">
@@ -213,7 +392,23 @@ export default function NotebooksPage() {
           <RetroWindow title="دفتر المحاضرات">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h1 className="text-xl font-bold text-black">دفتر المحاضرات اليومية</h1>
+                <div>
+                  <h1 className="text-xl font-bold text-black">دفتر المحاضرات اليومية</h1>
+                  {/* Download Status Indicator */}
+                  {downloadStatus.subscriptionTier === "free" && (
+                    <p className="text-sm mt-2">
+                      {downloadStatus.canDownload ? (
+                        <span className="text-green-600">
+                          ✓ يمكنك عرض {downloadStatus.maxDownloads - downloadStatus.downloadsThisMonth} محاضرة هذا الشهر
+                        </span>
+                      ) : (
+                        <span className="text-orange-600">
+                          ⚠️ لقد استخدمت جميع مرات العرض المجانية ({downloadStatus.downloadsThisMonth}/{downloadStatus.maxDownloads})
+                        </span>
+                      )}
+                    </p>
+                  )}
+                </div>
                 <Button
                   onClick={() => setShowUploadForm(!showUploadForm)}
                   className="retro-button bg-green-500 text-white hover:bg-green-600"
@@ -432,14 +627,33 @@ export default function NotebooksPage() {
           {/* Approved Lectures */}
           <RetroWindow title="المحاضرات المقبولة">
             <div className="p-4">
+              {/* Download Limit Warning for Free Users */}
+              {downloadStatus.subscriptionTier === "free" && !downloadStatus.canDownload && (
+                <div className="mb-4 p-4 bg-orange-50 border-2 border-orange-400 text-center">
+                  <p className="text-orange-800 mb-2">
+                    ⚠️ لقد استخدمت جميع مرات العرض المجانية لهذا الشهر ({downloadStatus.downloadsThisMonth}/{downloadStatus.maxDownloads})
+                  </p>
+                  <p className="text-sm text-orange-700 mb-3">
+                    قم بالترقية للاشتراك المميز للحصول على عرض غير محدود
+                  </p>
+                  <Button
+                    asChild
+                    size="sm"
+                    className="retro-button bg-orange-500 text-white hover:bg-orange-600"
+                  >
+                    <Link href="/pricing">ترقية الاشتراك</Link>
+                  </Button>
+                </div>
+              )}
+
               {/* Search Input */}
-              <div className="flex gap-2">
-                <label className="font-bold text-lg mb-1">ابحث عن اسم المادة\التخصص او اسم المحاضرة :</label>
+              <div className="mb-4">
+                <label className="font-bold text-lg mb-2 block">ابحث عن اسم المادة\التخصص او اسم المحاضرة :</label>
                 <Input
                   placeholder="ابحث عن محاضرة..."
                   value={approvedSearch}
                   onChange={(e) => setApprovedSearch(e.target.value)}
-                  className="retro-button"
+                  className="retro-input"
                 />
               </div>
 
@@ -450,28 +664,54 @@ export default function NotebooksPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filteredApprovedLectures.slice(0, 10).map((lecture) => (
-                    <div
-                      key={lecture.id}
-                      className="p-4 retro-window bg-white shadow-md"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="font-bold text-lg">{lecture.title}</h3>
-                          <p className="text-sm text-gray-600">
-                            {lecture.subject_name} - {lecture.university_name}
-                          </p>
-                          <p className="text-sm text-gray-500">{lecture.major}</p>
+                  {filteredApprovedLectures.slice(0, 10).map((lecture) => {
+                    const isDownloading = downloadingId === lecture.id
+                    const isButtonDisabled = isDownloadDisabled || isDownloading
+
+                    return (
+                      <div
+                        key={lecture.id}
+                        className="p-4 retro-window bg-white shadow-md"
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg">{lecture.title}</h3>
+                            <p className="text-sm text-gray-600">
+                              {lecture.subject_name} - {lecture.university_name}
+                            </p>
+                            <p className="text-sm text-gray-500">{lecture.major}</p>
+                            {lecture.description && (
+                              <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                {lecture.description}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            onClick={() => handleLectureDownload(lecture)}
+                            disabled={isButtonDisabled}
+                            className="retro-button text-white hover:bg-green-700 mr-4"
+                            style={{
+                              background: isButtonDisabled ? "var(--gray-400)" : "var(--green-600)",
+                              opacity: isButtonDisabled ? 0.5 : 1,
+                              cursor: isButtonDisabled ? "not-allowed" : "pointer"
+                            }}
+                            title={
+                              !downloadStatus.canDownload
+                                ? "لقد وصلت لحد العرض لهذا الشهر"
+                                : isDownloading
+                                ? "جاري فتح الملف..."
+                                : "عرض ملف المحاضرة"
+                            }
+                          >
+                            <FileText 
+                              className={`w-4 h-4 mr-1 ${isDownloading ? "animate-bounce" : ""}`} 
+                            />
+                            {isDownloading ? "جاري الفتح..." : "عرض الملف"}
+                          </Button>
                         </div>
-                        <Button className="retro-button bg-green-600 text-white hover:bg-green-700">
-                          <Link href={`${lecture.file_url}`} target="_blank" rel="noopener noreferrer">
-                            <FileText className="w-3 h-3 mr-1" />
-                            عرض ملف المحاضرة
-                          </Link>
-                        </Button>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
