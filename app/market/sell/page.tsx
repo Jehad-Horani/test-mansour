@@ -1,20 +1,35 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { RetroWindow } from "@/app/components/retro-window"
 import Link from "next/link"
-import { Save, ArrowRight, Upload } from "lucide-react"
+import { Save, ArrowRight, Upload, AlertCircle } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { marketplaceApi } from "@/lib/supabase/marketplace"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+
+interface UploadStatus {
+  canUpload: boolean
+  subscriptionTier: string | null
+  uploadsThisMonth: number
+  maxUploads: number
+}
 
 export default function SellBookPage() {
   const { user, isLoggedIn, profile } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [checkingLimit, setCheckingLimit] = useState(true)
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>({
+    canUpload: false,
+    subscriptionTier: null,
+    uploadsThisMonth: 0,
+    maxUploads: 1,
+  })
   
   const [form, setForm] = useState({
     title: "",
@@ -37,6 +52,107 @@ export default function SellBookPage() {
   
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
+
+  const supabase = createClient()
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      checkUploadLimit()
+    }
+  }, [isLoggedIn])
+
+  const checkUploadLimit = async (): Promise<UploadStatus> => {
+    try {
+      setCheckingLimit(true)
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      
+      if (!currentUser) {
+        router.push("/login")
+        return { 
+          canUpload: false, 
+          subscriptionTier: null, 
+          uploadsThisMonth: 0,
+          maxUploads: 1 
+        }
+      }
+
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("subscription_tier")
+        .eq("id", currentUser.id)
+        .single()
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError)
+        return { 
+          canUpload: false, 
+          subscriptionTier: null, 
+          uploadsThisMonth: 0,
+          maxUploads: 1 
+        }
+      }
+
+      const tier = profile?.subscription_tier || "free"
+
+      // Premium users have unlimited uploads
+      if (tier !== "free") {
+        const status = { 
+          canUpload: true, 
+          subscriptionTier: tier, 
+          uploadsThisMonth: 0,
+          maxUploads: 999 // Unlimited for premium
+        }
+        setUploadStatus(status)
+        return status
+      }
+
+      // For free users, check monthly upload count (MAX 1 per month)
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+
+      const { data: uploads, error: uploadsError } = await supabase
+        .from("booksUpload")
+        .select("id")
+        .eq("user_id", currentUser.id)
+        .gte("created_at", startOfMonth.toISOString())
+
+      if (uploadsError) {
+        console.error("Error fetching uploads:", uploadsError)
+        return { 
+          canUpload: false, 
+          subscriptionTier: tier, 
+          uploadsThisMonth: 0,
+          maxUploads: 1 
+        }
+      }
+
+      const uploadCount = uploads?.length || 0
+      const canUpload = uploadCount < 1
+
+      const status = { 
+        canUpload, 
+        subscriptionTier: tier, 
+        uploadsThisMonth: uploadCount,
+        maxUploads: 1 
+      }
+      setUploadStatus(status)
+      return status
+    } catch (error) {
+      console.error("Error checking upload limit:", error)
+      const status = { 
+        canUpload: false, 
+        subscriptionTier: null, 
+        uploadsThisMonth: 0,
+        maxUploads: 1 
+      }
+      setUploadStatus(status)
+      return status
+    } finally {
+      setCheckingLimit(false)
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -95,6 +211,22 @@ export default function SellBookPage() {
       return
     }
 
+    // Re-check upload limit before submitting
+    const currentStatus = await checkUploadLimit()
+    
+    if (!currentStatus.canUpload) {
+      if (currentStatus.subscriptionTier === "free") {
+        toast.error(
+          `لقد وصلت لحد رفع الكتب لهذا الشهر (${currentStatus.uploadsThisMonth}/${currentStatus.maxUploads}). ` +
+          "يمكنك الترقية للاشتراك المميز لرفع عدد غير محدود من الكتب.",
+          { duration: 5000 }
+        )
+      } else {
+        toast.error("حدث خطأ في التحقق من حالة الاشتراك. يرجى المحاولة مرة أخرى.")
+      }
+      return
+    }
+
     // Validation
     if (!form.title || !form.author || !form.subject_name || !form.selling_price) {
       toast.error("يرجى ملء الحقول المطلوبة")
@@ -127,7 +259,35 @@ export default function SellBookPage() {
       // Upload images
       const uploadedImages = await uploadBookImages(book.id)
       
-      toast.success(`تم إرسال الكتاب للمراجعة! سيظهر في السوق بعد موافقة الإدارة. تم رفع ${uploadedImages.length} صورة.`)
+      // CRITICAL: Record the upload in booksUpload table for tracking
+      const { error: uploadTrackError } = await supabase
+        .from("booksUpload")
+        .insert({
+          user_id: user.id,
+          book_id: book.id,
+          created_at: new Date().toISOString(),
+        })
+
+      if (uploadTrackError) {
+        console.error("Error tracking book upload:", uploadTrackError)
+        // Don't fail the whole operation, just log it
+        toast.warning("تم إنشاء الكتاب لكن حدث خطأ في تسجيل العملية")
+      }
+
+      // Show success message
+      if (currentStatus.subscriptionTier === "free") {
+        toast.success(
+          `تم إرسال الكتاب للمراجعة! سيظهر في السوق بعد موافقة الإدارة. تم رفع ${uploadedImages.length} صورة. ` +
+          "لقد استخدمت حد رفع الكتب المجاني لهذا الشهر.",
+          { duration: 5000 }
+        )
+      } else {
+        toast.success(
+          `تم إرسال الكتاب للمراجعة! سيظهر في السوق بعد موافقة الإدارة. تم رفع ${uploadedImages.length} صورة.`
+        )
+      }
+
+      // Redirect to market page
       router.push("/market")
       
     } catch (error: any) {
@@ -154,6 +314,82 @@ export default function SellBookPage() {
     )
   }
 
+  // Show loading state while checking limit
+  if (checkingLimit) {
+    return (
+      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
+        <div className="max-w-4xl mx-auto">
+          <RetroWindow title="بيع كتاب جديد">
+            <div className="p-6 text-center">
+              <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">جاري التحقق من الصلاحيات...</p>
+            </div>
+          </RetroWindow>
+        </div>
+      </div>
+    )
+  }
+
+  // Show limit reached message
+  if (!uploadStatus.canUpload && uploadStatus.subscriptionTier === "free") {
+    return (
+      <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <Button asChild variant="outline" className="retro-button bg-transparent mb-4">
+              <Link href="/market">
+                <ArrowRight className="w-4 h-4 ml-1" />
+                العودة للسوق
+              </Link>
+            </Button>
+          </div>
+
+          <RetroWindow title="بيع كتاب جديد">
+            <div className="p-6">
+              <div className="bg-orange-50 border-2 border-orange-400 p-6 text-center">
+                <AlertCircle className="w-16 h-16 mx-auto mb-4 text-orange-600" />
+                <h3 className="text-xl font-bold text-orange-800 mb-3">
+                  وصلت لحد رفع الكتب المجاني
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  لقد قمت برفع {uploadStatus.uploadsThisMonth} كتاب هذا الشهر (الحد الأقصى: {uploadStatus.maxUploads} كتاب).
+                </p>
+                <p className="text-gray-700 mb-6">
+                  يمكنك الترقية للاشتراك المميز للحصول على:
+                </p>
+                <ul className="text-right mb-6 inline-block">
+                  <li className="text-gray-700 mb-2">✓ رفع عدد غير محدود من الكتب</li>
+                  <li className="text-gray-700 mb-2">✓ تحميلات غير محدودة للملخصات والمحاضرات</li>
+                  <li className="text-gray-700 mb-2">✓ أولوية في الموافقة على الكتب</li>
+                  <li className="text-gray-700 mb-2">✓ دعم فني مخصص</li>
+                </ul>
+                <div className="flex gap-3 justify-center">
+                  <Button
+                    asChild
+                    className="retro-button"
+                    style={{ background: "var(--accent)", color: "white" }}
+                  >
+                    <Link href="/pricing">
+                      <Upload className="w-4 h-4 ml-1" />
+                      ترقية الاشتراك
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="retro-button bg-transparent"
+                  >
+                    <Link href="/market">العودة للسوق</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </RetroWindow>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
       <div className="max-w-4xl mx-auto">
@@ -169,6 +405,24 @@ export default function SellBookPage() {
 
         <RetroWindow title="بيع كتاب جديد">
           <div className="p-6">
+            {/* Upload Status Info for Free Users */}
+            {uploadStatus.subscriptionTier === "free" && uploadStatus.canUpload && (
+              <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-400">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-semibold text-blue-800 mb-1">
+                      معلومة هامة
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                      يمكنك رفع {uploadStatus.maxUploads - uploadStatus.uploadsThisMonth} كتاب هذا الشهر. 
+                      بعد رفع هذا الكتاب، ستحتاج للترقية للاشتراك المميز لرفع المزيد من الكتب.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form className="space-y-6" onSubmit={handleSubmit}>
               {/* Book Information */}
               <div>
@@ -435,7 +689,7 @@ export default function SellBookPage() {
                   type="submit"
                   className="retro-button"
                   style={{ background: "var(--primary)", color: "white" }}
-                  disabled={loading}
+                  disabled={loading || !uploadStatus.canUpload}
                 >
                   <Save className="w-4 h-4 ml-1" />
                   {loading ? "جاري النشر..." : "نشر الكتاب"}
