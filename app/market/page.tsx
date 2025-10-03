@@ -159,7 +159,7 @@ export default function MarketPage() {
   const handleSellClick = async () => {
     if (!isLoggedIn) {
       toast.error("يجب تسجيل الدخول لبيع كتاب")
-      router.push("/login")
+      router.push("/auth/login")
       return
     }
 
@@ -320,7 +320,7 @@ export default function MarketPage() {
                   className="retro-button" 
                   style={{ background: "var(--accent)", color: "white" }}
                 >
-                  <Link href="/login">
+                  <Link href="/auth/login">
                     <Plus className="w-4 h-4 ml-2" />
                     بيع كتابك
                   </Link>

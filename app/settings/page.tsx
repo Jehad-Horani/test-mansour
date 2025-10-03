@@ -193,7 +193,7 @@ export default function SettingsPage() {
           <div className="p-6 text-center">
             <p className="text-gray-600 mb-4">يجب تسجيل الدخول لعرض الإعدادات</p>
             <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
-              <Link href="/auth">تسجيل الدخول</Link>
+              <Link href="/auth/login">تسجيل الدخول</Link>
             </Button>
           </div>
         </RetroWindow>

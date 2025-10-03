@@ -146,7 +146,7 @@ export default function CartPage() {
               <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-gray-400" />
               <p className="text-gray-600 mb-4">يجب تسجيل الدخول لعرض سلة التسوق</p>
               <Button asChild className="retro-button" style={{ background: "var(--primary)", color: "white" }}>
-                <Link href="/auth">تسجيل الدخول</Link>
+                <Link href="/auth/login">تسجيل الدخول</Link>
               </Button>
             </div>
           </RetroWindow>

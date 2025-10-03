@@ -185,7 +185,7 @@ export default function SummaryDetailPage() {
     // Check if user is logged in
     if (!downloadStatus.isLoggedIn) {
       alert("يجب تسجيل الدخول لتحميل الملخص.")
-      router.push("/login")
+      router.push("/auth/login")
       return
     }
 
@@ -201,7 +201,7 @@ export default function SummaryDetailPage() {
       
       if (!user) {
         alert("يجب تسجيل الدخول لتحميل الملخص.")
-        router.push("/login")
+        router.push("/auth/login")
         return
       }
 
@@ -546,7 +546,7 @@ export default function SummaryDetailPage() {
                         className="retro-button" 
                         style={{ background: "var(--primary)", color: "white" }}
                       >
-                        <Link href="/login">
+                        <Link href="/auth/login">
                           <PixelIcon type="user" className="w-4 h-4 ml-2" />
                           تسجيل الدخول
                         </Link>
