@@ -22,9 +22,7 @@ import {
   TrendingUp,
 } from "lucide-react"
 
-const getMajorLabelSafe = (major: string | null | undefined) => {
 
-}
 
 const getTierLabelSafe = (tier: string | null | undefined) => {
   switch (tier) {

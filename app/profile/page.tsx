@@ -9,7 +9,7 @@ import { Edit, Settings, BookOpen, Users, Award, Calendar } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 
 export default function ProfilePage() {
-  const { user, isLoggedIn, getTierLabel, getMajorLabel, profile } = useAuth()
+  const { user, isLoggedIn, getTierLabel, profile } = useAuth()
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState(profile?.avatar_url || "")
 
   if (!isLoggedIn) {
@@ -40,8 +40,8 @@ export default function ProfilePage() {
   }
 
   const recentActivity = [
-    { type: "book", title: `اشترى كتاب: أساسيات ${getMajorLabel(profile?.major)}`, date: "منذ يومين" },
-    { type: "course", title: `انضم لمقرر: ${getMajorLabel(profile?.major)} المتقدم`, date: "منذ أسبوعين" },
+    { type: "book", title: `اشترى كتاب: أساسيات ${(profile?.major)}`, date: "منذ يومين" },
+    { type: "course", title: `انضم لمقرر: ${(profile?.major)} المتقدم`, date: "منذ أسبوعين" },
   ]
 
   return (
@@ -64,7 +64,7 @@ export default function ProfilePage() {
                     </h2>
                     <p className="text-gray-600 mb-1">{user?.email}</p>
                     <p className="text-gray-600 mb-1">{profile?.university || "غير محدد"}</p>
-                    <p className="text-gray-600 mb-4">تخصص: {getMajorLabel(profile?.major)}</p>
+                    <p className="text-gray-600 mb-4">تخصص: {(profile?.major)}</p>
                   </div>
 
                   <div>

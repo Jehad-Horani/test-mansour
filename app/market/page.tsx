@@ -245,15 +245,6 @@ export default function MarketPage() {
     { value: "popular", label: "الأكثر شعبية" },
   ]
 
-  const getMajorLabel = (major: string) => {
-    const labels: Record<string, string> = {
-      law: "القانون",
-      it: "تقنية المعلومات",
-      medical: "الطب",
-      business: "إدارة الأعمال"
-    }
-    return labels[major] || major
-  }
 
   const getConditionLabel = (condition: string) => {
     const labels: Record<string, string> = {
@@ -460,7 +451,7 @@ export default function MarketPage() {
 
                       <div className="space-y-2">
                         <Badge variant="outline" className="text-xs">
-                          {getMajorLabel(book.major)}
+                          {(book.major)}
                         </Badge>
                         <h3 className="font-bold text-sm line-clamp-2" title={book.title}>
                           {book.title}

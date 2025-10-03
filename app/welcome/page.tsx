@@ -9,7 +9,7 @@ import { Sparkles, ArrowLeft, CheckCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function WelcomePage() {
-  const { user, isLoggedIn, getMajorLabel ,profile } = useAuth()
+  const { user, isLoggedIn ,profile } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function WelcomePage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <CheckCircle className="w-5 h-5" style={{ color: "var(--accent)" }} />
-                  <span>التخصص: {getMajorLabel(profile?.major)}</span>
+                  <span>التخصص: {(profile?.major)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <CheckCircle className="w-5 h-5" style={{ color: "var(--accent)" }} />
