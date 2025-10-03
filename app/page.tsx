@@ -259,15 +259,6 @@ useEffect(() => {
                 منصة شاملة للطلاب الجامعيين في الأردن لتبادل الكتب والمعرفة والحصول على الاستشارات الأكاديمية
               </p>
               <div className="flex gap-2">
-                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
-                  <span className="text-xs">📧</span>
-                </div>
-                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
-                  <span className="text-xs">📱</span>
-                </div>
-                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
-                  <span className="text-xs">🌐</span>
-                </div>
               </div>
             </div>
 
@@ -336,10 +327,6 @@ useEffect(() => {
                   <span>📧</span>
                   <span className="text-white/90">info@takhassus.com</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span>📍</span>
-                  <span className="text-white/90">عمان، الأردن</span>
-                </div>
               </div>
             </div>
           </div>
@@ -348,15 +335,12 @@ useEffect(() => {
           <div className="border-t border-white/20 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center text-sm">
             <div className="text-white/90 mb-4 md:mb-0">© 2024 تخصص.كُم. جميع الحقوق محفوظة.</div>
             <div className="flex gap-4">
-              <Link href="/terms" className="hover:underline text-white/90 hover:text-white">
+              {/* <Link href="/terms" className="hover:underline text-white/90 hover:text-white">
                 شروط الاستخدام
               </Link>
               <Link href="/privacy" className="hover:underline text-white/90 hover:text-white">
                 سياسة الخصوصية
-              </Link>
-              <Link href="/help" className="hover:underline text-white/90 hover:text-white">
-                المساعدة
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>

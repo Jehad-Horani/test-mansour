@@ -7,7 +7,7 @@ export interface User {
   id: string
   name: string
   email: string
-  major: "law" | "it" | "medical" | "business"
+  major: string
   university: string
   year: string
   role: "student" | "admin"

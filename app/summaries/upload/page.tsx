@@ -21,16 +21,94 @@ const colleges = [
   "كلية الهندسة",
   "كلية الطب",
   "كلية الصيدلة",
+  "كلية التمريض",
+  "كلية العلوم",
+  "كلية الآداب",
+  "كلية الإعلام",
+  "كلية التربية",
+  "كلية الفنون والتصميم",
+  "كلية السياحة والفندقة",
+  "كلية الزراعة"
 ]
 
 const majorsByCollege: Record<string, string[]> = {
   "كلية الحقوق": ["القانون", "الشريعة", "العلوم السياسية"],
-  "كلية تكنولوجيا المعلومات": ["علوم الحاسوب", "هندسة البرمجيات", "أمن المعلومات", "الشبكات"],
-  "كلية إدارة الأعمال": ["إدارة الأعمال", "المحاسبة", "التسويق", "الاقتصاد"],
-  "كلية الهندسة": ["الهندسة المدنية", "الهندسة الكهربائية", "الهندسة الميكانيكية"],
-  "كلية الطب": ["الطب العام", "طب الأسنان"],
-  "كلية الصيدلة": ["الصيدلة", "العلوم الطبية"],
+  "كلية تكنولوجيا المعلومات": [
+    "علوم الحاسوب",
+    "هندسة البرمجيات",
+    "أمن المعلومات",
+    "الشبكات",
+    "الذكاء الاصطناعي",
+    "علوم البيانات"
+  ],
+  "كلية إدارة الأعمال": [
+    "إدارة الأعمال",
+    "المحاسبة",
+    "التسويق",
+    "الاقتصاد",
+    "المالية والمصارف",
+    "إدارة الموارد البشرية",
+    "نظم المعلومات الإدارية",
+    "إدارة اللوجستيات وسلاسل التوريد"
+  ],
+  "كلية الهندسة": [
+    "الهندسة المدنية",
+    "الهندسة الكهربائية",
+    "الهندسة الميكانيكية",
+    "الهندسة المعمارية",
+    "هندسة الحاسوب",
+    "الهندسة الصناعية",
+    "هندسة الطاقة",
+    "الهندسة الكيميائية",
+    "هندسة الميكاترونكس"
+  ],
+  "كلية الطب": ["الطب العام", "طب الأسنان", "الطب البيطري"],
+  "كلية الصيدلة": ["الصيدلة", "العلوم الطبية", "التكنولوجيا الحيوية"],
+  "كلية التمريض": ["التمريض", "الإسعاف والطوارئ"],
+  "كلية العلوم": [
+    "الرياضيات",
+    "الكيمياء",
+    "الفيزياء",
+    "الأحياء",
+    "الجيولوجيا",
+    "العلوم البيئية"
+  ],
+  "كلية الآداب": [
+    "اللغة العربية وآدابها",
+    "اللغة الإنجليزية وآدابها",
+    "اللغة الفرنسية",
+    "اللغة الألمانية",
+    "التاريخ",
+    "الجغرافيا",
+    "الفلسفة",
+    "علم النفس",
+    "الآثار"
+  ],
+  "كلية الإعلام": ["الصحافة", "العلاقات العامة", "الإذاعة والتلفزيون", "الإعلام الرقمي"],
+  "كلية التربية": [
+    "التربية الخاصة",
+    "معلم صف",
+    "الإرشاد التربوي",
+    "التربية البدنية",
+    "التربية الفنية"
+  ],
+  "كلية الفنون والتصميم": [
+    "التصميم الجرافيكي",
+    "الفنون البصرية",
+    "الموسيقى",
+    "المسرح",
+    "التصميم الداخلي"
+  ],
+  "كلية السياحة والفندقة": ["إدارة السياحة", "إدارة الفنادق", "الإرشاد السياحي"],
+  "كلية الزراعة": [
+    "المحاصيل والإنتاج",
+    "الإنتاج الحيواني",
+    "الاقتصاد الزراعي",
+    "وقاية النبات",
+    "المياه والبيئة الزراعية"
+  ]
 }
+
 
 const semesters = [
   "الفصل الأول 2024/2025",
@@ -57,7 +135,7 @@ export default function UploadSummaryPage() {
 
   const router = useRouter()
   const { user, isLoggedIn } = useUserContext()
-const { data, loading1, error1 } = useSupabaseClient()
+  const { data, loading1, error1 } = useSupabaseClient()
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -108,55 +186,55 @@ const { data, loading1, error1 } = useSupabaseClient()
     }
   }
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-  if (!user) {
-    setError("يجب تسجيل الدخول أولاً")
-    return
+    if (!user) {
+      setError("يجب تسجيل الدخول أولاً")
+      return
+    }
+
+    const requiredFields = ["title", "subject_name", "university_name", "semester", "college", "major"]
+    const missingFields = requiredFields.filter((field) => !formData[field as keyof typeof formData])
+
+    if (missingFields.length > 0) {
+      setError("يرجى ملء جميع الحقول المطلوبة")
+      return
+    }
+
+    if (!file) {
+      setError("يرجى اختيار ملف للرفع")
+      return
+    }
+
+    setLoading(true)
+    setError("")
+
+    try {
+      const form = new FormData()
+      form.append("file", file)
+      Object.entries(formData).forEach(([key, value]) => form.append(key, value as string))
+      form.append("user_id", user.id)
+
+      const res = await fetch("/api/summaries/upload", {
+        method: "POST",
+        body: form,
+      })
+
+      if (!res.ok) throw new Error("فشل رفع الملخص")
+
+      setSuccess(true)
+
+      setTimeout(() => {
+        router.push("/summaries")
+      }, 2000)
+    } catch (err: any) {
+      console.error("Error uploading summary:", err)
+      setError("حدث خطأ أثناء رفع الملخص. يرجى المحاولة مرة أخرى")
+    } finally {
+      setLoading(false)
+    }
   }
-
-  const requiredFields = ["title", "subject_name", "university_name", "semester", "college", "major"]
-  const missingFields = requiredFields.filter((field) => !formData[field as keyof typeof formData])
-
-  if (missingFields.length > 0) {
-    setError("يرجى ملء جميع الحقول المطلوبة")
-    return
-  }
-
-  if (!file) {
-    setError("يرجى اختيار ملف للرفع")
-    return
-  }
-
-  setLoading(true)
-  setError("")
-
-  try {
-    const form = new FormData()
-    form.append("file", file)
-    Object.entries(formData).forEach(([key, value]) => form.append(key, value as string))
-    form.append("user_id", user.id)
-
-    const res = await fetch("/api/summaries/upload", {
-      method: "POST",
-      body: form,
-    })
-
-    if (!res.ok) throw new Error("فشل رفع الملخص")
-
-    setSuccess(true)
-
-    setTimeout(() => {
-      router.push("/summaries")
-    }, 2000)
-  } catch (err: any) {
-    console.error("Error uploading summary:", err)
-    setError("حدث خطأ أثناء رفع الملخص. يرجى المحاولة مرة أخرى")
-  } finally {
-    setLoading(false)
-  }
-}
 
 
   if (!isLoggedIn) {

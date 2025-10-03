@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   name TEXT NOT NULL,
   phone TEXT,
   university TEXT,
-  major TEXT CHECK (major IN ('law', 'it', 'medical', 'business')),
+  major TEXT ,
   year TEXT,
   graduation_year TEXT,
   study_level TEXT DEFAULT 'بكالوريوس',

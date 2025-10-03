@@ -11,6 +11,45 @@ import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
+const universities = [
+  "جامعة العلوم التطبيقية الخاصة",
+  "الجامعة الأردنية",
+  "جامعة عمان الأهلية",
+  "جامعة اليرموك",
+  "جامعة مؤتة",
+  "جامعة العلوم والتكنولوجيا الأردنية",
+  "الجامعة الهاشمية",
+  "جامعة آل البيت",
+  "جامعة البلقاء التطبيقية",
+  "جامعة الحسين بن طلال",
+  "جامعة الطفيلة التقنية",
+  "الجامعة الألمانية الأردنية",
+  "جامعة فيلادلفيا",
+  "جامعة الإسراء",
+  "جامعة البترا",
+  "جامعة الزيتونة الأردنية",
+  "جامعة جرش",
+  "جامعة إربد الأهلية",
+  "جامعة الزرقاء",
+  "جامعة الأميرة سمية للتكنولوجيا",
+  "جامعة عمان العربية",
+  "جامعة الشرق الأوسط",
+  "جامعة جدارا",
+  "الجامعة الأمريكية في مادبا",
+  "جامعة عجلون الوطنية",
+  "كلية الأونروا التربوية",
+  "كلية عمون الجامعية التطبيقية",
+  "الأكاديمية الأردنية للموسيقى",
+  "جامعة العقبة للتكنولوجيا",
+  "جامعة الحسين التقنية",
+  "الجامعة العربية المفتوحة",
+  "جامعة العلوم الإسلامية العالمية",
+  "الجامعة الأردنية / فرع العقبة",
+  "جامعة البلقاء التطبيقية / كلياتها",
+  "جامعة الحسين بن طلال / كلية العلوم الطبية التطبيقية",
+  "جامعة الطفيلة التقنية / كلية الهندسة"
+];
+
 export default function EditProfilePage() {
   const { user, profile } = useAuth()
   const router = useRouter()
@@ -183,30 +222,25 @@ export default function EditProfilePage() {
                       className="w-full p-2 retro-window"
                       style={{ background: "white", border: "2px inset #c0c0c0" }}
                     >
-                      <option value="">اختر الجامعة</option>
-                      <option value="جامعة الملك سعود">جامعة الملك سعود</option>
-                      <option value="جامعة الملك عبدالعزيز">جامعة الملك عبدالعزيز</option>
-                      <option value="جامعة الإمام محمد بن سعود">جامعة الإمام محمد بن سعود</option>
-                      <option value="جامعة الملك فهد للبترول والمعادن">جامعة الملك فهد للبترول والمعادن</option>
-                      <option value="الجامعة الأردنية">الجامعة الأردنية</option>
-                      <option value="جامعة العلوم والتكنولوجيا الأردنية">جامعة العلوم والتكنولوجيا الأردنية</option>
+                         <option value="">اختر الجامعة</option>
+                  {universities.map((uni) => (
+                    <option key={uni} value={uni}>
+                      {uni}
+                    </option>
+                  ))}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">التخصص</label>
-                    <select
+             
+                 <Input
                       name="major"
                       value={form.major}
                       onChange={handleChange}
                       className="w-full p-2 retro-window"
                       style={{ background: "white", border: "2px inset #c0c0c0" }}
-                    >
-                      <option value="">اختر التخصص</option>
-                      <option value="law">القانون</option>
-                      <option value="it">علوم الحاسب</option>
-                      <option value="medical">الطب</option>
-                      <option value="business">إدارة الأعمال</option>
-                    </select>
+                      required
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">المستوى الدراسي</label>

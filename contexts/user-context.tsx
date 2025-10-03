@@ -8,10 +8,10 @@ export interface User {
   id: string
   name: string
   email: string
-  major: "law" | "it" | "medical" | "business"
+  major: string
   university: string
   year: string
-  role: "student" | "admin"
+  role: "student" | "admin" | "ambassador"
   avatar?: string
   avatar_url?: string
   bio?: string
@@ -99,10 +99,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
             id: authUser.id,
             name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'مستخدم',
             email: authUser.email || '',
-            major: (authUser.user_metadata?.major as any) || 'law',
+            major: (authUser.user_metadata?.major as any) || '',
             university: Array.isArray(authUser.user_metadata?.university) 
               ? authUser.user_metadata.university[0] 
-              : authUser.user_metadata?.university || 'جامعة افتراضية',
+              : authUser.user_metadata?.university || 'جامعة ',
             year: authUser.user_metadata?.year || '1',
             role: (authUser.user_metadata?.role as any) || 'student',
             avatar_url: authUser.user_metadata?.avatar_url,
@@ -130,10 +130,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
         id: profile.id,
         name: profile.name,
         email: authUser?.email || '',
-        major: profile.major || 'law',
+        major: profile.major || '',
         university: Array.isArray(profile.university) 
           ? profile.university[0] 
-          : profile.university || 'جامعة افتراضية',
+          : profile.university || 'جامعة ',
         year: profile.year || '1',
         role: profile.role || 'student',
         avatar: profile.avatar_url,

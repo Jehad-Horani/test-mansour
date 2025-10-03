@@ -6,7 +6,7 @@ export interface RegisterData {
   password: string
   phone: string
   university: string
-  major: "law" | "it" | "medical" | "business"
+  major: string
   year: string
 }
 
@@ -22,7 +22,7 @@ export interface Profile {
   name: string
   phone?: string
   university?: string
-  major?: "law" | "it" | "medical" | "business"
+  major?: string
   year?: string
   graduation_year?: string
   study_level?: string

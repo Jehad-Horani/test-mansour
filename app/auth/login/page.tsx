@@ -191,70 +191,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-4 text-center">للاختبار فقط:</p>
-              <div className="space-y-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="retro-button bg-transparent text-xs w-full"
-                  onClick={() => {
-                    setFormData({ email: "student@takhassus.com", password: "password123", rememberMe: false })
-                  }}
-                  disabled={loading}
-                >
-                  حساب طالب تجريبي
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="retro-button bg-transparent text-xs w-full"
-                  onClick={() => {
-                    setFormData({ email: "admin@takhassus.com", password: "admin123", rememberMe: false })
-                  }}
-                  disabled={loading}
-                >
-                  حساب إدارة تجريبي
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="retro-button bg-green-100 text-xs w-full"
-                  onClick={async () => {
-                    try {
-                      setError("")
-                      const response = await fetch("/api/auth/setup-admin", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                      })
-                      const result = await response.json()
-                      if (result.success) {
-                        alert(
-                          `تم إنشاء الحسابات بنجاح!\n\nحساب المدير:\nالبريد: ${result.admin.email}\nكلمة المرور: ${result.admin.password}\n\nحساب الطالب:\nالبريد: ${result.student.email}\nكلمة المرور: ${result.student.password}`,
-                        )
-                        // تعبئة حقول تسجيل الدخول بحساب المدير
-                        setFormData({
-                          email: result.admin.email,
-                          password: result.admin.password,
-                          rememberMe: false,
-                        })
-                      } else {
-                        setError("خطأ في إنشاء الحسابات: " + result.error)
-                      }
-                    } catch (error) {
-                      console.error("Setup error:", error)
-                      setError("حدث خطأ في إعداد النظام")
-                    }
-                  }}
-                  disabled={loading}
-                >
-                  إعداد النظام (إنشاء الحسابات)
-                </Button>
-              </div>
-            </div>
+            
           </div>
         </RetroWindow>
       </div>

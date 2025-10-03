@@ -10,7 +10,7 @@ export interface Course {
   id: string
   title: string
   code: string
-  major: "law" | "it" | "medical"
+  major: string
   university: string
   semester: string
   level: string
@@ -23,7 +23,7 @@ export interface Course {
 export interface Ambassador {
   id: string
   name: string
-  major: "law" | "it" | "medical"
+  major: string
   university: string
   year: string
   rating: number
@@ -43,7 +43,7 @@ export interface StudySession {
   maxParticipants: number
   price: string
   status: "متاح" | "مكتمل" | "ملغي"
-  major: "law" | "it" | "medical"
+  major: string
   description: string
 }
 
@@ -56,7 +56,7 @@ export interface MarketListing {
   category: "books" | "electronics" | "supplies" | "other"
   status: "متاح" | "مباع" | "محجوز"
   image: string
-  major?: "law" | "it" | "medical"
+  major?: string
   condition: "جديد" | "مستعمل - ممتاز" | "مستعمل - جيد" | "مستعمل - مقبول"
   createdAt: string
 }
@@ -76,78 +76,7 @@ export interface Notebook {
 }
 
 // Universities Data
-export const universities: University[] = [
-  {
-    id: "ksu",
-    name: "جامعة الملك سعود",
-    nameEn: "King Saud University",
-    city: "الرياض",
-    majors: ["law", "it", "medical"],
-  },
-  {
-    id: "kau",
-    name: "جامعة الملك عبدالعزيز",
-    nameEn: "King Abdulaziz University",
-    city: "جدة",
-    majors: ["law", "it", "medical"],
-  },
-  {
-    id: "kfupm",
-    name: "جامعة الملك فهد للبترول والمعادن",
-    nameEn: "King Fahd University of Petroleum and Minerals",
-    city: "الظهران",
-    majors: ["it"],
-  },
-  {
-    id: "imam",
-    name: "جامعة الإمام محمد بن سعود الإسلامية",
-    nameEn: "Imam Mohammad Ibn Saud Islamic University",
-    city: "الرياض",
-    majors: ["law"],
-  },
-  {
-    id: "uod",
-    name: "جامعة الدمام",
-    nameEn: "University of Dammam",
-    city: "الدمام",
-    majors: ["medical", "it"],
-  },
-  {
-    id: "ju",
-    name: "الجامعة الأردنية",
-    nameEn: "University of Jordan",
-    city: "عمان",
-    majors: ["law", "it", "medical"],
-  },
-  {
-    id: "just",
-    name: "جامعة العلوم والتكنولوجيا الأردنية",
-    nameEn: "Jordan University of Science and Technology",
-    city: "إربد",
-    majors: ["it", "medical"],
-  },
-  {
-    id: "yarmouk",
-    name: "جامعة اليرموك",
-    nameEn: "Yarmouk University",
-    city: "إربد",
-    majors: ["law", "it"],
-  },
-  {
-    id: "mutah",
-    name: "جامعة مؤتة",
-    nameEn: "Mutah University",
-    city: "الكرك",
-    majors: ["law", "medical"],
-  },
-  {
-    id: "aau",
-    name: "جامعة عمان العربية",
-    nameEn: "Amman Arab University",
-    city: "عمان",
-    majors: ["law", "it"],
-  },
-]
+
 
 // Courses Data
 export const courses: Course[] = [
@@ -898,39 +827,5 @@ export const notebooks: Notebook[] = [
   },
 ]
 
-// Helper functions to get data by filters
-export const getCoursesByMajor = (major: "law" | "it" | "medical") => {
-  return courses.filter((course) => course.major === major)
-}
 
-export const getAmbassadorsByMajor = (major: "law" | "it" | "medical") => {
-  return ambassadors.filter((ambassador) => ambassador.major === major)
-}
 
-export const getAmbassadorsByUniversity = (university: string) => {
-  return ambassadors.filter((ambassador) => ambassador.university === university)
-}
-
-export const getSessionsByMajor = (major: "law" | "it" | "medical") => {
-  return studySessions.filter((session) => session.major === major)
-}
-
-export const getListingsByMajor = (major: "law" | "it" | "medical") => {
-  return marketListings.filter((listing) => listing.major === major)
-}
-
-export const getListingsByCategory = (category: "books" | "electronics" | "supplies" | "other") => {
-  return marketListings.filter((listing) => listing.category === category)
-}
-
-export const getCourseById = (id: string) => {
-  return courses.find((course) => course.id === id)
-}
-
-export const getAmbassadorById = (id: string) => {
-  return ambassadors.find((ambassador) => ambassador.id === id)
-}
-
-export const getUniversityById = (id: string) => {
-  return universities.find((university) => university.id === id)
-}

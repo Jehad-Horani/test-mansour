@@ -63,7 +63,7 @@ export default function SettingsPage() {
         university: profile.university || "",
         major: profile.major || "",
         graduationYear: profile.graduation_year || "",
-        studyLevel: profile.study_level || "بكالوريوس",
+        studyLevel: profile.study_level || "",
         // Load preferences if available
         emailNotifications: profile.preferences?.emailNotifications ?? true,
         pushNotifications: profile.preferences?.pushNotifications ?? true,
@@ -93,7 +93,7 @@ export default function SettingsPage() {
         university: settings.university?.trim() || null, // TEXT not array
         major: settings.major || null,
         graduation_year: settings.graduationYear?.trim() || null,
-        study_level: settings.studyLevel || 'بكالوريوس',
+        study_level: settings.studyLevel || '',
         preferences: {
           theme: "retro",
           language: settings.language || "ar",
@@ -200,8 +200,44 @@ export default function SettingsPage() {
       </div>
     )
   }
-  const universities = ["الجامعة الأردنية", "جامعة العلوم والتكنولوجيا الأردنية", "جامعة اليرموك", "جامعة مؤتة", "جامعة عمان العربية"]
-
+const universities = [
+  "جامعة العلوم التطبيقية الخاصة",
+  "الجامعة الأردنية",
+  "جامعة عمان الأهلية",
+  "جامعة اليرموك",
+  "جامعة مؤتة",
+  "جامعة العلوم والتكنولوجيا الأردنية",
+  "الجامعة الهاشمية",
+  "جامعة آل البيت",
+  "جامعة البلقاء التطبيقية",
+  "جامعة الحسين بن طلال",
+  "جامعة الطفيلة التقنية",
+  "الجامعة الألمانية الأردنية",
+  "جامعة فيلادلفيا",
+  "جامعة الإسراء",
+  "جامعة البترا",
+  "جامعة الزيتونة الأردنية",
+  "جامعة جرش",
+  "جامعة إربد الأهلية",
+  "جامعة الزرقاء",
+  "جامعة الأميرة سمية للتكنولوجيا",
+  "جامعة عمان العربية",
+  "جامعة الشرق الأوسط",
+  "جامعة جدارا",
+  "الجامعة الأمريكية في مادبا",
+  "جامعة عجلون الوطنية",
+  "كلية الأونروا التربوية",
+  "كلية عمون الجامعية التطبيقية",
+  "الأكاديمية الأردنية للموسيقى",
+  "جامعة العقبة للتكنولوجيا",
+  "جامعة الحسين التقنية",
+  "الجامعة العربية المفتوحة",
+  "جامعة العلوم الإسلامية العالمية",
+  "الجامعة الأردنية / فرع العقبة",
+  "جامعة البلقاء التطبيقية / كلياتها",
+  "جامعة الحسين بن طلال / كلية العلوم الطبية التطبيقية",
+  "جامعة الطفيلة التقنية / كلية الهندسة"
+];
   return (
     <div className="min-h-screen p-4" style={{ background: "var(--panel)" }}>
       <div className="max-w-6xl mx-auto">
@@ -469,18 +505,14 @@ export default function SettingsPage() {
                       <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
                         التخصص
                       </label>
-                      <select
+                   
+                       <Input
                         value={settings.major}
                         onChange={(e) => setSettings({ ...settings, major: e.target.value })}
                         className="w-full p-2 retro-window"
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
-                      >
-                        <option value="">اختر التخصص</option>
-                        <option value="law">القانون</option>
-                        <option value="it">تقنية المعلومات</option>
-                        <option value="medical">الطب</option>
-                        <option value="business">إدارة الأعمال</option>
-                      </select>
+                        placeholder="مثال : علم الحاسوب"
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
@@ -491,12 +523,12 @@ export default function SettingsPage() {
                         onChange={(e) => setSettings({ ...settings, graduationYear: e.target.value })}
                         className="retro-window"
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
-                        placeholder="20??"
+                        placeholder="مثال : 2027"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: "var(--ink)" }}>
-                        المستوى الدراسي
+                        السنة الدراسية
                       </label>
                       <select
                         value={settings.studyLevel}
@@ -504,7 +536,7 @@ export default function SettingsPage() {
                         className="w-full p-2 retro-window"
                         style={{ background: "white", border: "2px inset #c0c0c0" }}
                       >
-                        <option value="">اختر المستوى</option>
+                        <option value="">اختر السنة</option>
                         <option value="1">السنة الأولى</option>
                         <option value="2">السنة الثانية</option>
                         <option value="3">السنة الثالثة</option>

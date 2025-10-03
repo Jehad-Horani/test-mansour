@@ -209,16 +209,7 @@ export function useAuth() {
 
   const isLoggedIn = !!user
 
-  const getMajorLabel = (major?: "law" | "it" | "medical" | "business" | "") => {
-    const labels: Record<string, string> = {
-      law: "القانون",
-      it: "تقنية المعلومات",
-      medical: "الطب",
-      business: "إدارة الأعمال",
-      "": "غير محدد",
-    }
-    return labels[major || ""] ?? "غير محدد"
-  }
+ 
 
   const getTierLabel = (tier?: "free" | "standard" | "premium" | "") => {
     const labels: Record<string, string> = {
@@ -242,7 +233,6 @@ export function useAuth() {
     updateProfile,
     isAdmin,
     isLoggedIn,
-    getMajorLabel,
     getTierLabel,
     clearError: () => setError(null),
     ispremium,
