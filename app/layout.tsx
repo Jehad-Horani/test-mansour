@@ -20,8 +20,8 @@ const cairo = Cairo({
 
 export const metadata: Metadata = {
   title: "تخصص.كُم - TAKHASSUS.com",
-  description: "منصة الطلاب متعددة التخصصات - نمط ريترو",
-  generator: "v0.app",
+  description: "تخصص.كُم منصة جامعية بتسهل على الطلاب دراستهم من خلال توفير محاضرات، ملخصات، وأسئلة مراجعة، بمكان واحد منظم وسهل الاستخدام.",
+  generator: "Jehad Horani",
 }
 
 export default function RootLayout({
