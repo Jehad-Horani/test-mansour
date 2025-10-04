@@ -10,6 +10,7 @@ import { UserProvider } from "@/contexts/user-context"
 import { MessagesProvider } from "@/contexts/messages-context"
 import { AuthDebug } from "@/components/auth/auth-debug"
 import { Toaster } from "sonner"
+import { Analytics } from "@vercel/analytics/next"
 
 const cairo = Cairo({
   subsets: ["arabic"],
@@ -43,6 +44,7 @@ export default function RootLayout({
                   <div className="p-4">
                     <Breadcrumbs />
                     {children}
+                    <Analytics />
                   </div>
                 </main>
                 <RetroSidebar />
