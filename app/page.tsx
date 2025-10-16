@@ -249,102 +249,7 @@ useEffect(() => {
         </div>
       </section>
 
-      <footer className="mt-16 py-8 px-4" style={{ background: "var(--bg)", color: "white" }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* About Section */}
-            <div>
-              <h3 className="font-bold mb-4 text-lg text-white">عن تخصص.كُم</h3>
-              <p className="text-sm mb-4 text-white/90">
-                منصة شاملة للطلاب الجامعيين في الأردن لتبادل الكتب والمعرفة والحصول على الاستشارات الأكاديمية
-              </p>
-              <div className="flex gap-2">
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h3 className="font-bold mb-4 text-lg text-white">روابط سريعة</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/market" className="hover:underline text-white/90 hover:text-white">
-                    سوق الكتب
-                  </Link>
-                </li>
-
-                <li>
-                  <Link href="/ambassadors" className="hover:underline text-white/90 hover:text-white">
-                    السفراء
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/pricing" className="hover:underline text-white/90 hover:text-white">
-                    خطط الاشتراك
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/dashboard" className="hover:underline text-white/90 hover:text-white">
-                    لوحة التحكم
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/summaries" className="hover:underline text-white/90 hover:text-white">
-                    الملخصات
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Colleges */}
-            <div>
-              <h3 className="font-bold mb-4 text-lg text-white">الكليات</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <span className="text-white/90">كلية الحقوق</span>
-                </li>
-                <li>
-                  <span className="text-white/90">تكنولوجيا المعلومات</span>
-                </li>
-                <li>
-                  <span className="text-white/90">إدارة الأعمال</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Contact Info */}
-            <div>
-              <h3 className="font-bold mb-4 text-lg text-white">تواصل معنا</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <span>📞</span>
-                  <span className="text-white/90">+962 6 123 4567</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>📱</span>
-                  <span className="text-white/90">+962 79 123 4567</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>📧</span>
-                  <span className="text-white/90">info@takhassus.com</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="border-t border-white/20 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center text-sm">
-            <div className="text-white/90 mb-4 md:mb-0">© 2024 تخصص.كُم. جميع الحقوق محفوظة.</div>
-            <div className="flex gap-4">
-              {/* <Link href="/terms" className="hover:underline text-white/90 hover:text-white">
-                شروط الاستخدام
-              </Link>
-              <Link href="/privacy" className="hover:underline text-white/90 hover:text-white">
-                سياسة الخصوصية
-              </Link> */}
-            </div>
-          </div>
-        </div>
-      </footer>
+    
     </div>
   )
 }
