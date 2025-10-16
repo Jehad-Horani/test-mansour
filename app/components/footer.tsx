@@ -99,7 +99,8 @@ export default function Footer() {
 
                 {/* Bottom Bar */}
                 <div className="border-t border-white/20 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center text-sm">
-                    <a href="https://jehadh-portfolio.vercel.app/">
+                    <a href="https://jehadh-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer"
+                    >
 
                         © {new Date().getFullYear()} JHWebDev. All rights reserved.
                     </a>
