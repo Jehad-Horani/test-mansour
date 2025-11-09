@@ -54,6 +54,9 @@ useEffect(() => {
             <Button asChild className="retro-button text-white" style={{ background: "var(--primary)" }}>
               <Link href="/market">ادخل السوق</Link>
             </Button>
+            <Button asChild className="retro-button text-white" style={{ background: "var(--primary)" }}>
+              <Link href="/pricing"> اشترك الان</Link>
+            </Button>
 
           </div>
         </div>
