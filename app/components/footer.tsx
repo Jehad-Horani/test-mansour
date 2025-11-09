@@ -14,7 +14,7 @@ export default function Footer() {
                             منصة شاملة للطلاب الجامعيين في الأردن لتبادل المعرفة والحصول على الاستشارات الأكاديمية
                         </p>
                         <div className="flex gap-3 mt-4">
-                            <Link href="https://www.instagram.com/takhassus.com_?igsh=MTViNWtsb3hsdDlpNQ==" aria-label="Instagram">
+                            <Link href="https://www.instagram.com/takhassus.com_?igsh=MTViNWtsb3hsdDlpNQ==" aria-label="Instagram" target="_blank">
                                 <svg
                                     className="w-5 h-5 fill-white/80 hover:fill-white transition-colors"
                                     xmlns="http://www.w3.org/2000/svg"
